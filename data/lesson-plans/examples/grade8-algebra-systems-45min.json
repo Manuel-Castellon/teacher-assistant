@@ -1,0 +1,64 @@
+{
+  "id": "example-002",
+  "source": "real_teacher_example",
+  "createdAt": "2026-04-29",
+  "updatedAt": "2026-04-29",
+  "topic": "מערכת משוואות",
+  "subTopic": "שיטת השוואת המקדמים",
+  "grade": "חי",
+  "duration": 45,
+  "lessonType": "שגרה",
+  "textbook": {
+    "name": "מתמטיקה לחטיבת הביניים",
+    "grade": "ח'",
+    "part": 2,
+    "publisher": "מט\"ח",
+    "isStudentStandardBook": true
+  },
+  "phases": {
+    "opening": {
+      "name": "משימת פתיחה",
+      "durationMinutes": 10,
+      "description": "תרגיל בעצמאות בזמן שהמורה מבצעת אדמין",
+      "exercises": [
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 52,
+            "exerciseId": "25"
+          },
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 10,
+          "notes": "בעיה מילולית גאומטרית — בניית מערכת משוואות מתוך הקשר גאומטרי"
+        }
+      ]
+    },
+    "instruction": {
+      "name": "הקנייה — שיטת השוואת המקדמים",
+      "durationMinutes": 20,
+      "description": "נושא חדש. עד כה למדו ותרגלו רק שיטת הצבה.",
+      "exercises": [],
+      "teacherNotes": "שיטת השוואת מקדמים — חומר חדש לגמרי. עד כה ידעו רק שיטת הצבה."
+    },
+    "practice": {
+      "name": "תרגול",
+      "durationMinutes": 0,
+      "description": "משולב עם הקנייה בשיעור של 45 דקות",
+      "exercises": []
+    },
+    "independentWork": {
+      "name": "עבודה עצמית",
+      "durationMinutes": 15,
+      "description": "עבודה עצמית",
+      "exercises": []
+    }
+  },
+  "homework": null,
+  "_analysisNotes": {
+    "keyInsights": [
+      "45-minute lesson — more compressed structure",
+      "Homework intentionally withheld: teacher sees this class again later in the week",
+      "New topic: coefficient comparison method (only substitution was known before)"
+    ]
+  }
+}

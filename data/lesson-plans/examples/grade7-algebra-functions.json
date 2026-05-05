@@ -1,0 +1,74 @@
+{
+  "id": "example-001",
+  "source": "real_teacher_example",
+  "createdAt": "2026-04-29",
+  "updatedAt": "2026-04-29",
+  "topic": "פונקציות",
+  "subTopic": "מה זו פונקציה",
+  "grade": "זי",
+  "duration": 90,
+  "lessonType": "שגרה",
+  "textbook": {
+    "name": "בכיוון הנכון עם ארכימדס",
+    "grade": "ז'",
+    "part": 3,
+    "isStudentStandardBook": false,
+    "_note": "Teacher's preferred book. NOT the students' standard book. Exercises must be printed as worksheets."
+  },
+  "phases": {
+    "opening": {
+      "name": "משימת פתיחה",
+      "durationMinutes": 15,
+      "description": "תרגיל בעצמאות בזמן שהמורה מבצעת אדמין (נוכחות, לוח, חומרים)",
+      "exercises": [
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 83,
+            "exerciseId": "4"
+          },
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 15,
+          "notes": "חזרה על קצב השתנות. מופיעה המילה פונקציה — טיזר להמשך השיעור"
+        }
+      ]
+    },
+    "instruction": {
+      "name": "הקנייה — מה זו פונקציה",
+      "durationMinutes": 40,
+      "description": "הגדרת פונקציה: תחום, טווח, התאמה חד-ערכית. דוגמאות לפונקציות ולא-פונקציות.",
+      "exercises": [],
+      "teacherNotes": "יש כאן רק 4 תרגילים אבל הרבה הגדרות חדשות — לא להעמיס. פונקציה זה ביג דיל! שווה להכין מצגת עם גרפים לחסוך זמן ולדייק."
+    },
+    "practice": {
+      "name": "תרגול על הלוח",
+      "durationMinutes": 20,
+      "description": "תרגילים משותפים על הלוח",
+      "exercises": [
+        {
+          "source": "textbook",
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 20,
+          "notes": "4 תרגילים בלבד — מכוון בגלל עומס ההגדרות"
+        }
+      ]
+    },
+    "independentWork": {
+      "name": "עבודה עצמית",
+      "durationMinutes": 15,
+      "description": "עבודה עצמית + שיעורי בית",
+      "exercises": [],
+      "teacherNotes": "15 דקות אחרונות לפחות לעבודה עצמית — חובה"
+    }
+  },
+  "homework": [],
+  "generatedBy": "teacher",
+  "_analysisNotes": {
+    "keyInsights": [
+      "Opening is explicitly during admin time — students work while teacher takes attendance",
+      "Teacher pre-warns not to overload when many definitions are new",
+      "Suggests preparing a slide deck with graphs to save board time and improve precision",
+      "Only 4 exercises — far fewer than typical because of conceptual density"
+    ]
+  }
+}

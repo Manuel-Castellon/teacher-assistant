@@ -1,0 +1,167 @@
+{
+  "id": "example-004",
+  "source": "real_teacher_example",
+  "createdAt": "2026-04-26",
+  "updatedAt": "2026-04-26",
+  "topic": "משפט פיתגורס",
+  "subTopic": "שימושים במשפט פיתגורס",
+  "grade": "חי",
+  "duration": 90,
+  "lessonType": "שגרה",
+  "textbook": {
+    "name": "מתמטיקה לחטיבת הביניים",
+    "grade": "ח'",
+    "part": 2,
+    "publisher": "מט\"ח",
+    "isStudentStandardBook": true
+  },
+  "phases": {
+    "opening": {
+      "name": "משימת פתיחה",
+      "durationMinutes": 15,
+      "description": "מציאת אורכי צלעות עם משפט פיתגורס — לא טריוויאלי",
+      "exercises": [
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 224,
+            "exerciseId": "8-9"
+          },
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 15
+        }
+      ]
+    },
+    "instruction": {
+      "name": "הקנייה — העלאת רמה",
+      "durationMinutes": 30,
+      "description": "שימושים מתקדמים במשפט פיתגורס",
+      "exercises": [],
+      "teacherNotes": "העלאת רמה — לא חומר חדש אלא רמה גבוהה יותר של יישום"
+    },
+    "practice": {
+      "name": "תרגול משותף",
+      "durationMinutes": 30,
+      "description": "תרגילים על הלוח — יכול להיות עם לוחות מחיקים",
+      "exercises": [
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 224,
+            "exerciseId": "8"
+          },
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 10
+        },
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 224,
+            "exerciseId": "12"
+          },
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 10
+        },
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 224,
+            "exerciseId": "13"
+          },
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 10
+        }
+      ]
+    },
+    "independentWork": {
+      "name": "עבודה עצמית",
+      "durationMinutes": 15,
+      "description": "אוסף תרגילים — חלק מוכרז כשיעורי בית רק בסוף השיעור",
+      "exercises": [
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 224,
+            "exerciseId": "10"
+          },
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 5
+        },
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 224,
+            "exerciseId": "11"
+          },
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 5
+        },
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 224,
+            "exerciseId": "14"
+          },
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 3
+        },
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 224,
+            "exerciseId": "15"
+          },
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 2
+        }
+      ]
+    }
+  },
+  "homework": [
+    {
+      "source": "textbook",
+      "textbookRef": {
+        "page": 224,
+        "exerciseId": "10"
+      },
+      "practiceMode": "עצמאי",
+      "estimatedMinutes": 5
+    },
+    {
+      "source": "textbook",
+      "textbookRef": {
+        "page": 224,
+        "exerciseId": "11"
+      },
+      "practiceMode": "עצמאי",
+      "estimatedMinutes": 5
+    },
+    {
+      "source": "textbook",
+      "textbookRef": {
+        "page": 224,
+        "exerciseId": "14"
+      },
+      "practiceMode": "עצמאי",
+      "estimatedMinutes": 3
+    },
+    {
+      "source": "textbook",
+      "textbookRef": {
+        "page": 224,
+        "exerciseId": "15"
+      },
+      "practiceMode": "עצמאי",
+      "estimatedMinutes": 2
+    }
+  ],
+  "postLessonNotes": "במהלך פתרון תרגיל 8 (פתיחה), התלמידים לא הצליחו להוכיח מעבר לאינטואיציה שגבהים לשוקיים במשולש שווה-שוקיים שווים. עברנו זמן רב בהוכחת הטענה. בפועל: פתרנו יחד רק 8, 12, 13. שיעורי בית: 10,11,14,15. השיעור הבא יפתח בתרגיל 16.",
+  "generatedBy": "teacher",
+  "_analysisNotes": {
+    "keyInsights": [
+      "postLessonNotes show significant deviation from plan — unexpected proof detour",
+      "Homework announced only at end of lesson from the independent work set",
+      "Next lesson continuity: starts with exercise 16"
+    ]
+  }
+}

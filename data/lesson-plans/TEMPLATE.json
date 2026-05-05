@@ -1,0 +1,48 @@
+{
+  "_instructions": "Fill in all fields. See examples/ for real instances. Null homework = intentionally none.",
+  "id": "GENERATE_UUID",
+  "createdAt": "ISO_DATE",
+  "updatedAt": "ISO_DATE",
+  "topic": "",
+  "subTopic": "",
+  "grade": "זי | חי | טי | יי | יאי | יבי",
+  "duration": "45 | 90",
+  "lessonType": "שגרה | חזרה_לבגרות | חזרה_למבחן | הקנייה | תרגול | מבחן",
+  "textbook": {
+    "name": "",
+    "grade": "",
+    "part": null,
+    "publisher": "",
+    "isStudentStandardBook": true
+  },
+  "curriculumTopicId": "links to CurriculumTopic.id",
+  "classId": "",
+  "phases": {
+    "opening": {
+      "name": "משימת פתיחה",
+      "durationMinutes": 0,
+      "exercises": [],
+      "teacherNotes": ""
+    },
+    "instruction": null,
+    "practice": {
+      "name": "תרגול",
+      "durationMinutes": 0,
+      "exercises": [],
+      "teacherNotes": ""
+    },
+    "independentWork": {
+      "name": "עבודה עצמית",
+      "durationMinutes": 0,
+      "exercises": [],
+      "teacherNotes": ""
+    }
+  },
+  "homework": [],
+  "teacherNotes": "",
+  "postLessonNotes": "",
+  "bagrutReview": null,
+  "generatedBy": "claude-api | teacher",
+  "modelVersion": "",
+  "promptVersion": ""
+}

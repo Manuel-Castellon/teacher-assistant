@@ -1,0 +1,49 @@
+{
+  "id": "example-006",
+  "source": "real_teacher_example",
+  "createdAt": "2026-04-30",
+  "updatedAt": "2026-04-30",
+  "topic": "חקירה של פונקציה טריגונומטרית",
+  "subTopic": "חקירה מלאה — מינימום, מקסימום, נקודות קיצון, תחום",
+  "grade": "יאי",
+  "duration": 90,
+  "lessonType": "חזרה_לבגרות",
+  "textbook": null,
+  "phases": {
+    "opening": {
+      "name": "כניסה לשיעור",
+      "durationMinutes": 5,
+      "description": "אדמין",
+      "exercises": []
+    },
+    "practice": {
+      "name": "תרגילים משותפים",
+      "durationMinutes": 30,
+      "description": "1-2 תרגילים מבגרויות עבר",
+      "exercises": [
+        {
+          "source": "bagrut_archive",
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 30,
+          "notes": "מקורות: יואל גבע, בני גורן"
+        }
+      ]
+    },
+    "instruction": null,
+    "independentWork": {
+      "name": "לימוד עצמי לבגרות",
+      "durationMinutes": 55,
+      "description": "תלמידים לומדים בעצמם",
+      "exercises": []
+    }
+  },
+  "homework": null,
+  "bagrutReview": {
+    "studentSurveyTopic": "חקירת פונקציה טריגונומטרית — נבחר על ידי סקר תלמידים",
+    "exerciseSources": [
+      "יואל גבע",
+      "בני גורן"
+    ]
+  },
+  "generatedBy": "teacher"
+}

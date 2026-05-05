@@ -1,0 +1,59 @@
+{
+  "id": "example-003",
+  "source": "real_teacher_example",
+  "createdAt": "2026-04-30",
+  "updatedAt": "2026-04-30",
+  "topic": "משוואות אלגבריות עם שברים",
+  "subTopic": "חזרה — מכנה משותף, תחום הצבה",
+  "grade": "חי",
+  "duration": 90,
+  "lessonType": "חזרה_למבחן",
+  "textbook": {
+    "name": "בכיוון הנכון עם ארכימדס",
+    "grade": "ח'",
+    "part": 2,
+    "isStudentStandardBook": false,
+    "_note": "Not students' standard book. Print exercises as worksheet."
+  },
+  "phases": {
+    "opening": {
+      "name": "תרגיל פתיחה",
+      "durationMinutes": 15,
+      "description": "תרגיל בעצמאות בזמן שהמורה מבצעת אדמין",
+      "exercises": [
+        {
+          "source": "textbook",
+          "textbookRef": {
+            "page": 196,
+            "exerciseId": "1 סעיפים א,ב,ג,ד,ז,ח,ט,י"
+          },
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 15
+        }
+      ]
+    },
+    "practice": {
+      "name": "תרגול חזרה",
+      "durationMinutes": 45,
+      "description": "רענון חומר לבחינה — לא נגעו בו הרבה זמן",
+      "exercises": [],
+      "teacherNotes": "חשוב לרענן גם במחיר הפסקה בחומר השוטף. שיטת השוואת מקדמים — נושא חדש כאן."
+    },
+    "instruction": null,
+    "independentWork": {
+      "name": "עבודה עצמית + שיעורי בית",
+      "durationMinutes": 30,
+      "description": "30 דקות אחרונות לפחות — חובה בשיעור חזרה של 90 דקות",
+      "exercises": [
+        {
+          "source": "teacher_provided",
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 30,
+          "notes": "דף עבודה"
+        }
+      ]
+    }
+  },
+  "homework": [],
+  "generatedBy": "teacher"
+}

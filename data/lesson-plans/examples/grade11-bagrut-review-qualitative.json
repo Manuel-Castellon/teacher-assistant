@@ -1,0 +1,57 @@
+{
+  "id": "example-005",
+  "source": "real_teacher_example",
+  "createdAt": "2026-04-29",
+  "updatedAt": "2026-04-29",
+  "topic": "חקירה איכותנית",
+  "subTopic": "הקשר בין פונקציה, נגזרת וגרף",
+  "grade": "יאי",
+  "duration": 90,
+  "lessonType": "חזרה_לבגרות",
+  "textbook": null,
+  "phases": {
+    "opening": {
+      "name": "כניסה לשיעור",
+      "durationMinutes": 5,
+      "description": "אדמין קצר",
+      "exercises": []
+    },
+    "practice": {
+      "name": "פתרון תרגילים משותף",
+      "durationMinutes": 30,
+      "description": "1-2 תרגילים מבגרויות עבר — מורה מובילה על הלוח",
+      "exercises": [
+        {
+          "source": "bagrut_archive",
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 30,
+          "notes": "מקורות: יואל גבע, בני גורן"
+        }
+      ]
+    },
+    "instruction": null,
+    "independentWork": {
+      "name": "לימוד עצמי לבגרות",
+      "durationMinutes": 55,
+      "description": "תלמידים לומדים בעצמם לבגרות בזמן שהמורה עוברת ביניהם",
+      "exercises": []
+    }
+  },
+  "homework": null,
+  "bagrutReview": {
+    "studentSurveyTopic": "חקירה איכותנית — נבחר על ידי סקר תלמידים לפני השיעור",
+    "exerciseSources": [
+      "יואל גבע",
+      "בני גורן"
+    ]
+  },
+  "generatedBy": "teacher",
+  "_analysisNotes": {
+    "keyInsights": [
+      "Topic chosen by student poll — this happens before EVERY Bagrut review lesson",
+      "Bulk of lesson (55 min) is student self-study while teacher circulates",
+      "No homework — Bagrut prep is self-directed",
+      "Sources for exercises: yoel-geva and benigoren websites"
+    ]
+  }
+}
