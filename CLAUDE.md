@@ -92,6 +92,7 @@ These are open. Raise each one explicitly before implementing:
 | 2 | Math verifier | MVP 2 start | Wolfram Alpha API · SymPy-only · both in sequence |
 | 3 | Grading infra | MVP 6 start | GradeLab · ExamAI · custom on OCR layer |
 | 4 | AI generation | default Claude API | Interface allows swap if costs grow |
+| 6 | **Auth provider (revisit)** | Before MVP 0 auth wiring | **Cognito (current default in PROGRESS.md) creates separate user records per identity provider** — exact "signed up with email, locked out of Google SSO" UX the teacher dislikes. Cleaner: **Auth.js with `allowDangerousEmailAccountLinking: true`** (free, in-process, auto-links verified-email providers) or managed Clerk / WorkOS. Decide before writing any auth code. |
 | 5 | Geometry validation | MVP 2, when live | GeoGebra API · custom |
 
 ---

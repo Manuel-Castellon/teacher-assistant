@@ -50,3 +50,4 @@
 3. Grading infrastructure — ask at MVP 6 start
 4. AI generation — Claude API default, interface allows swap
 5. Geometry validation — ask at MVP 2, when live
+6. **Auth provider — revisit before any auth code.** PROGRESS.md says "Cognito + Google OAuth" but Cognito's default = separate user per IdP, which produces the "signed up with email, locked out of OAuth" failure the teacher explicitly dislikes (mirrors the vaulty project pain). Auth.js with `allowDangerousEmailAccountLinking` for verified providers links automatically; Clerk / WorkOS handle it as managed services. Cognito should only stay if we're prepared to ship a Lambda trigger for `AdminLinkProviderForUser`.

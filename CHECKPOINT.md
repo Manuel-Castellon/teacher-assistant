@@ -3,33 +3,34 @@
 > Live cursor for the current task. PROGRESS.md is the milestone log; this file is "where I am RIGHT NOW".
 
 ## Current task
-MVP 0 setup — pre-implementation gates: git init + version verification.
+MVP 0 sub-task **D** — Curriculum PDF parsing into JSON matching `CurriculumUnit`.
 
 ## Last action that succeeded
-- `git init -b main` in `project-scaffold/`
-- Staged scaffold files (CLAUDE.md, AGENTS.md, MEMORY.md, PROGRESS.md, CHECKPOINT.md, package.json, tsconfig.json, .env.example, .gitignore). Untracked dirs with content: data/, evals/, src/, tests/.
-- Web-verified versions (2026-05-05).
+- Fetched `prisa.pdf` (middle school portal, 3 pages) and `yod5.pdf` (high school year 10, 44 pages, 2.2 MB) into `data/curriculum/raw/`.
+- Set up Python venv at `scripts/parse-curriculum/.venv/` with PyMuPDF 1.27.2.3.
+- Wrote `scripts/parse-curriculum/extract_text.py` — uses `get_text("words")` + per-line x-DESC sort to produce logical-order Hebrew. Verified on prisa.pdf: "משרד החינוך" / "המזכירות הפדגוגית" come out correctly.
+- Confirmed Google Docs in the portal are publicly fetchable via `/export?format=txt`.
 
-## Version verification (2026-05-05, corrected after user pushback)
-- Node.js **24.x** Active LTS, supported through Apr 2028. ✅
-- TypeScript **6.0.3** is current stable (npm `latest` dist-tag). 6.0 shipped Mar 23, 2026. CLAUDE.md/MEMORY.md correct as written. Note: TS 7.0 (Go-native) is close to release; 6.0 is the last JS-based version and carries deprecations that become hard removals in 7.0 — plan a migration in 3–6 months.
-- React **19.2.5** stable (Apr 8, 2026). ✅
-- PostgreSQL **18.3** current (Feb 26, 2026); 19 due Sep 2026. ✅
-- Next.js **16.2** stable (Mar 2026), on React 19.2. CLAUDE.md "verify" line resolved.
+## Key architectural finding
+- **`prisa.pdf` (middle school) is a portal, NOT content.** It links to ~35 Google Docs. The 20 links on page 1 form a 4-grade × 5-column table; only 4 of them (תכנית הוראה Hebrew per grade) are relevant for our schema.
+- **High school 5-יח"ל PDFs are direct content** (yod5/yodalef5/yodbet5). Fetch + PyMuPDF parse path is clean.
+- `FETCH_INSTRUCTIONS.md` description of `prisa.pdf` ("Contains: full topic list + recommended hour allocation") is out of date — needs correction once parsing strategy settles.
 
 ## What I was about to do next
-1. Add resolved Next.js 16.x version to CLAUDE.md Versions table (replaces "verify").
-2. Note the TS 7 migration window in CLAUDE.md (or skip if user prefers).
-3. Initial git commit of scaffold.
-4. Begin MVP 0 implementation: Next.js install, RTL layout, etc.
+**Awaiting user go-ahead** on this plan:
+1. Fetch yodalef5.pdf + yodbet5.pdf (year 11, year 12).
+2. Extend `extract_text.py` with structured parsing → `CurriculumUnit` JSON for years 10/11/12 of the 5-יח"ל track.
+3. Then tackle middle school: match prisa.pdf link rects to table cells to identify the 4 relevant Google Doc URLs, fetch + parse.
+4. Update `FETCH_INSTRUCTIONS.md` to reflect the portal/Google Docs reality.
+5. Run the eval/smoke tests for the JSON shape.
 
 ## Open question / waiting on user
-- OK to record Next.js 16.x in CLAUDE.md Versions table and proceed to initial commit?
-- Want a note in CLAUDE.md flagging the TS 6 → 7 migration window (3–6 months out)?
+- OK to proceed with high-school-first strategy? Or do you want middle-school parallelized?
+- For Google Doc parsing: any concern about Ministry having moved content to public Google Docs (versioning, ownership)? The OUIDs in the URLs suggest individual ownership — Ministry could revoke link access at any point.
 
-## Correction log (this session)
-- I initially reported TS 5.9 as current stable. That was wrong — npm registry shows `latest: 6.0.3`. User pushed back; I verified via `npm view typescript dist-tags`. CLAUDE.md and MEMORY.md were correct as written; do not change them.
-
-## Files touched this session
-- `CHECKPOINT.md` (this file)
-- `.git/` (initialized)
+## Files touched this session (D so far)
+- `scripts/parse-curriculum/extract_text.py` (new)
+- `scripts/parse-curriculum/.venv/` (gitignored)
+- `data/curriculum/raw/prisa.pdf`, `data/curriculum/raw/prisa.txt`
+- `data/curriculum/raw/yod5.pdf`
+- `.gitignore` (added scripts/**/.venv/)
