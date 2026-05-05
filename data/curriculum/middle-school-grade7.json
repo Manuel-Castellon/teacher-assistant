@@ -1,0 +1,334 @@
+{
+  "id": "ms-grade7-tashpav",
+  "stage": "חטיבת_ביניים",
+  "gradeLevel": "זי",
+  "academicYear": "תשפ\"ו",
+  "sourceUrl": "https://docs.google.com/document/d/17bGFCtZjygxCWsj3Dya8la4trFfW2QYq/edit?usp=sharing",
+  "parsedAt": "2026-05-05",
+  "_note": "Topics extracted from the פריסת הוראה Google Doc via heuristic parse (scripts/parse-curriculum/parse_spread.py). Sum of topic hours = 127h, sum of monthly budgets = 163h; the 36h gap is mostly Ministry-allocated free / חזרות / משימות אוריינות weeks not tied to a specific topic. Topic IDs are positional (`tNN`); English slugs and per-topic learning objectives are TODO. Raw text dump committed at data/curriculum/raw/middle-school/grade7-spread.txt.",
+  "topics": [
+    {
+      "id": "ms-grade7-t01",
+      "name": "זוויות",
+      "recommendedHours": 15,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t01-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t01",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t02",
+      "name": "משתנים וביטויים אלגבריים והכללה של תופעות מספריות",
+      "recommendedHours": 13,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t02-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t02",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t03",
+      "name": "מלבן, תיבה, ניצבות והקבלה",
+      "recommendedHours": 10,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t03-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t03",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t04",
+      "name": "מספרים שליליים, חיוביים ואפס",
+      "recommendedHours": 9,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t04-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t04",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t05",
+      "name": "שאלות אוריינות אינטגרטיביות",
+      "recommendedHours": 9,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t05-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t05",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t06",
+      "name": "פעולות החשבון וחוקיהן, חזקות ושורשים ריבועיים",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t06-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t06",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t07",
+      "name": "פתרון משוואות",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t07-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t07",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t08",
+      "name": "שאלות מילוליות",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t08-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t08",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t09",
+      "name": "מערכת צירים",
+      "recommendedHours": 7,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t09-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t09",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t10",
+      "name": "שטחים",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t10-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t10",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t11",
+      "name": "מספרים שליליים חיוביים ואפס",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t11-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t11",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t12",
+      "name": "ביטויים אלגבריים",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t12-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t12",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t13",
+      "name": "פתרון משוואות פשוטות",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t13-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t13",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t14",
+      "name": "שאלות מילוליות פשוטות",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t14-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t14",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t15",
+      "name": "קריאת גרפים",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t15-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t15",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t16",
+      "name": "מנסרה",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t16-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t16",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade7-t17",
+      "name": "סוגי משולשים",
+      "recommendedHours": 2,
+      "gradeLevel": [
+        "זי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade7-t17-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade7-t17",
+          "learningObjectives": []
+        }
+      ]
+    }
+  ]
+}

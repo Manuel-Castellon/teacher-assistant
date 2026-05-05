@@ -24,5 +24,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Python venvs (one-shot parsers)
+# Python venvs and bytecode (one-shot parsers)
 scripts/**/.venv/
+scripts/**/__pycache__/

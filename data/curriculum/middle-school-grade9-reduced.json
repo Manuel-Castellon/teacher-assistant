@@ -1,0 +1,353 @@
+{
+  "id": "ms-grade9-reduced-tashpav",
+  "stage": "חטיבת_ביניים",
+  "gradeLevel": "טי",
+  "academicYear": "תשפ\"ו",
+  "sourceUrl": "https://docs.google.com/document/d/1sjF0sQTi9xZeNpDaZ-gOzhqLP4KGRy1Fr5zeCcYC168/edit?usp=sharing",
+  "parsedAt": "2026-05-05",
+  "_note": "Topics extracted from the פריסת הוראה Google Doc via heuristic parse (scripts/parse-curriculum/parse_spread.py). Sum of topic hours = 113h, sum of monthly budgets = 153h; the 40h gap is mostly Ministry-allocated free / חזרות / משימות אוריינות weeks not tied to a specific topic. Topic IDs are positional (`tNN`); English slugs and per-topic learning objectives are TODO. Raw text dump committed at data/curriculum/raw/middle-school/grade9-reduced-spread.txt.",
+  "topics": [
+    {
+      "id": "ms-grade9-reduced-t01",
+      "name": "פונקציה קווית",
+      "recommendedHours": 10,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t01-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t01",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t02",
+      "name": "שאלות מילוליות",
+      "recommendedHours": 10,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t02-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t02",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t03",
+      "name": "אחוזים",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t03-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t03",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t04",
+      "name": "מהי הסתברות מושגים בסיסיים, חישובי הסתברות והקשר לשכיחות יחסית, מאורע משלים",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t04-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t04",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t05",
+      "name": "פונקציה ריבועית ומשוואות ריבועיות",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t05-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t05",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t06",
+      "name": "קריאת גרפים",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t06-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t06",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t07",
+      "name": "משפט פיתגורס",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t07-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t07",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t08",
+      "name": "משוואות",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t08-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t08",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t09",
+      "name": "דמיון משולשים",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t09-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t09",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t10",
+      "name": "חזרה על ישרים מקבילים",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t10-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t10",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t11",
+      "name": "מלבן",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t11-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t11",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t12",
+      "name": "שטחים והיקפים",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t12-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t12",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t13",
+      "name": "טכניקה אלגברית",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t13-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t13",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t14",
+      "name": "איסוף וארגון נתונים בטבלה, ברשימה ודיאגרמות. שכיחות ושכיחות יחסית",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t14-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t14",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t15",
+      "name": "טווח נתונים, ממוצע, שכיח וחציון",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t15-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t15",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t16",
+      "name": "מעויין",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t16-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t16",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t17",
+      "name": "ריבוע",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t17-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t17",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-reduced-t18",
+      "name": "טרפז",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-reduced-t18-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-reduced-t18",
+          "learningObjectives": []
+        }
+      ]
+    }
+  ]
+}

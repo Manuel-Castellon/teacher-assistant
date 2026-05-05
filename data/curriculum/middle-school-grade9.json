@@ -1,0 +1,296 @@
+{
+  "id": "ms-grade9-tashpav",
+  "stage": "חטיבת_ביניים",
+  "gradeLevel": "טי",
+  "academicYear": "תשפ\"ו",
+  "sourceUrl": "https://docs.google.com/document/d/1mLDtQqvYkOX3tQLdC9AcPVjeC36jodXJzzGP-gZ_0oI/edit?usp=sharing",
+  "parsedAt": "2026-05-05",
+  "_note": "Topics extracted from the פריסת הוראה Google Doc via heuristic parse (scripts/parse-curriculum/parse_spread.py). Sum of topic hours = 89h, sum of monthly budgets = 163h; the 74h gap is mostly Ministry-allocated free / חזרות / משימות אוריינות weeks not tied to a specific topic. Topic IDs are positional (`tNN`); English slugs and per-topic learning objectives are TODO. Raw text dump committed at data/curriculum/raw/middle-school/grade9-spread.txt.",
+  "topics": [
+    {
+      "id": "ms-grade9-t01",
+      "name": "פונקציות ריבועיות",
+      "recommendedHours": 14,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t01-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t01",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t02",
+      "name": "טכניקה אלגברית",
+      "recommendedHours": 13,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t02-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t02",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t03",
+      "name": "משוואות רציונליות",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t03-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t03",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t04",
+      "name": "שאלות מילוליות",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t04-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t04",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t05",
+      "name": "משולש שווה שוקיים",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t05-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t05",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t06",
+      "name": "פתרון משוואות בעזרת נוסחת השורשים",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t06-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t06",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t07",
+      "name": "מלבן",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t07-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t07",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t08",
+      "name": "חוקי חזקות",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t08-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t08",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t09",
+      "name": "דלתון",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t09-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t09",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t10",
+      "name": "מקבילית-המשך",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t10-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t10",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t11",
+      "name": "מערכת משוואות לא לינאריות",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t11-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t11",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t12",
+      "name": "ריבוע",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t12-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t12",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t13",
+      "name": "דמיון משולשים",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t13-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t13",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t14",
+      "name": "אי שוויונות ריבועיים",
+      "recommendedHours": 3,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t14-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t14",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade9-t15",
+      "name": "יחסי צלעות וזוויות",
+      "recommendedHours": 2,
+      "gradeLevel": [
+        "טי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade9-t15-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade9-t15",
+          "learningObjectives": []
+        }
+      ]
+    }
+  ]
+}

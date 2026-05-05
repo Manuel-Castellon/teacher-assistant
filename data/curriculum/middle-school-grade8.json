@@ -1,0 +1,334 @@
+{
+  "id": "ms-grade8-tashpav",
+  "stage": "חטיבת_ביניים",
+  "gradeLevel": "חי",
+  "academicYear": "תשפ\"ו",
+  "sourceUrl": "https://docs.google.com/document/d/1l40XxpILIZPGNqPBkCDAfUcJR5Njl1JP/edit?usp=sharing",
+  "parsedAt": "2026-05-05",
+  "_note": "Topics extracted from the פריסת הוראה Google Doc via heuristic parse (scripts/parse-curriculum/parse_spread.py). Sum of topic hours = 117h, sum of monthly budgets = 129h; the 12h gap is mostly Ministry-allocated free / חזרות / משימות אוריינות weeks not tied to a specific topic. Topic IDs are positional (`tNN`); English slugs and per-topic learning objectives are TODO. Raw text dump committed at data/curriculum/raw/middle-school/grade8-spread.txt.",
+  "topics": [
+    {
+      "id": "ms-grade8-t01",
+      "name": "פונקציה קווית",
+      "recommendedHours": 14,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t01-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t01",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t02",
+      "name": "חזרות והשלמות",
+      "recommendedHours": 14,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t02-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t02",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t03",
+      "name": "חפיפת משולשים",
+      "recommendedHours": 11,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t03-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t03",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t04",
+      "name": "משוואות ושאלות מילוליות",
+      "recommendedHours": 10,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t04-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t04",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t05",
+      "name": "אחוזים ושאלות מילוליות",
+      "recommendedHours": 10,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t05-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t05",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t06",
+      "name": "מערכת משוואות בשני נעלמים",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t06-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t06",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t07",
+      "name": "דמיון משולשים",
+      "recommendedHours": 8,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t07-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t07",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t08",
+      "name": "המשך פונקציה קווית",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t08-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t08",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t09",
+      "name": "שאלות אוריינות אינטגרטיביות",
+      "recommendedHours": 6,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t09-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t09",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t10",
+      "name": "זוויות",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t10-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t10",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t11",
+      "name": "מערכת משוואות ושאלות מילוליות",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t11-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t11",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t12",
+      "name": "משפט פיתגורס",
+      "recommendedHours": 5,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t12-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t12",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t13",
+      "name": "קנה מידה",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t13-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t13",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t14",
+      "name": "שאלות אינטגרטיביות בגיאומטריה משולבת מערכת צירים",
+      "recommendedHours": 4,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t14-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t14",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t15",
+      "name": "מושג היחס",
+      "recommendedHours": 3,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t15-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t15",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t16",
+      "name": "תיכון במשולש",
+      "recommendedHours": 2,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t16-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t16",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "ms-grade8-t17",
+      "name": "שורש ריבועי",
+      "recommendedHours": 2,
+      "gradeLevel": [
+        "חי"
+      ],
+      "unitLevels": [],
+      "isBagrutTopic": false,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "ms-grade8-t17-content",
+          "name": "תכנים",
+          "parentTopicId": "ms-grade8-t17",
+          "learningObjectives": []
+        }
+      ]
+    }
+  ]
+}
