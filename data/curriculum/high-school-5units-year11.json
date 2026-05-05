@@ -1,0 +1,132 @@
+{
+  "id": "hs-5units-year11-tashpav",
+  "stage": "תיכון",
+  "unitLevel": 5,
+  "gradeLevel": "יאי",
+  "academicYear": "תשפ\"ו",
+  "sourceUrl": "https://meyda.education.gov.il/files/Mazkirut_Pedagogit/matematika/yodalef5.pdf",
+  "parsedAt": "2026-05-05",
+  "_note": "Spine extracted from page 2 TOC. Per-chapter תכנים lists (pages 3–25) are TODO.",
+  "topics": [
+    {
+      "id": "induction-sequences",
+      "name": "אינדוקציה מתמטית וסדרות",
+      "nameEn": "Mathematical Induction and Sequences",
+      "recommendedHours": 40,
+      "gradeLevel": ["יאי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "arithmetic-geometric-sequences",
+          "name": "סדרה חשבונית וסדרה הנדסית",
+          "parentTopicId": "induction-sequences",
+          "learningObjectives": []
+        },
+        {
+          "id": "induction-applications",
+          "name": "אינדוקציה מתמטית ושימושיה",
+          "parentTopicId": "induction-sequences",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "differential-calculus-y11",
+      "name": "חשבון דיפרנציאלי (י\"א)",
+      "nameEn": "Differential Calculus (Year 11)",
+      "recommendedHours": 30,
+      "gradeLevel": ["יאי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["differential-calculus"],
+      "subTopics": [
+        {
+          "id": "rate-of-change-variation",
+          "name": "השתנות של קצב השינוי של הפונקציה",
+          "parentTopicId": "differential-calculus-y11",
+          "learningObjectives": []
+        },
+        {
+          "id": "square-root-functions",
+          "name": "פונקציות עם שורשים ריבועיים",
+          "parentTopicId": "differential-calculus-y11",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "integral-calculus",
+      "name": "חשבון אינטגרלי",
+      "nameEn": "Integral Calculus",
+      "recommendedHours": 25,
+      "gradeLevel": ["יאי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["differential-calculus-y11"],
+      "subTopics": [
+        {
+          "id": "integral-calculus-content",
+          "name": "תכנים",
+          "parentTopicId": "integral-calculus",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "trig-identities-geometry",
+      "name": "זהויות טריגונומטריות ויישומן בבעיות בגאומטריה",
+      "nameEn": "Trigonometric Identities and Their Applications in Geometry",
+      "recommendedHours": 15,
+      "gradeLevel": ["יאי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["trigonometry-plane"],
+      "subTopics": [
+        {
+          "id": "trig-identities-geometry-content",
+          "name": "תכנים",
+          "parentTopicId": "trig-identities-geometry",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "trig-functions-y11",
+      "name": "פונקציות טריגונומטריות (י\"א)",
+      "nameEn": "Trigonometric Functions (Year 11)",
+      "recommendedHours": 15,
+      "gradeLevel": ["יאי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["intro-trig-functions"],
+      "subTopics": [
+        {
+          "id": "trig-functions-y11-content",
+          "name": "תכנים",
+          "parentTopicId": "trig-functions-y11",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "probability",
+      "name": "הסתברות",
+      "nameEn": "Probability",
+      "recommendedHours": 25,
+      "gradeLevel": ["יאי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "probability-content",
+          "name": "תכנים",
+          "parentTopicId": "probability",
+          "learningObjectives": []
+        }
+      ]
+    }
+  ]
+}

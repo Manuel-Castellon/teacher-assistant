@@ -1,0 +1,84 @@
+{
+  "id": "hs-5units-year12-tashpav",
+  "stage": "תיכון",
+  "unitLevel": 5,
+  "gradeLevel": "יבי",
+  "academicYear": "תשפ\"ו",
+  "sourceUrl": "https://meyda.education.gov.il/files/Mazkirut_Pedagogit/matematika/yodbet5.pdf",
+  "parsedAt": "2026-05-05",
+  "_note": "Spine extracted from page 1 summary. Per-topic תכנים from pages 2–13 are TODO.",
+  "topics": [
+    {
+      "id": "vectors-3d",
+      "name": "וקטורים בגישה גאומטרית ואלגברית (כולל טריגונומטריה במרחב)",
+      "nameEn": "Vectors — Geometric and Algebraic Approach (incl. 3D Trigonometry)",
+      "recommendedHours": 50,
+      "gradeLevel": ["יבי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["trigonometry-plane"],
+      "subTopics": [
+        {
+          "id": "vectors-3d-content",
+          "name": "תכנים",
+          "parentTopicId": "vectors-3d",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "analytic-geometry",
+      "name": "גאומטריה אנליטית",
+      "nameEn": "Analytic Geometry",
+      "recommendedHours": 40,
+      "gradeLevel": ["יבי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["intro-analytic-geometry", "geometry-circle"],
+      "subTopics": [
+        {
+          "id": "analytic-geometry-content",
+          "name": "תכנים",
+          "parentTopicId": "analytic-geometry",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "exp-log-calculus",
+      "name": "חשבון דיפרנציאלי ואינטגרלי: פונקציות מעריכיות ולוגריתמיות",
+      "nameEn": "Differential and Integral Calculus: Exponential and Logarithmic Functions",
+      "recommendedHours": 40,
+      "gradeLevel": ["יבי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["differential-calculus-y11", "integral-calculus"],
+      "subTopics": [
+        {
+          "id": "exp-log-calculus-content",
+          "name": "תכנים",
+          "parentTopicId": "exp-log-calculus",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "complex-numbers",
+      "name": "מספרים מרוכבים",
+      "nameEn": "Complex Numbers",
+      "recommendedHours": 20,
+      "gradeLevel": ["יבי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "complex-numbers-content",
+          "name": "תכנים",
+          "parentTopicId": "complex-numbers",
+          "learningObjectives": []
+        }
+      ]
+    }
+  ]
+}

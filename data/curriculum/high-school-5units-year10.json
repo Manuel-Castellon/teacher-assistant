@@ -1,0 +1,175 @@
+{
+  "id": "hs-5units-year10-tashpav",
+  "stage": "תיכון",
+  "unitLevel": 5,
+  "gradeLevel": "יי",
+  "academicYear": "תשפ\"ו",
+  "sourceUrl": "https://meyda.education.gov.il/files/Mazkirut_Pedagogit/matematika/yod5.pdf",
+  "parsedAt": "2026-05-05",
+  "_note": "Spine extracted from page 1 summary table. Sub-topic learning objectives are minimal; full per-chapter תכנים lists from pages 4–35 are TODO.",
+  "topics": [
+    {
+      "id": "intro-analytic-geometry",
+      "name": "מבוא להנדסה אנליטית",
+      "nameEn": "Introduction to Analytic Geometry",
+      "recommendedHours": 10,
+      "gradeLevel": ["יי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "intro-analytic-geometry-content",
+          "name": "תכנים",
+          "parentTopicId": "intro-analytic-geometry",
+          "learningObjectives": [
+            "מבוא היסטורי על מקורות ההנדסה האנליטית ויישומיה",
+            "חזרה על נושא הישר והפרבולה והרחבתו תוך קישור למושג הפונקציה ויישומיה; אבחנה בין גרף של פונקציה לבין קבוצת נקודות שאינה מייצגת גרף",
+            "מציאת משוואת ישר על פי שתי נקודות ועל פי שיפוע ונקודה, הקבלה, אמצע קטע, חיתוך וניצבות, מרחק בין שתי נקודות",
+            "קישור למערכת משוואות לינאריות והצגתה הגרפית; שימוש פשוט בפרמטרים; אבחנה בין משוואה מפורשת של קו ישר לעומת משוואה כללית",
+            "קישור למערכת של משוואה ריבועית ומשוואה לינארית",
+            "משוואת מעגל קנוני (שמרכזו בראשית הצירים) כהכנה לטריגונומטריה",
+            "הצגת מעגל באמצעות נוסחת המרחק בין נקודות, והקשר להזזה של מעגל קנוני (התוכנית לכיתה י' אינה כוללת משוואה כללית של מעגל)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "intro-analysis-functions",
+      "name": "מבוא לאנליזה של פונקציות",
+      "nameEn": "Introduction to Analysis of Functions",
+      "recommendedHours": 15,
+      "gradeLevel": ["יי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "intro-analysis-functions-content",
+          "name": "תכנים",
+          "parentTopicId": "intro-analysis-functions",
+          "learningObjectives": [
+            "היכרות עם פונקציות פולינומיאליות תוך חזרה על הפונקציה הקווית והפונקציה הריבועית; פונקציות חזקה ותכונותיהן",
+            "היכרות עם תבניות של פונקציות שאינן פולינומיאליות (ערך מוחלט, שורש ריבועי, 1/x, 1/x²) ובחינת תכונותיהן",
+            "פעולות על פונקציות והשפעתן על הגרף: שיקוף לציר ה-x ול-y, הזזות ומתיחות, סכום והפרש, מכפלה ומנה",
+            "הרכבת פונקציות ופונקציה הפוכה; תנאים לקיום פונקציה הפוכה; פונקציית השורש כפונקציה הפוכה לפונקציה הריבועית"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "differential-calculus",
+      "name": "חשבון דיפרנציאלי",
+      "nameEn": "Differential Calculus",
+      "recommendedHours": 45,
+      "gradeLevel": ["יי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["intro-analysis-functions"],
+      "subTopics": [
+        {
+          "id": "differential-calculus-content",
+          "name": "תכנים",
+          "parentTopicId": "differential-calculus",
+          "learningObjectives": [
+            "מושגי יסוד: קצב שינוי, גבולות, שימושים והיסטוריה",
+            "פונקציות פולינומיאליות; היכרות ראשונית עם פונקציות רציונליות ושורש"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "geometry-loci-triangle",
+      "name": "גאומטריה — מקומות גאומטריים והמשולש",
+      "nameEn": "Geometry — Loci and the Triangle",
+      "recommendedHours": 10,
+      "gradeLevel": ["יי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "geometry-loci-triangle-content",
+          "name": "תכנים",
+          "parentTopicId": "geometry-loci-triangle",
+          "learningObjectives": [
+            "מקומות גאומטריים; נקודות מיוחדות במשולש",
+            "משפט חפיפה רביעי"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "geometry-circle",
+      "name": "גאומטריה — המעגל",
+      "nameEn": "Geometry — The Circle",
+      "recommendedHours": 20,
+      "gradeLevel": ["יי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["geometry-loci-triangle"],
+      "subTopics": [
+        {
+          "id": "geometry-circle-content",
+          "name": "תכנים",
+          "parentTopicId": "geometry-circle",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "geometry-similarity",
+      "name": "גאומטריה — דמיון",
+      "nameEn": "Geometry — Similarity",
+      "recommendedHours": 20,
+      "gradeLevel": ["יי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["geometry-loci-triangle"],
+      "subTopics": [
+        {
+          "id": "geometry-similarity-content",
+          "name": "פרופורציה ודמיון משולשים",
+          "parentTopicId": "geometry-similarity",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "trigonometry-plane",
+      "name": "טריגונומטריה במישור כולל משוואות טריגונומטריות",
+      "nameEn": "Plane Trigonometry incl. Trigonometric Equations",
+      "recommendedHours": 15,
+      "gradeLevel": ["יי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": [],
+      "subTopics": [
+        {
+          "id": "trigonometry-plane-content",
+          "name": "תכנים",
+          "parentTopicId": "trigonometry-plane",
+          "learningObjectives": []
+        }
+      ]
+    },
+    {
+      "id": "intro-trig-functions",
+      "name": "מבוא לפונקציות טריגונומטריות",
+      "nameEn": "Introduction to Trigonometric Functions",
+      "recommendedHours": 15,
+      "gradeLevel": ["יי"],
+      "unitLevels": [5],
+      "isBagrutTopic": true,
+      "prerequisites": ["trigonometry-plane"],
+      "subTopics": [
+        {
+          "id": "intro-trig-functions-content",
+          "name": "תכנים",
+          "parentTopicId": "intro-trig-functions",
+          "learningObjectives": []
+        }
+      ]
+    }
+  ]
+}
