@@ -1,0 +1,297 @@
+{
+  "header": {
+    "examNumber": 3,
+    "subject": "מתמטיקה",
+    "className": "שכבה ב' מואצת",
+    "date": "15.05.26"
+  },
+  "parts": [
+    {
+      "title": "חלק א'- אלגברה",
+      "questions": [
+        {
+          "questionNumber": 1,
+          "points": 20,
+          "instruction": "פתרו את האי-שוויונות הבאים. עבור כל אי-שוויון רשמו את הפתרון בייצוג אלגברי וסמנו אותו על ציר המספרים.",
+          "subQuestions": [
+            {
+              "label": "1.",
+              "content": "$5x - 3 > 2(x + 6)$"
+            },
+            {
+              "label": "2.",
+              "content": "$\\frac{2x + 1}{3} - \\frac{x - 4}{6} \\geq 2$"
+            }
+          ]
+        },
+        {
+          "questionNumber": 2,
+          "points": 30,
+          "instruction": "פתרו את המשוואות הבאות. בכל סעיף זכרו לציין את תחום ההצבה.",
+          "subQuestions": [
+            {
+              "label": "1.",
+              "content": "$\\frac{x + 3}{4} - \\frac{2x - 1}{6} = 1$"
+            },
+            {
+              "label": "2.",
+              "content": "$\\frac{3}{2x} + \\frac{x + 1}{4x} = \\frac{7}{8}$"
+            },
+            {
+              "label": "3.",
+              "content": "$\\frac{5x + 10}{x + 2} - 3 = 2$"
+            }
+          ]
+        },
+        {
+          "questionNumber": 3,
+          "points": 15,
+          "instruction": "",
+          "subQuestions": [
+            {
+              "label": "1.",
+              "content": "חנות ספרים מציעה הנחה של 15% על כל הספרים. ליאור קנה שני ספרים: מחירו המקורי של הראשון כפול ממחירו המקורי של השני. לאחר ההנחה שילם ליאור סה\"כ 204 ש\"ח. מהו המחיר המקורי של כל ספר?"
+            },
+            {
+              "label": "2.",
+              "content": "עומר הרוויח בחופשה 450 ש\"ח. הוא הוציא 20% מהסכום על מתנה לחבר, ועוד 35 ש\"ח על כרטיס לקונצרט. כמה כסף נותר לו?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "חלק ב'- גיאומטריה",
+      "questions": [
+        {
+          "questionNumber": 4,
+          "points": 35,
+          "instruction": "העתיקו את השרטוט וכתבו הוכחה מלאה.",
+          "givenData": [
+            "נתון: משולש ABC ישר זווית ב-B.",
+            "$AB = 9$ ס\"מ",
+            "$BC = 12$ ס\"מ",
+            "$AC = 15$ ס\"מ",
+            "D נקודה על AC כך ש-$AD = 6$ ס\"מ.",
+            "E נקודה על AB כך ש-$\\angle AED = 90°$.",
+            "DE קטע המחבר את D ל-E."
+          ],
+          "diagramDescription": "משולש ABC ישר זווית ב-B. הנקודה D נמצאת על הצלע AC, בין A ל-C. הנקודה E נמצאת על AB. הקטע DE יוצר זווית ישרה עם AB בנקודה E. נוצר משולש קטן AED בתוך המשולש הגדול ABC.",
+          "subQuestions": [
+            {
+              "label": "1.",
+              "content": "הוכיחו כי $\\triangle AED \\sim \\triangle ABC$."
+            },
+            {
+              "label": "2.",
+              "content": "מצאו את אורך הצלע DE."
+            },
+            {
+              "label": "3.",
+              "content": "חשבו את שטח המשולש AED."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "totalPoints": 100,
+  "answerKey": [
+    {
+      "questionNumber": 1,
+      "subAnswers": [
+        {
+          "label": "1.",
+          "steps": [
+            "$5x - 3 > 2(x + 6)$",
+            "$5x - 3 > 2x + 12$",
+            "$5x - 2x > 12 + 3$",
+            "$3x > 15$",
+            "$x > 5$"
+          ],
+          "finalAnswer": "$x > 5$"
+        },
+        {
+          "label": "2.",
+          "steps": [
+            "$\\frac{2x + 1}{3} - \\frac{x - 4}{6} \\geq 2$",
+            "נכפיל ב-6:",
+            "$2(2x + 1) - (x - 4) \\geq 12$",
+            "$4x + 2 - x + 4 \\geq 12$",
+            "$3x + 6 \\geq 12$",
+            "$3x \\geq 6$",
+            "$x \\geq 2$"
+          ],
+          "finalAnswer": "$x \\geq 2$"
+        }
+      ]
+    },
+    {
+      "questionNumber": 2,
+      "subAnswers": [
+        {
+          "label": "1.",
+          "steps": [
+            "תחום הצבה: כל הממשיים (אין מכנה עם נעלם).",
+            "$\\frac{x + 3}{4} - \\frac{2x - 1}{6} = 1$",
+            "נכפיל ב-12:",
+            "$3(x + 3) - 2(2x - 1) = 12$",
+            "$3x + 9 - 4x + 2 = 12$",
+            "$-x + 11 = 12$",
+            "$-x = 1$",
+            "$x = -1$"
+          ],
+          "finalAnswer": "$x = -1$"
+        },
+        {
+          "label": "2.",
+          "steps": [
+            "תחום הצבה: $x \\neq 0$.",
+            "$\\frac{3}{2x} + \\frac{x + 1}{4x} = \\frac{7}{8}$",
+            "נכפיל ב-$8x$:",
+            "$4 \\cdot 3 + 2(x + 1) = 7x$",
+            "$12 + 2x + 2 = 7x$",
+            "$14 = 5x$",
+            "$x = \\frac{14}{5}$",
+            "$x = \\frac{14}{5}$ בתחום, ולכן הפתרון תקף."
+          ],
+          "finalAnswer": "$x = \\frac{14}{5}$"
+        },
+        {
+          "label": "3.",
+          "steps": [
+            "תחום הצבה: $x \\neq -2$.",
+            "$\\frac{5x + 10}{x + 2} - 3 = 2$",
+            "$\\frac{5(x + 2)}{x + 2} - 3 = 2$",
+            "$5 - 3 = 2$",
+            "$2 = 2$",
+            "זהות! המשוואה מתקיימת לכל $x$ בתחום.",
+            "פתרון: כל $x \\neq -2$."
+          ],
+          "finalAnswer": "כל $x \\neq -2$ (זהות)"
+        }
+      ]
+    },
+    {
+      "questionNumber": 3,
+      "subAnswers": [
+        {
+          "label": "1.",
+          "steps": [
+            "נסמן את המחיר המקורי של הספר הזול ב-$x$.",
+            "המחיר המקורי של הספר היקר: $2x$.",
+            "סה\"כ מחיר מקורי: $x + 2x = 3x$.",
+            "לאחר הנחה של 15%: $3x \\times 0.85 = 204$.",
+            "$2.55x = 204$",
+            "$x = 80$",
+            "הספר הזול: 80 ש\"ח. הספר היקר: 160 ש\"ח."
+          ],
+          "finalAnswer": "הספר הזול: 80 ש\"ח, הספר היקר: 160 ש\"ח"
+        },
+        {
+          "label": "2.",
+          "steps": [
+            "הוצאה על מתנה: $450 \\times 0.20 = 90$ ש\"ח.",
+            "סה\"כ הוצאות: $90 + 35 = 125$ ש\"ח.",
+            "נותר: $450 - 125 = 325$ ש\"ח."
+          ],
+          "finalAnswer": "325 ש\"ח"
+        }
+      ]
+    },
+    {
+      "questionNumber": 4,
+      "subAnswers": [
+        {
+          "label": "1.",
+          "steps": [
+            "ב-$\\triangle AED$ וב-$\\triangle ABC$:",
+            "1) $\\angle A$ משותפת לשני המשולשים.",
+            "2) $\\angle AED = \\angle ABC = 90°$ (נתון).",
+            "לפי משפט ז\"ז (שתי זוויות שוות), $\\triangle AED \\sim \\triangle ABC$."
+          ],
+          "finalAnswer": "$\\triangle AED \\sim \\triangle ABC$ לפי ז\"ז"
+        },
+        {
+          "label": "2.",
+          "steps": [
+            "מדמיון המשולשים: $\\frac{DE}{BC} = \\frac{AD}{AC}$",
+            "$\\frac{DE}{12} = \\frac{6}{15}$",
+            "$DE = \\frac{12 \\times 6}{15} = \\frac{72}{15} = \\frac{24}{5} = 4.8$ ס\"מ."
+          ],
+          "finalAnswer": "$DE = 4.8$ ס\"מ"
+        },
+        {
+          "label": "3.",
+          "steps": [
+            "שטח משולש ABC: $S_{ABC} = \\frac{1}{2} \\times AB \\times BC = \\frac{1}{2} \\times 9 \\times 12 = 54$ ס\"מ².",
+            "יחס שטחים של משולשים דומים שווה לריבוע יחס הצלעות המתאימות:",
+            "$\\frac{S_{AED}}{S_{ABC}} = \\left(\\frac{AD}{AC}\\right)^2 = \\left(\\frac{6}{15}\\right)^2 = \\frac{36}{225} = \\frac{4}{25}$",
+            "$S_{AED} = \\frac{4}{25} \\times 54 = \\frac{216}{25} = 8.64$ ס\"מ²."
+          ],
+          "finalAnswer": "$S_{AED} = 8.64$ ס\"מ²"
+        }
+      ]
+    }
+  ],
+  "verificationItems": [
+    {
+      "questionRef": "Q1.1",
+      "type": "inequality",
+      "sympyExpression": "5*x - 3 > 2*(x + 6)",
+      "expectedAnswer": "Interval.open(5, oo)"
+    },
+    {
+      "questionRef": "Q1.2",
+      "type": "inequality",
+      "sympyExpression": "(2*x + 1)/3 - (x - 4)/6 >= 2",
+      "expectedAnswer": "Interval(2, oo)"
+    },
+    {
+      "questionRef": "Q2.1",
+      "type": "equation",
+      "sympyExpression": "Eq((x + 3)/4 - (2*x - 1)/6, 1)",
+      "expectedAnswer": "-1"
+    },
+    {
+      "questionRef": "Q2.2",
+      "type": "equation",
+      "sympyExpression": "Eq(S(3)/(2*x) + (x + 1)/(4*x), Rational(7, 8))",
+      "expectedAnswer": "Rational(14, 5)"
+    },
+    {
+      "questionRef": "Q2.3",
+      "type": "equation",
+      "sympyExpression": "Eq(5*(x + 2)/(x + 2) - 3, 2)",
+      "expectedAnswer": "all_reals_except_minus_2"
+    },
+    {
+      "questionRef": "Q3.1",
+      "type": "equation",
+      "sympyExpression": "Eq(3*x * Rational(85, 100), 204)",
+      "expectedAnswer": "80"
+    },
+    {
+      "questionRef": "Q3.2",
+      "type": "numeric",
+      "sympyExpression": "450 - 450*Rational(20, 100) - 35",
+      "expectedAnswer": "325"
+    },
+    {
+      "questionRef": "Q4.1",
+      "type": "proof"
+    },
+    {
+      "questionRef": "Q4.2",
+      "type": "numeric",
+      "sympyExpression": "Rational(12 * 6, 15)",
+      "expectedAnswer": "Rational(24, 5)"
+    },
+    {
+      "questionRef": "Q4.3",
+      "type": "numeric",
+      "sympyExpression": "Rational(1, 2) * Rational(9*6, 15) * Rational(12*6, 15)",
+      "expectedAnswer": "Rational(864, 100)"
+    }
+  ]
+}

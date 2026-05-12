@@ -3,39 +3,77 @@
 > Live cursor for the current task. PROGRESS.md is the milestone log; this file is "where I am RIGHT NOW".
 
 ## Current task
-MVP 0 sub-task **D done**. Pick next sub-task from the MVP 0 list (auth, schema, font wiring, tests, etc.) at session start.
+MVP 2 exam generation: curriculum grounding + topic selector hardening complete.
 
 ## Last action that succeeded
-- Middle-school grades 7/8/9/9-reduced parsed → JSON, validator passes (commit pending: this same checkpoint update).
-- See PROGRESS.md "Done so far in MVP 0" for the cumulative list.
+- Resumed from `PROGRESS.md` + `CHECKPOINT.md`.
+- Confirmed `http://localhost:3000/exam` responds 200 over HTTP.
+- Confirmed the live API did **not** previously inject `data/curriculum/*.json`; prompt only included grade/topic/notes.
+- Added curriculum grounding in code: `ExamGenerator` now loads grade-specific scope from local curriculum JSON and injects it into `renderExamUserPrompt`.
+- Added strict grade-scope guardrails, including grade ז out-of-scope examples such as systems, formal linear functions, rational equations, Pythagoras/trig.
+- Fixed local `/exam` console errors: Auth.js now has a development-only fallback secret when `AUTH_SECRET` is missing; app metadata points to `/icon.svg`.
+- `npm run type-check` passes after curriculum grounding.
+- `npm test` passed after curriculum grounding: 11 suites, 79 tests, 100% statements/branches/functions/lines.
+- Playwright MCP click-through passed on `http://localhost:3000/exam`:
+  - Filled a grade ז short algebra request.
+  - Clicked `ייצר מבחן`.
+  - Result panel appeared with `2/2 תקינים`.
+  - Preview opened; tabs for exam, answer key, verification worked.
+  - Both DOCX buttons downloaded valid packages to `.playwright-mcp/מבחן.docx` and `.playwright-mcp/פתרון.docx`.
+- Added curriculum topic selection hardening:
+  - Exam UI now has a per-question `נושא בתוכנית` dropdown populated by selected grade.
+  - Each question also has `מיקוד`; choosing a curriculum topic auto-fills it, but the teacher can refine it.
+  - Added `אחר / פירוט חופשי` wildcard for intentional teacher-specific focus.
+  - API validates selected topic IDs belong to the selected grade and rejects stale/out-of-grade IDs before model generation.
+  - `npm run type-check` passes.
+  - `npm test` passes: 12 suites, 87 tests, 100% statements/branches/functions/lines.
+  - Playwright verified grade switching, custom wildcard UI, selected-topic autofill, and API rejection for a grade ח topic ID on a grade ז request.
+- Added question type `קריאה וניתוח` for graph/table/diagram/coordinate-plane/number-line interpretation:
+  - Wired into `ExamQuestionSpec`.
+  - Added to `/exam` type dropdown.
+  - Added prompt guidance so it means interpreting a representation, not a separate curriculum topic.
+  - `npm run type-check` passes.
+  - `npm test` passes: 12 suites, 88 tests, 100% statements/branches/functions/lines.
+  - Playwright snapshot confirms the dropdown includes `קריאה וניתוח`.
 
 ## What I'm about to do next
-**Awaiting user direction** on which MVP 0 sub-task to pick up next. Open candidates:
-- **A**: Hebrew font wiring in `src/app/layout.tsx` (Noto Sans Hebrew or Rubik). Small.
-- **B**: Verify `next dev` boots and renders RTL Hebrew correctly (visual smoke test).
-- **C**: Service Decision #6 (auth provider) — needs a call before any auth code lands. PROGRESS.md still defaults to Cognito; CLAUDE.md flags the linking-failure problem.
-- **E**: PostgreSQL 18 schema from `src/types/` data models.
-- **F**: Test scaffolding for deterministic code (eval framework already exists for AI outputs).
-
-Stretch / cleanup (not strictly MVP 0 sub-tasks):
-- Middle-school: English topic slugs + per-topic learning objectives (currently positional IDs + empty `learningObjectives`).
-- High-school: full per-chapter תכנים lists from PDF pages 4–35 (currently spine only).
+- Next product step is either MVP 1 formal gates (rubric/prompt sign-off + live eval) or MVP 3 question-bank planning.
+- Optional hardening: add actual taught-progress/class-placement layer so the topic list can be narrowed by class pace, not only by grade curriculum.
 
 ## Open question / waiting on user
-- Which sub-task next?
-- Service Decision #6 is the only thing that genuinely BLOCKS (any auth wiring would be wasted work if Cognito gets swapped).
+Whether to prioritize MVP 1 formal gates or MVP 3 question-bank planning.
 
-## Files touched this session
-- `scripts/parse-curriculum/extract_text.py` (high-school PDF text dump)
-- `scripts/parse-curriculum/dump_links.py` (PDF link rects)
-- `scripts/parse-curriculum/parse_spread.py` (Google Doc spread → topic rows)
-- `scripts/parse-curriculum/build_middle_school_json.py` (parser + envelope → JSON)
-- `scripts/parse-curriculum/validate.ts` (covers high-school + middle-school JSONs)
-- `data/curriculum/raw/{prisa,yod5,yodalef5,yodbet5}.pdf` + `.txt`
-- `data/curriculum/raw/middle-school/{grade7,grade8,grade9,grade9-reduced}-spread.txt`
-- `data/curriculum/high-school-5units-year{10,11,12}.json`
-- `data/curriculum/middle-school-{grade7,grade8,grade9,grade9-reduced}.json`
-- `data/curriculum/FETCH_INSTRUCTIONS.md` (corrected portal/Doc reality)
-- `.gitignore` (`scripts/**/.venv/`, `scripts/**/__pycache__/`)
-- `CLAUDE.md`, `MEMORY.md` (Service Decision #6 added)
-- `PROGRESS.md` (D milestones folded in)
+## Files created/modified this session
+- `src/exam/curriculumContext.ts` (new: maps grades to curriculum JSON and renders strict prompt scope)
+- `src/exam/ExamGenerator.ts` (updated: injects curriculum scope into the model prompt)
+- `src/exam/examPrompt.ts` (updated: renders curriculum scope section)
+- `src/exam/ExamGenerator.test.ts` (updated: asserts curriculum scope reaches backend prompt)
+- `src/exam/examPrompt.test.ts` (updated: asserts grade ז scope/guardrails)
+- `src/auth.ts` (updated: development-only fallback secret)
+- `src/app/layout.tsx` (updated: icon metadata)
+- `src/app/icon.svg` (new: app icon)
+- `src/exam/types.ts` (updated: optional `curriculumTopicId` on question specs)
+- `src/app/exam/page.tsx` (updated: curriculum topic dropdown + custom focus option)
+- `src/app/api/exam/generate/route.ts` (updated: topic-ID validation before generation)
+- `src/exam/curriculumContext.test.ts` (new: deterministic coverage for curriculum options/validation)
+- `src/exam/types.ts` (updated: question type includes `קריאה_וניתוח`)
+- `src/app/exam/page.tsx` (updated: question type dropdown includes `קריאה וניתוח`)
+- `src/exam/examPrompt.ts` (updated: prompt guidance for reading/analysis tasks)
+- `src/exam/backends.ts` (new: CompletionFn, Gemini/Anthropic backends, factory)
+- `src/exam/ExamGenerator.ts` (refactored: uses CompletionFn instead of AnthropicLike)
+- `src/exam/renderExam.test.ts` (new: 13 tests)
+- `src/providers/impl/SympyMathVerifier.test.ts` (new: 12 tests)
+- `src/providers/impl/SympyMathVerifier.errors.test.ts` (new: subprocess failure/invalid JSON tests)
+- `src/app/exam/page.tsx` (new: exam generation form UI)
+- `src/app/api/exam/generate/route.ts` (new: POST endpoint)
+- `src/providers/index.ts` (updated: exports backends)
+- `scripts/generate-exam.ts` (updated: uses createDefaultBackend)
+- `scripts/verify-math.py` (fixed: identity-equation edge case)
+- `.env.local` (updated: GEMINI_API_KEY)
+- `.env.example` (updated: GEMINI_API_KEY placeholder)
+- `src/exam/ExamGenerator.test.ts` (new)
+- `src/exam/backends.test.ts` (new)
+- `src/exam/examPrompt.test.ts` (new)
+- `src/exam/exportDocx.ts` (exports `injectBidi` for deterministic coverage)
+- `src/exam/exportDocx.test.ts` (new)
+- `PROGRESS.md`, `CHECKPOINT.md` (updated)

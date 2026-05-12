@@ -4,6 +4,7 @@ node_modules/
 # Next.js
 .next/
 out/
+next-env.d.ts
 
 # Environment
 .env
@@ -12,6 +13,10 @@ out/
 
 # Eval results (store in CI artifacts, not git)
 evals/*/results/
+evals/.cache/
+
+# Jest coverage output
+coverage/
 
 # OS
 .DS_Store
@@ -24,6 +29,11 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Python venvs and bytecode (one-shot parsers)
+# Python venvs and bytecode
+.venv/
 scripts/**/.venv/
 scripts/**/__pycache__/
+__pycache__/
+
+# Generated exam output (not source, regenerate on demand)
+output/

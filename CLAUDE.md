@@ -49,6 +49,9 @@ STOP, state which condition was hit, and list what is missing. Do not proceed.
 - **Curriculum spine**: All content features reference `src/types/curriculum.ts`.
   The shared data model is the join point between every MVP.
 - **RTL first**: All React components default `dir="rtl"`. Never add RTL as an afterthought.
+- **Docx RTL**: Every logical line (especially mixed Hebrew+math) must be its own paragraph
+  (blank-line separated in markdown). Post-process docx with `<w:bidi/>` injection.
+  Geometry diagrams: vertex labels + angle markers only, no side lengths (students fill those in).
 - **No service decisions without asking**: See "Service Decisions" section below.
 
 ---
@@ -73,9 +76,9 @@ STOP, state which condition was hit, and list what is missing. Do not proceed.
 ## MVP Sequence
 | MVP | Feature                        | Status      | Blocker |
 |-----|--------------------------------|-------------|---------|
-| 0   | Foundation + scaffold          | 🔴 Not started | — |
-| 1   | מערך שיעור generator           | 🔴 Blocked  | Curriculum JSON not parsed |
-| 2   | Exercise/exam creator + verify | 🔴 Blocked  | OCR untested; math eval not researched |
+| 0   | Foundation + scaffold          | ✅ Complete | — |
+| 1   | מערך שיעור generator           | 🟡 In progress | Rubric sign-off + prompt review + live eval |
+| 2   | Exercise/exam creator + verify | 🟡 In progress | SymPy verifier done; needs Gemini backend + UI |
 | 3   | Question bank (Bagrut archive) | 🔴 Not started | — |
 | 4   | Curriculum tracker             | 🔴 Not started | — |
 | 5   | Grade tracker                  | 🔴 Not started | — |
@@ -89,11 +92,11 @@ These are open. Raise each one explicitly before implementing:
 | # | Decision | When | Options |
 |---|----------|------|---------|
 | 1 | OCR provider | MVP 0, after testing | MathPix · Google Document AI · Tesseract · Azure |
-| 2 | Math verifier | MVP 2 start | Wolfram Alpha API · SymPy-only · both in sequence |
+| 2 | Math verifier | MVP 2 start | **Decided: SymPy primary** (local, free, sufficient for middle/high school algebra+geometry). Wolfram Full Results API available as cross-check for 5-unit bagrut content (AppID configured). |
 | 3 | Grading infra | MVP 6 start | GradeLab · ExamAI · custom on OCR layer |
-| 4 | AI generation | default Claude API | Interface allows swap if costs grow |
-| 6 | **Auth provider (revisit)** | Before MVP 0 auth wiring | **Cognito (current default in PROGRESS.md) creates separate user records per identity provider** — exact "signed up with email, locked out of Google SSO" UX the teacher dislikes. Cleaner: **Auth.js with `allowDangerousEmailAccountLinking: true`** (free, in-process, auto-links verified-email providers) or managed Clerk / WorkOS. Decide before writing any auth code. |
-| 5 | Geometry validation | MVP 2, when live | GeoGebra API · custom |
+| 4 | AI generation | default Claude API | **Update: no Anthropic API key available.** User has free Gemini API key. Next: wire GeminiExamGenerator as ITextGenerator alternative. Claude Code sessions can generate directly (validated in first exam run). |
+| 6 | **Auth provider** | ✅ Decided | Auth.js v5 + Google OAuth + @auth/pg-adapter, allowDangerousEmailAccountLinking. |
+| 5 | Geometry validation | MVP 2, when live | **Update: programmatic SVG generation works** (scripts/generate-diagram.py). GeoGebra API deferred unless interactive diagrams needed. |
 
 ---
 
