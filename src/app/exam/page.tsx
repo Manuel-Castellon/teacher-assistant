@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import type { ExamRequest, ExamPartSpec, ExamQuestionSpec } from '@/exam/types';
+import { useEffect, useState } from 'react';
+import type { ExamRequest, ExamPartSpec, ExamQuestionSpec, GeneratedExam, RegenerateQuestionRequest } from '@/exam/types';
 import { CUSTOM_CURRICULUM_TOPIC_ID, getCurriculumTopicOptions } from '@/exam/curriculumContext';
 import type { GradeLevel } from '@/types/shared';
 
@@ -13,12 +13,21 @@ interface VerificationResult {
 }
 
 interface GenerateResponse {
-  exam: unknown;
+  exam: GeneratedExam;
   examMarkdown: string;
   answerKeyMarkdown: string;
   verification: VerificationResult[];
   error?: string;
 }
+
+interface SavedExam {
+  id: string;
+  savedAt: string;
+  request: ExamRequest;
+  response: GenerateResponse;
+}
+
+const SAVED_EXAMS_KEY = 'teacher-assistant.saved-exams.v1';
 
 const GRADE_OPTIONS: { value: GradeLevel; label: string }[] = [
   { value: 'זי', label: "ז'" },
@@ -60,7 +69,18 @@ export default function ExamPage() {
   const [activeTab, setActiveTab] = useState<'exam' | 'answers' | 'verification'>('exam');
   const [exporting, setExporting] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [savedExams, setSavedExams] = useState<SavedExam[]>([]);
+  const [regeneratingQuestion, setRegeneratingQuestion] = useState<number | null>(null);
   const curriculumTopicOptions = getCurriculumTopicOptions(grade);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(SAVED_EXAMS_KEY);
+      if (raw) setSavedExams(JSON.parse(raw) as SavedExam[]);
+    } catch {
+      setSavedExams([]);
+    }
+  }, []);
 
   function updatePart(idx: number, patch: Partial<ExamPartSpec>) {
     setParts(prev => prev.map((p, i) => i === idx ? { ...p, ...patch } : p));
@@ -128,12 +148,8 @@ export default function ExamPage() {
     ));
   }
 
-  async function handleGenerate() {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    const request: ExamRequest = {
+  function buildRequest(): ExamRequest {
+    return {
       className,
       date,
       grade,
@@ -142,6 +158,51 @@ export default function ExamPage() {
       parts,
       ...(teacherNotes ? { teacherNotes } : {}),
     };
+  }
+
+  function rememberExam(request: ExamRequest, response: GenerateResponse) {
+    const saved: SavedExam = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      savedAt: new Date().toISOString(),
+      request,
+      response,
+    };
+    setSavedExams(prev => {
+      const next = [saved, ...prev].slice(0, 8);
+      try {
+        window.localStorage.setItem(SAVED_EXAMS_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore local persistence failures; generation result remains visible.
+      }
+      return next;
+    });
+  }
+
+  function openSavedExam(saved: SavedExam) {
+    setClassName(saved.request.className);
+    setDate(saved.request.date);
+    setGrade(saved.request.grade);
+    setDurationMinutes(saved.request.durationMinutes);
+    setTotalPoints(saved.request.totalPoints);
+    setTeacherNotes(saved.request.teacherNotes ?? '');
+    setParts(saved.request.parts);
+    setResult(saved.response);
+    setActiveTab('exam');
+    setShowPreview(true);
+    setError(null);
+  }
+
+  function clearSavedExams() {
+    setSavedExams([]);
+    window.localStorage.removeItem(SAVED_EXAMS_KEY);
+  }
+
+  async function handleGenerate() {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    const request = buildRequest();
 
     try {
       const resp = await fetch('/api/exam/generate', {
@@ -154,12 +215,46 @@ export default function ExamPage() {
         setError(data.error ?? `שגיאה ${resp.status}`);
       } else {
         setResult(data);
+        rememberExam(request, data);
         setActiveTab('exam');
+        setShowPreview(true);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'שגיאת רשת');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleRegenerateQuestion(questionNumber: number) {
+    if (!result) return;
+    const request = buildRequest();
+    const payload: RegenerateQuestionRequest = {
+      request,
+      exam: result.exam,
+      questionNumber,
+    };
+    setRegeneratingQuestion(questionNumber);
+    setError(null);
+    try {
+      const resp = await fetch('/api/exam/regenerate-question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = (await resp.json()) as GenerateResponse;
+      if (!resp.ok || data.error) {
+        setError(data.error ?? `שגיאה ${resp.status}`);
+      } else {
+        setResult(data);
+        rememberExam(request, data);
+        setActiveTab('exam');
+        setShowPreview(true);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'שגיאת רשת');
+    } finally {
+      setRegeneratingQuestion(null);
     }
   }
 
@@ -199,6 +294,22 @@ export default function ExamPage() {
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '2rem 1rem' }}>
       <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '1.5rem' }}>יצירת מבחן</h1>
+
+      {savedExams.length > 0 && (
+        <div style={{ border: '1px solid #d7dee8', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem', background: '#f8fbff' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <strong>מבחנים אחרונים</strong>
+            <button type="button" onClick={clearSavedExams} style={btnSecondary}>נקה</button>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {savedExams.map(saved => (
+              <button key={saved.id} type="button" onClick={() => openSavedExam(saved)} style={btnSecondary}>
+                {saved.request.className} · {saved.request.date} · {new Date(saved.savedAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
         <Field label="שכבה / כיתה" value={className} onChange={setClassName} />
@@ -382,6 +493,20 @@ export default function ExamPage() {
             </button>
           </div>
 
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+            {result.exam.parts.flatMap(part => part.questions).map(question => (
+              <button
+                key={question.questionNumber}
+                type="button"
+                onClick={() => handleRegenerateQuestion(question.questionNumber)}
+                disabled={regeneratingQuestion !== null}
+                style={{ ...btnSecondary, opacity: regeneratingQuestion !== null ? 0.6 : 1 }}
+              >
+                {regeneratingQuestion === question.questionNumber ? 'מחליף...' : `החלף שאלה ${question.questionNumber}`}
+              </button>
+            ))}
+          </div>
+
           {/* Collapsible preview */}
           <button
             type="button"
@@ -402,11 +527,11 @@ export default function ExamPage() {
               </div>
 
               {activeTab === 'exam' && (
-                <pre style={preStyle}>{result.examMarkdown}</pre>
+                <MarkdownPreview markdown={result.examMarkdown} />
               )}
 
               {activeTab === 'answers' && (
-                <pre style={preStyle}>{result.answerKeyMarkdown}</pre>
+                <MarkdownPreview markdown={result.answerKeyMarkdown} />
               )}
 
               {activeTab === 'verification' && (
@@ -491,6 +616,35 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   );
 }
 
+function MarkdownPreview({ markdown }: { markdown: string }) {
+  const lines = markdown.split('\n');
+  return (
+    <div style={previewStyle}>
+      {lines.map((line, idx) => {
+        if (!line.trim()) return <div key={idx} style={{ height: '0.5rem' }} />;
+        if (line.startsWith('#### ')) return <h4 key={idx} style={previewH4}>{renderInline(line.slice(5))}</h4>;
+        if (line.startsWith('### ')) return <h3 key={idx} style={previewH3}>{renderInline(line.slice(4))}</h3>;
+        if (line.startsWith('## ')) return <h2 key={idx} style={previewH2}>{renderInline(line.slice(3))}</h2>;
+        if (line.startsWith('# ')) return <h1 key={idx} style={previewH1}>{renderInline(line.slice(2))}</h1>;
+        return <p key={idx} style={previewParagraph}>{renderInline(line)}</p>;
+      })}
+    </div>
+  );
+}
+
+function renderInline(text: string): React.ReactNode[] {
+  const tokens = text.split(/(\*\*[^*]+\*\*|\$[^$]+\$)/g).filter(Boolean);
+  return tokens.map((token, idx) => {
+    if (token.startsWith('**') && token.endsWith('**')) {
+      return <strong key={idx}>{token.slice(2, -2)}</strong>;
+    }
+    if (token.startsWith('$') && token.endsWith('$')) {
+      return <span key={idx} style={mathStyle}>{token}</span>;
+    }
+    return <span key={idx}>{token}</span>;
+  });
+}
+
 const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '0.85rem',
@@ -554,13 +708,52 @@ const btnDownload: React.CSSProperties = {
   flex: 1,
 };
 
-const preStyle: React.CSSProperties = {
-  whiteSpace: 'pre-wrap',
-  fontFamily: 'inherit',
+const previewStyle: React.CSSProperties = {
   background: '#f9f9f9',
   padding: '1.5rem',
   borderRadius: 8,
   lineHeight: 1.8,
   fontSize: '0.95rem',
   border: '1px solid #eee',
+};
+
+const previewH1: React.CSSProperties = {
+  fontSize: '1.35rem',
+  margin: '0 0 0.25rem',
+  fontWeight: 700,
+};
+
+const previewH2: React.CSSProperties = {
+  fontSize: '1.2rem',
+  margin: '0.25rem 0',
+  fontWeight: 700,
+};
+
+const previewH3: React.CSSProperties = {
+  fontSize: '1.05rem',
+  margin: '0.4rem 0 0.1rem',
+  fontWeight: 700,
+  color: '#174a7c',
+};
+
+const previewH4: React.CSSProperties = {
+  fontSize: '1rem',
+  margin: '0.35rem 0 0.1rem',
+  fontWeight: 700,
+};
+
+const previewParagraph: React.CSSProperties = {
+  margin: 0,
+};
+
+const mathStyle: React.CSSProperties = {
+  direction: 'ltr',
+  unicodeBidi: 'isolate',
+  display: 'inline-block',
+  fontFamily: 'Cambria Math, Times New Roman, serif',
+  background: '#fff',
+  border: '1px solid #e5e7eb',
+  borderRadius: 4,
+  padding: '0 0.2rem',
+  margin: '0 0.1rem',
 };

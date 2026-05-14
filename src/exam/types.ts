@@ -27,6 +27,13 @@ export interface ExamRequest {
   teacherNotes?: string;
 }
 
+export interface RegenerateQuestionRequest {
+  request: ExamRequest;
+  exam: GeneratedExam;
+  questionNumber: number;
+  teacherNotes?: string;
+}
+
 // ── Generated output types (what Claude returns) ──
 
 export interface ExamSubQuestion {

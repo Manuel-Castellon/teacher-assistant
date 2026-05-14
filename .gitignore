@@ -37,3 +37,8 @@ __pycache__/
 
 # Generated exam output (not source, regenerate on demand)
 output/
+
+# Local-only reference resources. These may include copyrighted textbooks or
+# teacher-provided PDFs; keep the files on disk but out of git.
+data/resources/*
+!data/resources/README.md

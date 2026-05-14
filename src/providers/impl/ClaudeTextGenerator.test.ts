@@ -176,6 +176,7 @@ describe('ClaudeTextGenerator', () => {
     expect(captured).toContain('ספר לימוד');
     expect(captured).toContain('ms-grade8-pythagoras');
     expect(captured).toContain('הקשר מהשיעור הקודם');
+    expect(captured).toContain('## הקשר מתכנית הלימודים');
   });
 
   it('honors a custom model option', async () => {

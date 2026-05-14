@@ -1,5 +1,25 @@
-import { EXAM_PROMPT_VERSION, EXAM_SYSTEM_PROMPT, renderExamUserPrompt } from './examPrompt';
+import { EXAM_PROMPT_VERSION, EXAM_SYSTEM_PROMPT, renderExamUserPrompt, renderRegenerateQuestionUserPrompt } from './examPrompt';
 import { CUSTOM_CURRICULUM_TOPIC_ID, getCurriculumExamScope, getCurriculumTopicOptions } from './curriculumContext';
+import type { GeneratedExam } from './types';
+
+const SAMPLE_EXAM: GeneratedExam = {
+  header: { subject: 'מתמטיקה', className: "ז'1", date: '13.05.26' },
+  parts: [{
+    title: 'אלגברה',
+    questions: [{
+      questionNumber: 1,
+      points: 20,
+      instruction: 'פתרו',
+      subQuestions: [{ label: '1.', content: '$x+1=2$' }],
+    }],
+  }],
+  totalPoints: 20,
+  answerKey: [{
+    questionNumber: 1,
+    subAnswers: [{ label: '1.', steps: ['$x=1$'], finalAnswer: '$x=1$' }],
+  }],
+  verificationItems: [{ questionRef: 'Q1.1', type: 'equation', sympyExpression: 'Eq(x+1,2)', expectedAnswer: '{1}' }],
+};
 
 describe('examPrompt', () => {
   it('exposes the current prompt version and core system contract', () => {
@@ -136,5 +156,28 @@ describe('examPrompt', () => {
     });
 
     expect(prompt).toContain('קריאת גרפים (קריאה_וניתוח, 20 נק');
+  });
+
+  it('renders a scoped regenerate-question prompt', () => {
+    const prompt = renderRegenerateQuestionUserPrompt({
+      originalRequest: {
+        className: "ז'1",
+        date: '13.05.26',
+        grade: 'זי',
+        durationMinutes: 30,
+        totalPoints: 20,
+        parts: [{ title: 'אלגברה', questionSpecs: [{ topic: 'משוואות', questionType: 'חישובי', points: 20 }] }],
+        curriculumScope: getCurriculumExamScope('זי'),
+      },
+      existingExam: SAMPLE_EXAM,
+      questionNumber: 1,
+      teacherNotes: 'להחליף לניסוח פחות דומה לדף העבודה.',
+    });
+
+    expect(prompt).toContain('החלף שאלה אחת בלבד');
+    expect(prompt).toContain('מספר השאלה להחלפה: 1');
+    expect(prompt).toContain('אל תשנה שאלות אחרות');
+    expect(prompt).toContain('להחליף לניסוח פחות דומה לדף העבודה.');
+    expect(prompt).toContain('"questionNumber": 1');
   });
 });

@@ -1,0 +1,50 @@
+{
+  "request": {
+    "className": "ז'1",
+    "date": "13.05.26",
+    "grade": "זי",
+    "durationMinutes": 30,
+    "totalPoints": 20,
+    "parts": [{
+      "title": "קריאת גרפים",
+      "questionSpecs": [{
+        "topic": "קריאת גרפים",
+        "curriculumTopicId": "ms-grade7-t15",
+        "questionType": "קריאה_וניתוח",
+        "points": 20,
+        "subQuestionCount": 2
+      }]
+    }]
+  },
+  "expectedQuestionTypes": ["קריאה_וניתוח"],
+  "minVerificationItems": 2,
+  "bannedTerms": ["שיפוע הישר", "משוואת ישר"],
+  "fakeExam": {
+    "header": { "subject": "מתמטיקה", "className": "ז'1", "date": "13.05.26" },
+    "parts": [{
+      "title": "קריאת גרפים",
+      "questions": [{
+        "questionNumber": 1,
+        "points": 20,
+        "instruction": "התבוננו בגרף המתאר את מספר הספרים שנקראו בכל חודש.",
+        "diagramDescription": "גרף עמודות: ינואר 4, פברואר 7, מרץ 5",
+        "subQuestions": [
+          { "label": "1.", "content": "באיזה חודש נקראו הכי הרבה ספרים?" },
+          { "label": "2.", "content": "כמה ספרים נקראו בינואר ובמרץ יחד?" }
+        ]
+      }]
+    }],
+    "totalPoints": 20,
+    "answerKey": [{
+      "questionNumber": 1,
+      "subAnswers": [
+        { "label": "1.", "steps": ["בפברואר העמודה הגבוהה ביותר."], "finalAnswer": "פברואר" },
+        { "label": "2.", "steps": ["$4+5=9$"], "finalAnswer": "$9$" }
+      ]
+    }],
+    "verificationItems": [
+      { "questionRef": "Q1.1", "type": "proof" },
+      { "questionRef": "Q1.2", "type": "numeric", "sympyExpression": "4+5", "expectedAnswer": "9" }
+    ]
+  }
+}

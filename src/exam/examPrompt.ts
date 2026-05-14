@@ -122,6 +122,41 @@ export function renderExamUserPrompt(request: {
   return lines.join('\n');
 }
 
+export function renderRegenerateQuestionUserPrompt(request: {
+  originalRequest: Parameters<typeof renderExamUserPrompt>[0];
+  existingExam: unknown;
+  questionNumber: number;
+  teacherNotes?: string;
+}): string {
+  const lines = [
+    'החלף שאלה אחת בלבד במבחן הקיים. החזר JSON מלא בלבד התואם את הסכמה של GeneratedExam.',
+    '',
+    `מספר השאלה להחלפה: ${request.questionNumber}`,
+    '',
+    'כללים מחייבים:',
+    '- אל תשנה שאלות אחרות, כותרות חלקים, ניקוד כולל, תאריך או שם כיתה.',
+    '- שמור על אותו מספר שאלה ועל אותו ניקוד של השאלה המוחלפת.',
+    '- צור ניסוח חדש ושונה מהשאלה הקיימת, אך שמור על אותו עוגן סילבוס, סוג שאלה, רמת כיתה ומספר תת-שאלות ככל האפשר.',
+    '- עדכן את מפתח התשובות ואת verificationItems של השאלה שהוחלפה.',
+    '- אל תשאיר verificationItems ישנים של השאלה שהוחלפה.',
+  ];
+
+  if (request.teacherNotes) {
+    lines.push('', '## הנחיות להחלפה', request.teacherNotes);
+  }
+
+  lines.push(
+    '',
+    '## בקשת המקור והסילבוס',
+    renderExamUserPrompt(request.originalRequest),
+    '',
+    '## המבחן הקיים',
+    JSON.stringify(request.existingExam, null, 2),
+  );
+
+  return lines.join('\n');
+}
+
 function renderQuestionTopic(
   question: { topic: string; curriculumTopicId?: string },
   curriculumScope?: CurriculumExamScope,

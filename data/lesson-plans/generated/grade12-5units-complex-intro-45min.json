@@ -1,0 +1,145 @@
+{
+  "id": "lesson-grade12-5units-complex-intro-45min",
+  "source": "teacher_requested",
+  "createdAt": "2026-05-14T00:00:00.000Z",
+  "updatedAt": "2026-05-14T00:00:00.000Z",
+  "topic": "מספרים מרוכבים",
+  "subTopic": "הכרות, הצגה קרטזית, פעולות אלגבריות פשוטות ופתרון משוואות ריבועיות פשוטות מעל המרוכבים",
+  "grade": "יבי",
+  "duration": 45,
+  "lessonType": "הקנייה",
+  "textbook": {
+    "name": "בני גורן - מתמטיקה 5 יחידות לימוד, חלק ג׳2",
+    "grade": "י\"ב 5 יח\"ל",
+    "part": 2,
+    "publisher": "בני גורן",
+    "isStudentStandardBook": false
+  },
+  "curriculumTopicId": "complex-numbers",
+  "phases": {
+    "opening": {
+      "name": "פתיחה - למה צריך מספר חדש?",
+      "durationMinutes": 5,
+      "description": "משימת כניסה עצמאית בזמן נוכחות והכנת הלוח. המטרה היא לעורר צורך: מעל הממשיים יש משוואות ריבועיות ללא פתרון.",
+      "exercises": [
+        {
+          "source": "generated",
+          "generatedContent": "פתרו מעל הממשיים, ואם אין פתרון כתבו מדוע: א. $x^2=9$  ב. $x^2=0$  ג. $x^2=-4$.",
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 5,
+          "notes": "לא לתקן מיד. לאסוף על הלוח את המסקנה: בממשיים אין מספר שריבועו שלילי."
+        }
+      ]
+    },
+    "instruction": {
+      "name": "הקנייה - הגדרת i והצגה קרטזית",
+      "durationMinutes": 16,
+      "description": "הצגת הרעיון החדש דרך המשוואה $x^2+1=0$: מגדירים מספר חדש $i$ כך ש-$i^2=-1$. כל מספר מהצורה $a+ib$ כאשר $a,b$ ממשיים נקרא מספר מרוכב. מסמנים $Re(z)=a$, $Im(z)=b$. מדגישים שהמספרים הממשיים הם המקרה $b=0$, ושבמרוכבים לא משתמשים בסימני סדר כמו $<$ או $>$.",
+      "exercises": [
+        {
+          "source": "generated",
+          "generatedContent": "דוגמה מונחית: עבור $z=3-2i$ זהו את החלק הממשי, החלק המדומה, והנקודה המתאימה במישור גאוס.",
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 4,
+          "notes": "לשרטט צירים: אופקי ממשי, אנכי מדומה. לא להיכנס עדיין להצגה קוטבית."
+        },
+        {
+          "source": "generated",
+          "generatedContent": "דוגמה מונחית: חשבו $(2+3i)+(5-i)$, ואז $(2+3i)(1-2i)$.",
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 6,
+          "notes": "להקפיד להחליף $i^2$ ב-$-1$ ולכנס חלק ממשי וחלק מדומה."
+        },
+        {
+          "source": "generated",
+          "generatedContent": "דוגמה מונחית: פתרו $x^2+9=0$ מעל המרוכבים.",
+          "practiceMode": "לוח_משותף",
+          "estimatedMinutes": 4,
+          "notes": "להדגיש שמקבלים שני פתרונות: $x=3i$ ו-$x=-3i$."
+        }
+      ],
+      "teacherNotes": "לשמור את השיעור ברמת כניסה: הצגה קרטזית ופעולות אלגבריות בלבד. לא להיכנס למספר צמוד, חילוק כללי, ערך מוחלט, קוטבית או דה-מואבר."
+    },
+    "practice": {
+      "name": "תרגול קצר בלוחות מחיקים",
+      "durationMinutes": 9,
+      "description": "בדיקת הבנה מהירה לפני עבודה עצמית. כל סעיף נפתר על לוח מחיק או במחברת ומורם לבדיקה.",
+      "exercises": [
+        {
+          "source": "generated",
+          "generatedContent": "חשבו וכנסו לצורה $a+ib$: א. $(4-3i)+(2+7i)$  ב. $(5+i)-(8-4i)$.",
+          "practiceMode": "לוחות_מחיקה",
+          "estimatedMinutes": 3,
+          "notes": "אם רבים מתבלבלים בסימן בחיסור, לעצור לדקה ולפתוח סוגריים יחד."
+        },
+        {
+          "source": "generated",
+          "generatedContent": "חשבו: $(3+2i)(1-4i)$.",
+          "practiceMode": "לוחות_מחיקה",
+          "estimatedMinutes": 3,
+          "notes": "לחפש האם התלמידים זוכרים ש-$i^2=-1$."
+        },
+        {
+          "source": "generated",
+          "generatedContent": "פתרו מעל המרוכבים: $x^2+16=0$.",
+          "practiceMode": "לוחות_מחיקה",
+          "estimatedMinutes": 3,
+          "notes": "תשובה רצויה: $x=\\pm4i$."
+        }
+      ]
+    },
+    "independentWork": {
+      "name": "עבודה עצמית - דף עבודה לתלמידים",
+      "durationMinutes": 15,
+      "description": "עבודה עצמית מדורגת מתוך דף עבודה נפרד להדפסה: data/lesson-plans/generated/grade12-5units-complex-intro-45min-worksheet.md. המורה מסתובבת ומסמנת איפה יש שגיאות סימן או בלבול בין חלק ממשי למדומה.",
+      "exercises": [
+        {
+          "source": "generated",
+          "generatedContent": "זהו $Re(z)$ ו-$Im(z)$ עבור: א. $z=7+5i$  ב. $z=-2+9i$  ג. $z=6$  ד. $z=-i$.",
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 4,
+          "notes": "סעיפים ג-ד בודקים מקרי קצה: מספר ממשי טהור ומספר מדומה טהור."
+        },
+        {
+          "source": "generated",
+          "generatedContent": "חשבו וכנסו לצורה $a+ib$: א. $(6-2i)+(1+8i)$  ב. $(3+5i)-(7-2i)$  ג. $2(4-3i)$.",
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 4,
+          "notes": "מטרה: שליטה בחיבור, חיסור וכפל בסקלר."
+        },
+        {
+          "source": "generated",
+          "generatedContent": "חשבו וכנסו לצורה $a+ib$: א. $(2+i)(5-3i)$  ב. $(1-4i)^2$.",
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 4,
+          "notes": "מטרה: שימוש נכון ב-$i^2=-1$."
+        },
+        {
+          "source": "generated",
+          "generatedContent": "פתרו מעל המרוכבים: א. $x^2+25=0$  ב. $x^2-6x+13=0$.",
+          "practiceMode": "עצמאי",
+          "estimatedMinutes": 3,
+          "notes": "בסעיף ב להשתמש בנוסחת השורשים ולקבל $x=3\\pm2i$."
+        }
+      ],
+      "teacherNotes": "בדקות האחרונות לבחור תלמיד אחד שמציג סעיף כפל ותלמיד אחד שמציג משוואה ריבועית. אם אין זמן, סעיף 4 עובר לשיעורי בית."
+    }
+  },
+  "homework": [
+    {
+      "source": "generated",
+      "generatedContent": "סיימו את סעיפי העבודה העצמית שלא הושלמו. בנוסף: פתרו מעל המרוכבים $x^2+49=0$ ו-$x^2-4x+8=0$.",
+      "practiceMode": "עצמאי",
+      "estimatedMinutes": 10,
+      "notes": "מי שמתקדם יכול לשרטט במישור גאוס את הפתרונות שקיבל."
+    }
+  ],
+  "teacherNotes": "זהו שיעור ראשון בנושא מספרים מרוכבים. המטרה אינה להגיע לכל הטכניקה של הפרק, אלא לבנות צורך, להגדיר i, לזהות הצגה קרטזית, לבצע פעולות בסיסיות, ולפתור משוואות ריבועיות פשוטות עם דיסקרימיננטה שלילית.",
+  "postLessonNotes": "",
+  "generatedBy": "teacher",
+  "_sourceNotes": {
+    "ministryCurriculum": "data/curriculum/high-school-5units-year12.json#complex-numbers",
+    "bennyGoren": "נבדק אינדקס רשמי נגיש של בני גורן חלק ג׳2: https://www.bennygoren.co.il/wp-content/uploads/2022/09/index_108.pdf. האינדקס נמצא שימושי לסדר הנושאים בלבד, ללא העתקת תרגילים. קיים גם PDF מקומי תחת data/resources, אך חילוץ טקסט ממנו לא היה זמין באופן שימושי.",
+    "copyrightPolicy": "כל התרגילים בדף זה מקוריים ולא מועתקים מהספר."
+  }
+}

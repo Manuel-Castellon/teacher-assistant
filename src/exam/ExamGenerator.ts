@@ -1,5 +1,5 @@
-import { EXAM_PROMPT_VERSION, EXAM_SYSTEM_PROMPT, renderExamUserPrompt } from './examPrompt';
-import type { ExamRequest, GeneratedExam } from './types';
+import { EXAM_PROMPT_VERSION, EXAM_SYSTEM_PROMPT, renderExamUserPrompt, renderRegenerateQuestionUserPrompt } from './examPrompt';
+import type { ExamRequest, GeneratedExam, RegenerateQuestionRequest } from './types';
 import type { CompletionFn } from './backends';
 import { createDefaultBackend } from './backends';
 import { getCurriculumExamScope } from './curriculumContext';
@@ -16,6 +16,21 @@ export class ExamGenerator {
     const userPrompt = renderExamUserPrompt({
       ...request,
       curriculumScope: getCurriculumExamScope(request.grade),
+    });
+    const text = await this.complete(EXAM_SYSTEM_PROMPT, userPrompt);
+    return parseExamJson(text);
+  }
+
+  async regenerateQuestion(request: RegenerateQuestionRequest): Promise<GeneratedExam> {
+    const curriculumScope = getCurriculumExamScope(request.request.grade);
+    const userPrompt = renderRegenerateQuestionUserPrompt({
+      originalRequest: {
+        ...request.request,
+        curriculumScope,
+      },
+      existingExam: request.exam,
+      questionNumber: request.questionNumber,
+      ...(request.teacherNotes ? { teacherNotes: request.teacherNotes } : {}),
     });
     const text = await this.complete(EXAM_SYSTEM_PROMPT, userPrompt);
     return parseExamJson(text);

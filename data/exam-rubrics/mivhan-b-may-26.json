@@ -1,0 +1,197 @@
+{
+  "id": "mivhan-b-may-26",
+  "sourceExamPath": "data/exam-examples/מבחן ב מאי 26.pdf",
+  "title": "מבחן 3 במתמטיקה - שכבה ב' מואצת",
+  "className": "שכבה ב' מואצת",
+  "date": "15.05.26",
+  "totalPoints": 100,
+  "projectLearnings": [
+    "זהו מבחן אמיתי שהמורה ערכה מתוך אותו מבנה כללי: אלגברה 65 נקודות, גיאומטריה 35 נקודות, ובונוס נפרד.",
+    "יש לשמר במחולל שאלות קצה שמייצרות תשובה 'אין פתרון' או 'כל x בתחום' ולא להימנע מהן.",
+    "תחום הצבה הוא קריטריון ניקוד בפני עצמו בשאלות עם שברים אלגבריים.",
+    "מחוון גיאומטרי חייב לנקד נימוקים, התאמת זוויות/צלעות וסדר דמיון, לא רק תשובה סופית.",
+    "שאלת בונוס אינה חלק מ-100 הנקודות ולכן צריכה מודל נפרד מ-subQuestions רגילות."
+  ],
+  "questions": [
+    {
+      "questionNumber": 1,
+      "title": "אי-שוויונות",
+      "topic": "אלגברה - אי-שוויונות",
+      "maxPoints": 20,
+      "subQuestions": [
+        {
+          "label": "1.",
+          "maxPoints": 10,
+          "expectedAnswer": "אין פתרון",
+          "acceptedAlternatives": ["קבוצה ריקה", "$\\varnothing$"],
+          "criteria": [
+            { "id": "expand", "description": "פתיחת סוגריים וצמצום אגף ימין: $3(x-2)-x=2x-6$", "points": 3 },
+            { "id": "isolate", "description": "העברת אגפים תקינה עד לקבלת סתירה כגון $0<-6$", "points": 3 },
+            { "id": "conclude", "description": "מסקנה מפורשת שאין פתרון", "points": 3 },
+            { "id": "notation", "description": "כתיבה אלגברית/מילולית ברורה של קבוצת הפתרונות", "points": 1 }
+          ],
+          "commonMistakes": [
+            "מחיקת $2x$ משני האגפים וכתיבת $x<-3$ במקום זיהוי סתירה.",
+            "אי-כתיבת תשובה סופית."
+          ]
+        },
+        {
+          "label": "2.",
+          "maxPoints": 10,
+          "expectedAnswer": "$x \\leq -1$",
+          "criteria": [
+            { "id": "clear-denominators", "description": "כפל נכון ב-12 או מעבר נכון למכנה משותף", "points": 3 },
+            { "id": "linear-solve", "description": "פתרון אלגברי תקין עד $11x \\leq -11$", "points": 4 },
+            { "id": "inequality-direction", "description": "שמירה נכונה על כיוון אי-השוויון", "points": 1 },
+            { "id": "final-answer", "description": "תשובה סופית בייצוג אלגברי: $x \\leq -1$", "points": 2 }
+          ],
+          "commonMistakes": [
+            "טעות סימן בגלל המכנה $-12$ באגף ימין.",
+            "היפוך כיוון אי-השוויון ללא כפל/חילוק במספר שלילי."
+          ]
+        }
+      ]
+    },
+    {
+      "questionNumber": 2,
+      "title": "משוואות ותחום הצבה",
+      "topic": "אלגברה - משוואות עם שברים",
+      "maxPoints": 30,
+      "subQuestions": [
+        {
+          "label": "1.",
+          "maxPoints": 10,
+          "expectedAnswer": "$x=9$; תחום הצבה: כל הממשיים",
+          "criteria": [
+            { "id": "domain", "description": "ציון תחום הצבה: כל $x$ ממשי", "points": 2 },
+            { "id": "clear-denominators", "description": "כפל נכון ב-6 או מכנה משותף", "points": 3 },
+            { "id": "solve", "description": "פתרון המשוואה עד $x=9$", "points": 4 },
+            { "id": "final-answer", "description": "תשובה סופית ברורה", "points": 1 }
+          ]
+        },
+        {
+          "label": "2.",
+          "maxPoints": 10,
+          "expectedAnswer": "$x=-1$; תחום הצבה: $x \\neq 0$",
+          "criteria": [
+            { "id": "domain", "description": "ציון תחום הצבה: $x \\neq 0$", "points": 2 },
+            { "id": "clear-denominators", "description": "כפל נכון ב-$12x$ או מכנה משותף שקול", "points": 3 },
+            { "id": "solve", "description": "פתרון נכון עד $x=-1$", "points": 4 },
+            { "id": "validate", "description": "בדיקה/ציון שהפתרון בתחום ההצבה", "points": 1 }
+          ],
+          "commonMistakes": [
+            "התעלמות מתחום ההצבה.",
+            "טעות סימן באגף ימין $-17/12$."
+          ]
+        },
+        {
+          "label": "3.",
+          "maxPoints": 10,
+          "expectedAnswer": "כל $x \\neq -3$",
+          "acceptedAlternatives": ["זהות בתחום ההצבה"],
+          "criteria": [
+            { "id": "domain", "description": "ציון תחום הצבה: $x \\neq -3$", "points": 2 },
+            { "id": "factor", "description": "זיהוי $2x+6=2(x+3)$", "points": 3 },
+            { "id": "reduce", "description": "צמצום תקין בתוך תחום ההצבה וקבלת $3-2=1$", "points": 2 },
+            { "id": "identity", "description": "זיהוי שהמשוואה מתקיימת לכל $x$ בתחום", "points": 2 },
+            { "id": "final-answer", "description": "תשובה סופית: כל $x \\neq -3$", "points": 1 }
+          ],
+          "commonMistakes": [
+            "כתיבת $x=-3$ כפתרון למרות שהוא מחוץ לתחום.",
+            "כתיבת פתרון יחיד במקום זיהוי זהות."
+          ]
+        }
+      ]
+    },
+    {
+      "questionNumber": 3,
+      "title": "בעיות אחוזים",
+      "topic": "אלגברה - שאלות מילוליות ואחוזים",
+      "maxPoints": 15,
+      "subQuestions": [
+        {
+          "label": "1.",
+          "maxPoints": 8,
+          "expectedAnswer": "דני הרוויח 250 ש\"ח; שירלי הרוויחה 260 ש\"ח",
+          "criteria": [
+            { "id": "variable", "description": "הגדרת משתנה לשכר של דני", "points": 2 },
+            { "id": "equation", "description": "בניית משוואה נכונה: $x+1.04x=510$", "points": 2 },
+            { "id": "solve", "description": "פתרון נכון: $x=250$", "points": 2 },
+            { "id": "assign", "description": "שיוך נכון של שני הסכומים לדני ולשירלי כולל יחידות", "points": 2 }
+          ]
+        },
+        {
+          "label": "2.",
+          "maxPoints": 7,
+          "expectedAnswer": "נותרו לשמרית 272 ש\"ח",
+          "criteria": [
+            { "id": "percent", "description": "חישוב 15% מ-320 או זיהוי שנשארים 85%", "points": 3 },
+            { "id": "remaining", "description": "חישוב סכום הכסף שנותר: $320-48=272$ או $0.85\\cdot320=272$", "points": 3 },
+            { "id": "units", "description": "תשובה סופית עם יחידות", "points": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "questionNumber": 4,
+      "title": "דמיון משולשים",
+      "topic": "גיאומטריה - דמיון ומשולשים ישרי זווית",
+      "maxPoints": 35,
+      "subQuestions": [
+        {
+          "label": "1.",
+          "maxPoints": 15,
+          "expectedAnswer": "$\\triangle ABC \\sim \\triangle EDC$ לפי זווית-זווית",
+          "criteria": [
+            { "id": "right-angles", "description": "זיהוי $\\angle ABC=\\angle EDC=90^\\circ$ מתוך הנתונים", "points": 4 },
+            { "id": "angle-c", "description": "זיהוי $\\angle ACB=\\angle ECD$ כי $E$ על $BC$ ו-$D$ על $AC$", "points": 4 },
+            { "id": "criterion", "description": "שימוש נכון במשפט דמיון ז.ז.", "points": 3 },
+            { "id": "order", "description": "כתיבת סדר התאמה נכון: $A\\leftrightarrow E$, $B\\leftrightarrow D$, $C\\leftrightarrow C$", "points": 2 },
+            { "id": "proof-writing", "description": "כתיבת הוכחה מלאה וברורה", "points": 2 }
+          ],
+          "commonMistakes": [
+            "דילוג על נימוק לזווית הישרה ב-$D$.",
+            "כתיבת סדר דמיון שגוי שמוביל ליחסי צלעות שגויים."
+          ]
+        },
+        {
+          "label": "2.",
+          "maxPoints": 10,
+          "expectedAnswer": "$DE=12$ ס\"מ",
+          "criteria": [
+            { "id": "dc", "description": "חישוב $DC=AC-AD=20-11=9$", "points": 3 },
+            { "id": "ratio", "description": "זיהוי יחס הדמיון: $DC/BC=9/12=3/4$", "points": 3 },
+            { "id": "de", "description": "שימוש בהתאמה $DE/AB=3/4$ וקבלת $DE=12$", "points": 3 },
+            { "id": "units", "description": "תשובה עם יחידות", "points": 1 }
+          ]
+        },
+        {
+          "label": "3.",
+          "maxPoints": 10,
+          "expectedAnswer": "$FC=15$ ס\"מ",
+          "acceptedAlternatives": ["פתרון בעזרת חפיפה/דמיון של $\\triangle EDC$ ו-$\\triangle FDC$"],
+          "criteria": [
+            { "id": "ec", "description": "מציאת $EC=15$ מתוך הדמיון בסעיפים הקודמים", "points": 3 },
+            { "id": "triangles", "description": "הוכחה ש-$\\triangle EDC$ ו-$\\triangle FDC$ דומים/חופפים: זוויות ישרות ב-$D$, זוויות שוות ב-$C$, והצלע $DC$ משותפת/מתאימה", "points": 4 },
+            { "id": "fc", "description": "מסקנה נכונה ש-$FC=EC=15$", "points": 2 },
+            { "id": "units", "description": "תשובה עם יחידות", "points": 1 }
+          ],
+          "commonMistakes": [
+            "שימוש ביחס הדמיון של סעיף 2 ישירות על $FC$ בלי להצדיק קשר ל-$EC$.",
+            "התעלמות מהנתון $\\angle ECD=\\angle FCD$."
+          ]
+        }
+      ]
+    }
+  ],
+  "bonus": {
+    "maxPoints": 5,
+    "prompt": "בריבוע $ABCD$ האלכסונים נחתכים בנקודה $O$. מצאו את היחס שבין אורך צלע הריבוע לבין האורך $AO$.",
+    "expectedAnswer": "היחס בין צלע הריבוע לבין $AO$ הוא $\\sqrt{2}:1$; שקול ל-$\\frac{\\text{צלע}}{AO}=\\sqrt{2}$",
+    "criteria": [
+      { "id": "diagonal", "description": "סימון צלע הריבוע $s$ וזיהוי האלכסון $s\\sqrt{2}$", "points": 2 },
+      { "id": "half-diagonal", "description": "זיהוי $AO=\\frac{s\\sqrt{2}}{2}=\\frac{s}{\\sqrt{2}}$", "points": 2 },
+      { "id": "ratio", "description": "כתיבת היחס הסופי והסבר קצר", "points": 1 }
+    ]
+  }
+}

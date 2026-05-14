@@ -8,7 +8,7 @@ import type { GeneratedExam } from './types';
 export function renderExamMarkdown(exam: GeneratedExam): string {
   const lines: string[] = [];
 
-  lines.push('שם ומשפחה:________________');
+  lines.push('# שם ומשפחה:________________');
   lines.push('');
 
   const title = [
@@ -17,15 +17,15 @@ export function renderExamMarkdown(exam: GeneratedExam): string {
     exam.header.className,
     exam.header.date,
   ].join('- ');
-  lines.push(title);
+  lines.push(`## ${title}`);
   lines.push('');
 
   for (const part of exam.parts) {
-    lines.push(`**${part.title}**`);
+    lines.push(`### ${part.title}`);
     lines.push('');
 
     for (const q of part.questions) {
-      lines.push(`**שאלה ${q.questionNumber} (${q.points} נק')**`);
+      lines.push(`#### שאלה ${q.questionNumber} (${q.points} נק')`);
       lines.push('');
 
       if (q.instruction) {
@@ -62,11 +62,11 @@ export function renderAnswerKeyMarkdown(exam: GeneratedExam): string {
   const title = exam.header.examNumber != null
     ? `פתרון מבחן ${exam.header.examNumber}`
     : 'פתרון המבחן';
-  lines.push(`**${title}**`);
+  lines.push(`# ${title}`);
   lines.push('');
 
   for (const solution of exam.answerKey) {
-    lines.push(`**שאלה ${solution.questionNumber}**`);
+    lines.push(`## שאלה ${solution.questionNumber}`);
     lines.push('');
 
     for (const sub of solution.subAnswers) {

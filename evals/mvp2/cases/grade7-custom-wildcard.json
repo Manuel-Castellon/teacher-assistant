@@ -1,0 +1,40 @@
+{
+  "request": {
+    "className": "ז'1",
+    "date": "13.05.26",
+    "grade": "זי",
+    "durationMinutes": 20,
+    "totalPoints": 10,
+    "parts": [{
+      "title": "חזרה",
+      "questionSpecs": [{
+        "topic": "חזרה ממוקדת על דף עבודה אחרון: משוואות פשוטות עם סוגריים",
+        "curriculumTopicId": "__custom__",
+        "questionType": "חישובי",
+        "points": 10,
+        "subQuestionCount": 1
+      }]
+    }]
+  },
+  "expectedQuestionTypes": ["חישובי"],
+  "minVerificationItems": 1,
+  "bannedTerms": ["מערכת משוואות", "משוואה ריבועית"],
+  "fakeExam": {
+    "header": { "subject": "מתמטיקה", "className": "ז'1", "date": "13.05.26" },
+    "parts": [{
+      "title": "חזרה",
+      "questions": [{
+        "questionNumber": 1,
+        "points": 10,
+        "instruction": "פתרו.",
+        "subQuestions": [{ "label": "1.", "content": "$3(x+2)=18$" }]
+      }]
+    }],
+    "totalPoints": 10,
+    "answerKey": [{
+      "questionNumber": 1,
+      "subAnswers": [{ "label": "1.", "steps": ["$x+2=6$", "$x=4$"], "finalAnswer": "$x=4$" }]
+    }],
+    "verificationItems": [{ "questionRef": "Q1.1", "type": "equation", "sympyExpression": "Eq(3*(x+2),18)", "expectedAnswer": "{4}" }]
+  }
+}

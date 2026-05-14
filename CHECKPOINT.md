@@ -3,9 +3,59 @@
 > Live cursor for the current task. PROGRESS.md is the milestone log; this file is "where I am RIGHT NOW".
 
 ## Current task
-MVP 2 exam generation: curriculum grounding + topic selector hardening complete.
+State saved after grade י"ב 5 יח"ל complex-numbers lesson plan, rubric exports, MVP2 hardening, and copyright-resource gitignore cleanup.
 
 ## Last action that succeeded
+- Added local-only resource guardrails:
+  - `.gitignore` now ignores `data/resources/*` while allowing `data/resources/README.md`.
+  - `data/resources/README.md` documents that local textbooks / teacher PDFs are not git artifacts and must not be copied into generated artifacts.
+  - Confirmed `data/resources/בני גורן מתמטיקה 5 יחידות לימוד ג-2.pdf` is ignored by git.
+- Created a 45-minute הקנייה lesson plan for `מספרים מרוכבים`:
+  - `data/lesson-plans/generated/grade12-5units-complex-intro-45min.json`
+  - `data/lesson-plans/generated/grade12-5units-complex-intro-45min.md`
+  - `data/lesson-plans/generated/grade12-5units-complex-intro-45min.docx`
+  - `data/lesson-plans/generated/grade12-5units-complex-intro-45min.pdf`
+- Applied teacher feedback to that lesson:
+  - Use Israeli convention `a+ib`, not `a+bi`.
+  - Whenever a lesson suggests a `דף עבודה`, create separate printable worksheet artifacts.
+  - Added `grade12-5units-complex-intro-45min-worksheet.md` and `grade12-5units-complex-intro-45min-worksheet-key.md`.
+- Added `data/lesson-plans/generated/README.md` for generated lesson-plan artifact conventions.
+- Enriched `data/curriculum/high-school-5units-year12.json` with complex-numbers learning objectives from the local Ministry source text.
+- Added reusable lesson-plan curriculum grounding:
+  - `src/lessonPlan/curriculumContext.ts`
+  - `src/lessonPlan/curriculumContext.test.ts`
+  - `ClaudeTextGenerator` now injects local curriculum context into lesson-plan prompts.
+- Added reusable lesson-plan Markdown rendering:
+  - `src/lessonPlan/renderLessonPlan.ts`
+  - `src/lessonPlan/renderLessonPlan.test.ts`
+  - `src/lessonPlan/generatedArtifacts.test.ts`
+- Generalized Markdown export:
+  - `scripts/export-markdown.mjs`
+  - `scripts/export-rubric.mjs` remains as a compatibility wrapper.
+- Verified the lesson-plan PDF first page visually; RTL layout is usable.
+- `npm run type-check` passes.
+- `npm test` passes: 16 suites, 102 tests, 100% statements/branches/functions/lines.
+- `npm run test:evals` passes: MVP 1 2/2, MVP 2 4/4.
+- Extracted and reviewed the real teacher PDF `data/exam-examples/מבחן ב מאי 26.pdf`.
+- Determined it is useful, not just more of the same:
+  - It adds real edited edge cases: no-solution inequality, identity equation constrained by domain, and explicit domain scoring.
+  - Geometry grading needs proof-structure criteria, not only final numeric answers.
+  - Bonus questions should be modeled separately from the 100-point exam total.
+- Added reusable rubric infrastructure:
+  - `src/examRubric/types.ts`
+  - `src/examRubric/renderRubric.ts`
+  - `src/examRubric/renderRubric.test.ts`
+- Created reusable teacher-facing rubric artifacts:
+  - `data/exam-rubrics/README.md`
+  - `data/exam-rubrics/mivhan-b-may-26.json`
+  - `data/exam-rubrics/mivhan-b-may-26.md`
+- Added `scripts/export-rubric.mjs` and exported:
+  - `data/exam-rubrics/mivhan-b-may-26.docx`
+  - `data/exam-rubrics/mivhan-b-may-26.pdf`
+- `npm run type-check` passes.
+- `npm test` passes: 13 suites, 93 tests, 100% statements/branches/functions/lines.
+- `npm run test:evals` passes: MVP 1 2/2, MVP 2 4/4.
+- MVP placement note: מחוון work has immediate MVP 2 value as an exam companion artifact, but the reusable rubric model belongs mainly to MVP 6 supervised grading infrastructure.
 - Resumed from `PROGRESS.md` + `CHECKPOINT.md`.
 - Confirmed `http://localhost:3000/exam` responds 200 over HTTP.
 - Confirmed the live API did **not** previously inject `data/curriculum/*.json`; prompt only included grade/topic/notes.
@@ -35,15 +85,51 @@ MVP 2 exam generation: curriculum grounding + topic selector hardening complete.
   - `npm run type-check` passes.
   - `npm test` passes: 12 suites, 88 tests, 100% statements/branches/functions/lines.
   - Playwright snapshot confirms the dropdown includes `קריאה וניתוח`.
+- Implemented remaining MVP 2 hardening suggestions:
+  - Browser-local saved exam history (`localStorage`) with restore/clear controls.
+  - Structured preview renderer for generated markdown (headings, paragraphs, isolated math spans) instead of raw `<pre>`.
+  - One-question regeneration path: `ExamGenerator.regenerateQuestion`, `/api/exam/regenerate-question`, and per-question `החלף שאלה N` buttons.
+  - Renderer/DOCX heading polish: exam and answer-key markdown now use heading levels that Pandoc maps to DOCX styles while preserving RTL blank-line paragraph separation.
+  - MVP 2 eval suite added with 4 fake deterministic cases: grade ז graph reading, grade ח systems, grade ח geometry proof, and grade ז custom wildcard.
+  - `npm run type-check` passes.
+  - `npm test` passes: 12 suites, 91 tests, 100% statements/branches/functions/lines.
+  - `npm run test:evals` passes: MVP 1 2/2, MVP 2 4/4.
+  - Playwright smoke restored a saved exam and verified structured preview + `החלף שאלה 1` control.
 
 ## What I'm about to do next
-- Next product step is either MVP 1 formal gates (rubric/prompt sign-off + live eval) or MVP 3 question-bank planning.
-- Optional hardening: add actual taught-progress/class-placement layer so the topic list can be narrowed by class pace, not only by grade curriculum.
+- Likely next: commit/push current work, or build MVP 4 class progress model so exam/lesson topic lists can be narrowed by actual taught progress.
 
 ## Open question / waiting on user
-Whether to prioritize MVP 1 formal gates or MVP 3 question-bank planning.
+Whether to commit/push this large batch before continuing, and whether curriculum tracking should be MVP 4 next.
 
 ## Files created/modified this session
+- `.gitignore` (updated: ignores local-only `data/resources/*` while allowing README)
+- `data/resources/README.md` (new: documents local-only copyrighted/reference resources)
+- `src/examRubric/types.ts` (new: reusable rubric model for questions, criteria, subquestions, bonus)
+- `src/examRubric/renderRubric.ts` (new: renders structured rubric JSON to Hebrew markdown)
+- `src/examRubric/renderRubric.test.ts` (new: deterministic coverage for optional sections, bonus, criteria)
+- `data/exam-rubrics/README.md` (new: rubric data conventions)
+- `data/exam-rubrics/mivhan-b-may-26.json` (new: structured rubric for the May 2026 real exam)
+- `data/exam-rubrics/mivhan-b-may-26.md` (new: teacher-facing rubric for the May 2026 real exam)
+- `data/exam-rubrics/mivhan-b-may-26.docx` (new: exported teacher-facing rubric)
+- `data/exam-rubrics/mivhan-b-may-26.pdf` (new: exported teacher-facing rubric)
+- `scripts/export-markdown.mjs` (new: reusable Markdown exporter to DOCX/PDF)
+- `scripts/export-rubric.mjs` (new: compatibility wrapper for rubric exports)
+- `data/lesson-plans/generated/README.md` (new: generated lesson-plan artifact conventions)
+- `data/lesson-plans/generated/grade12-5units-complex-intro-45min.json` (new: structured lesson plan)
+- `data/lesson-plans/generated/grade12-5units-complex-intro-45min.md` (new: teacher-readable lesson plan)
+- `data/lesson-plans/generated/grade12-5units-complex-intro-45min.docx` (new: exported lesson plan)
+- `data/lesson-plans/generated/grade12-5units-complex-intro-45min.pdf` (new: exported lesson plan)
+- `data/lesson-plans/generated/grade12-5units-complex-intro-45min-worksheet.md` (new: printable student worksheet)
+- `data/lesson-plans/generated/grade12-5units-complex-intro-45min-worksheet-key.md` (new: worksheet answer key)
+- `data/curriculum/high-school-5units-year12.json` (updated: complex-number learning objectives)
+- `src/lessonPlan/curriculumContext.ts` (new: curriculum prompt context for lesson plans)
+- `src/lessonPlan/curriculumContext.test.ts` (new)
+- `src/lessonPlan/renderLessonPlan.ts` (new: lesson plan markdown renderer)
+- `src/lessonPlan/renderLessonPlan.test.ts` (new)
+- `src/lessonPlan/generatedArtifacts.test.ts` (new: validates generated plan artifact)
+- `src/providers/impl/ClaudeTextGenerator.ts` (updated: injects lesson-plan curriculum context)
+- `src/providers/impl/ClaudeTextGenerator.test.ts` (updated)
 - `src/exam/curriculumContext.ts` (new: maps grades to curriculum JSON and renders strict prompt scope)
 - `src/exam/ExamGenerator.ts` (updated: injects curriculum scope into the model prompt)
 - `src/exam/examPrompt.ts` (updated: renders curriculum scope section)
@@ -59,6 +145,13 @@ Whether to prioritize MVP 1 formal gates or MVP 3 question-bank planning.
 - `src/exam/types.ts` (updated: question type includes `קריאה_וניתוח`)
 - `src/app/exam/page.tsx` (updated: question type dropdown includes `קריאה וניתוח`)
 - `src/exam/examPrompt.ts` (updated: prompt guidance for reading/analysis tasks)
+- `src/app/exam/page.tsx` (updated: saved history, structured preview, regenerate question buttons)
+- `src/app/api/exam/regenerate-question/route.ts` (new: replace one question and reverify)
+- `src/exam/ExamGenerator.ts` (updated: `regenerateQuestion`)
+- `src/exam/examPrompt.ts` (updated: regenerate-question prompt)
+- `src/exam/renderExam.ts` (updated: heading-based markdown for DOCX polish)
+- `src/exam/renderExam.test.ts`, `src/exam/ExamGenerator.test.ts`, `src/exam/examPrompt.test.ts` (updated)
+- `evals/mvp2/` (new: MVP 2 deterministic eval suite)
 - `src/exam/backends.ts` (new: CompletionFn, Gemini/Anthropic backends, factory)
 - `src/exam/ExamGenerator.ts` (refactored: uses CompletionFn instead of AnthropicLike)
 - `src/exam/renderExam.test.ts` (new: 13 tests)

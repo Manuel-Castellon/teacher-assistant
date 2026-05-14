@@ -73,19 +73,19 @@ describe('renderExamMarkdown', () => {
 
   it('omits exam number when not provided', () => {
     const md = renderExamMarkdown(GEOMETRY_EXAM);
-    expect(md).toMatch(/^שם ומשפחה/m);
+    expect(md).toMatch(/^# שם ומשפחה/m);
     expect(md).toContain('מבחן- במתמטיקה');
     expect(md).not.toContain('מבחן 1');
   });
 
-  it('renders part titles in bold', () => {
+  it('renders part titles as headings', () => {
     const md = renderExamMarkdown(MINIMAL_EXAM);
-    expect(md).toContain("**חלק א'- אלגברה**");
+    expect(md).toContain("### חלק א'- אלגברה");
   });
 
   it('renders question header with points', () => {
     const md = renderExamMarkdown(MINIMAL_EXAM);
-    expect(md).toContain("**שאלה 1 (20 נק')**");
+    expect(md).toContain("#### שאלה 1 (20 נק')");
   });
 
   it('renders sub-questions with blank-line separation (RTL safe)', () => {
@@ -122,17 +122,17 @@ describe('renderExamMarkdown', () => {
 describe('renderAnswerKeyMarkdown', () => {
   it('renders title with exam number', () => {
     const md = renderAnswerKeyMarkdown(MINIMAL_EXAM);
-    expect(md).toContain('**פתרון מבחן 1**');
+    expect(md).toContain('# פתרון מבחן 1');
   });
 
   it('renders generic title when no exam number', () => {
     const md = renderAnswerKeyMarkdown(GEOMETRY_EXAM);
-    expect(md).toContain('**פתרון המבחן**');
+    expect(md).toContain('# פתרון המבחן');
   });
 
   it('renders question numbers and sub-answer labels', () => {
     const md = renderAnswerKeyMarkdown(MINIMAL_EXAM);
-    expect(md).toContain('**שאלה 1**');
+    expect(md).toContain('## שאלה 1');
     expect(md).toContain('**1.**');
     expect(md).toContain('**2.**');
   });

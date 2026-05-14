@@ -1,0 +1,41 @@
+{
+  "request": {
+    "className": "ח' מואצת",
+    "date": "13.05.26",
+    "grade": "חי",
+    "durationMinutes": 45,
+    "totalPoints": 25,
+    "parts": [{
+      "title": "גיאומטריה",
+      "questionSpecs": [{
+        "topic": "חפיפת משולשים",
+        "curriculumTopicId": "ms-grade8-t03",
+        "questionType": "הוכחה",
+        "points": 25,
+        "subQuestionCount": 1
+      }]
+    }]
+  },
+  "expectedQuestionTypes": ["הוכחה"],
+  "minVerificationItems": 1,
+  "fakeExam": {
+    "header": { "subject": "מתמטיקה", "className": "ח' מואצת", "date": "13.05.26" },
+    "parts": [{
+      "title": "גיאומטריה",
+      "questions": [{
+        "questionNumber": 1,
+        "points": 25,
+        "instruction": "הוכיחו את החפיפה.",
+        "givenData": ["$AB=DE$", "$BC=EF$", "$\\angle ABC=\\angle DEF$"],
+        "diagramDescription": "שני משולשים עם סימוני צלעות וזווית",
+        "subQuestions": [{ "label": "1.", "content": "הוכיחו $\\triangle ABC \\cong \\triangle DEF$." }]
+      }]
+    }],
+    "totalPoints": 25,
+    "answerKey": [{
+      "questionNumber": 1,
+      "subAnswers": [{ "label": "1.", "steps": ["לפי צ.ז.צ."], "finalAnswer": "הוכח" }]
+    }],
+    "verificationItems": [{ "questionRef": "Q1.1", "type": "proof" }]
+  }
+}

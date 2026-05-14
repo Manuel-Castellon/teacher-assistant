@@ -1,0 +1,48 @@
+{
+  "request": {
+    "className": "ח'2",
+    "date": "13.05.26",
+    "grade": "חי",
+    "durationMinutes": 45,
+    "totalPoints": 30,
+    "parts": [{
+      "title": "אלגברה",
+      "questionSpecs": [{
+        "topic": "מערכת משוואות בשני נעלמים",
+        "curriculumTopicId": "ms-grade8-t06",
+        "questionType": "חישובי",
+        "points": 30,
+        "subQuestionCount": 2
+      }]
+    }]
+  },
+  "expectedQuestionTypes": ["חישובי"],
+  "minVerificationItems": 2,
+  "fakeExam": {
+    "header": { "subject": "מתמטיקה", "className": "ח'2", "date": "13.05.26" },
+    "parts": [{
+      "title": "אלגברה",
+      "questions": [{
+        "questionNumber": 1,
+        "points": 30,
+        "instruction": "פתרו את מערכות המשוואות.",
+        "subQuestions": [
+          { "label": "1.", "content": "$x+y=7,\\ x-y=1$" },
+          { "label": "2.", "content": "$2x+y=10,\\ x+y=6$" }
+        ]
+      }]
+    }],
+    "totalPoints": 30,
+    "answerKey": [{
+      "questionNumber": 1,
+      "subAnswers": [
+        { "label": "1.", "steps": ["$2x=8$", "$x=4$", "$y=3$"], "finalAnswer": "$(4,3)$" },
+        { "label": "2.", "steps": ["$x=4$", "$y=2$"], "finalAnswer": "$(4,2)$" }
+      ]
+    }],
+    "verificationItems": [
+      { "questionRef": "Q1.1", "type": "proof" },
+      { "questionRef": "Q1.2", "type": "proof" }
+    ]
+  }
+}

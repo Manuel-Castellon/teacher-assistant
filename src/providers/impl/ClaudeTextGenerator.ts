@@ -8,6 +8,7 @@ import type {
   GeneratedExam,
 } from '../interfaces/ITextGenerator';
 import type { LessonPlan, LessonPlanRequest } from '../../types/lessonPlan';
+import { getLessonPlanCurriculumContext, renderLessonPlanCurriculumContext } from '../../lessonPlan/curriculumContext';
 import { LESSON_PLAN_PROMPT_VERSION, LESSON_PLAN_SYSTEM_PROMPT } from './lessonPlanPrompt';
 
 /**
@@ -105,6 +106,7 @@ export class ClaudeTextGenerator implements ITextGenerator {
 }
 
 function renderLessonPlanUserPrompt(req: LessonPlanRequest): string {
+  const curriculumContext = getLessonPlanCurriculumContext(req.grade, req.curriculumTopicId);
   const lines = [
     'צור מערך שיעור עבור הבקשה הבאה. החזר JSON בלבד התואם את הסכמה של LessonPlan.',
     '',
@@ -120,6 +122,7 @@ function renderLessonPlanUserPrompt(req: LessonPlanRequest): string {
   if (req.curriculumTopicId) {
     lines.push(`מזהה נושא בתכנית: ${req.curriculumTopicId}`);
   }
+  lines.push('', renderLessonPlanCurriculumContext(curriculumContext));
   if (req.teacherNotes) {
     lines.push('', 'הערות מהמורה (לכבד בקפדנות):', req.teacherNotes);
   }
