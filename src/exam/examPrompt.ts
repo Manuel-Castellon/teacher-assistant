@@ -3,6 +3,7 @@ import {
   renderCurriculumExamScope,
   type CurriculumExamScope,
 } from './curriculumContext';
+import { gradeLabel, type GradeLevel } from '../types/shared';
 
 export const EXAM_PROMPT_VERSION = 'exam-v0.1.0';
 
@@ -83,7 +84,7 @@ export function renderExamUserPrompt(request: {
   const lines = [
     'צור מבחן במתמטיקה עבור הבקשה הבאה. החזר JSON בלבד התואם את הסכמה של GeneratedExam.',
     '',
-    `כיתה: ${request.grade}`,
+    `כיתה: ${gradeLabel(request.grade as GradeLevel)}`,
     `שכבה: ${request.className}`,
     `תאריך: ${request.date}`,
     `משך: ${request.durationMinutes} דקות`,

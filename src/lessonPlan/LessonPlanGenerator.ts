@@ -1,4 +1,5 @@
 import type { LessonPlan, LessonPlanRequest } from '../types/lessonPlan';
+import { gradeLabel } from '../types/shared';
 import { createDefaultBackend, type CompletionFn } from '../exam/backends';
 import { getLessonPlanCurriculumContext, renderLessonPlanCurriculumContext } from './curriculumContext';
 import { LESSON_PLAN_PROMPT_VERSION, LESSON_PLAN_SYSTEM_PROMPT } from '../providers/impl/lessonPlanPrompt';
@@ -33,7 +34,7 @@ export function renderLessonPlanUserPrompt(req: LessonPlanRequest): string {
     '',
     `נושא: ${req.topic}`,
     `תת-נושא: ${req.subTopic}`,
-    `כיתה: ${req.grade}`,
+    `כיתה: ${gradeLabel(req.grade)}`,
     `משך השיעור: ${req.duration} דקות`,
     `סוג השיעור: ${req.lessonType}`,
   ];
@@ -62,5 +63,23 @@ export function parseLessonPlanJson(raw: string): LessonPlan {
   if (text.startsWith('```')) {
     text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
   }
-  return JSON.parse(text) as LessonPlan;
+  const obj = JSON.parse(text) as Record<string, unknown>;
+  validateLessonPlanShape(obj);
+  return obj as unknown as LessonPlan;
+}
+
+function validateLessonPlanShape(obj: Record<string, unknown>): void {
+  if (!obj.phases || typeof obj.phases !== 'object') {
+    throw new Error(
+      `AI returned JSON without a "phases" object. Got top-level keys: [${Object.keys(obj).join(', ')}]`,
+    );
+  }
+  const phases = obj.phases as Record<string, unknown>;
+  for (const required of ['opening', 'practice', 'independentWork'] as const) {
+    if (!phases[required] || typeof phases[required] !== 'object') {
+      throw new Error(
+        `AI returned phases without "${required}". Got phase keys: [${Object.keys(phases).join(', ')}]`,
+      );
+    }
+  }
 }

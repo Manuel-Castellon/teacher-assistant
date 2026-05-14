@@ -1,10 +1,11 @@
 import type { ExerciseRef, LessonPhase, LessonPlan } from '../types/lessonPlan';
+import { gradeLabel } from '../types/shared';
 
 export function renderLessonPlanMarkdown(plan: LessonPlan): string {
   const lines: string[] = [
     `# מערך שיעור - ${plan.topic}`,
     '',
-    `כיתה: ${plan.grade}`,
+    `כיתה: ${gradeLabel(plan.grade)}`,
     '',
     `משך: ${plan.duration} דקות`,
     '',
@@ -24,7 +25,7 @@ export function renderLessonPlanMarkdown(plan: LessonPlan): string {
   }
 
   if (plan.teacherNotes) {
-    lines.push('## הערות למורה', '', plan.teacherNotes, '');
+    lines.push('## דגשים למורה', '', plan.teacherNotes, '');
   }
 
   lines.push('## מהלך השיעור', '');
@@ -41,7 +42,7 @@ export function renderLessonPlanMarkdown(plan: LessonPlan): string {
   } else if (plan.homework.length === 0) {
     lines.push('לא הוגדרו שיעורי בית.', '');
   } else {
-    renderExercises(lines, plan.homework);
+    renderExercises(lines, plan.homework, { numberGenerated: true });
   }
 
   return lines.join('\n').trimEnd() + '\n';
@@ -60,16 +61,58 @@ function renderPhase(lines: string[], phase: LessonPhase) {
   }
 }
 
-function renderExercises(lines: string[], exercises: ExerciseRef[]) {
+function renderExercises(lines: string[], exercises: ExerciseRef[], opts: { numberGenerated?: boolean } = {}) {
   exercises.forEach((exercise, index) => {
-    const label = exercise.textbookRef
-      ? `עמוד ${exercise.textbookRef.page}, תרגיל ${exercise.textbookRef.exerciseId}`
-      : exercise.generatedContent ?? 'תרגיל';
-    lines.push(`${index + 1}. ${label}`);
-    lines.push(`   מצב עבודה: ${exercise.practiceMode}; זמן משוער: ${exercise.estimatedMinutes} דקות`);
-    if (exercise.notes) {
-      lines.push(`   הערות: ${exercise.notes}`);
+    const content = renderExerciseContent(exercise);
+    if (exercise.generatedContent) {
+      appendGeneratedExercise(lines, content, index, opts.numberGenerated ?? false);
+    } else {
+      lines.push(`${index + 1}. ${content}`);
     }
+    if (exercise.notes) {
+      renderExerciseNote(lines, exercise.notes);
+    }
+    lines.push('');
   });
-  lines.push('');
+}
+
+function renderExerciseContent(exercise: ExerciseRef): string {
+  if (exercise.textbookRef) {
+    return `עמוד ${exercise.textbookRef.page}, תרגיל ${exercise.textbookRef.exerciseId}`;
+  }
+  return exercise.generatedContent?.trim() || 'תרגיל';
+}
+
+function appendGeneratedExercise(lines: string[], content: string, index: number, numberGenerated: boolean) {
+  if (!numberGenerated || isStructuredMarkdown(content)) {
+    lines.push(content);
+    return;
+  }
+
+  lines.push(`${index + 1}. ${content}`);
+}
+
+function isStructuredMarkdown(content: string): boolean {
+  return content.includes('\n')
+    || /^(\d+[.)]|[-*]\s|[א-ת][.)]\s|תרגיל[:\s]|דוגמה[:\s]|דף עבודה[:\s])/u.test(content);
+}
+
+function renderExerciseNote(lines: string[], note: string) {
+  const trimmed = note.trim();
+  if (trimmed.length <= 80) {
+    lines.push('', `דגש: ${trimmed}`);
+    return;
+  }
+
+  const label = /^פתרונות/u.test(trimmed) ? 'פתרונות קצרים למורה:' : 'דגשים למורה:';
+  lines.push('', label);
+  splitLongNote(trimmed).forEach(part => lines.push(`- ${part}`));
+}
+
+function splitLongNote(note: string): string[] {
+  const withoutLabel = note.replace(/^פתרונות למורה[:：]?\s*/u, '').trim();
+  return withoutLabel
+    .split(/(?:\.\s+|;\s+|,\s+)(?=(?:\d+[א-ת]?|[א-ת]{1,2})\.)/u)
+    .map(part => part.trim())
+    .filter(Boolean);
 }

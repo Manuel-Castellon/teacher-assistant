@@ -136,6 +136,18 @@ export function renderLessonPlanCurriculumContext(context: LessonPlanCurriculumC
 
   if (context.selectedTopic) {
     lines.push(`נושא שנבחר: ${context.selectedTopic.name} (${context.selectedTopic.recommendedHours} שעות)`);
+
+    const selectedIndex = context.topics.findIndex(t => t.id === context.selectedTopic!.id);
+    if (selectedIndex > 0) {
+      const prior = context.topics.slice(0, selectedIndex);
+      lines.push(
+        '',
+        'נושאים שהתלמידים כבר למדו (לפי סדר התכנית). אפשר להניח ידע מהם בלבד:',
+        ...prior.map(t => `- ${t.name}`),
+        '',
+        'חשוב: אסור להשתמש בתרגילים בחומר מנושאים שעדיין לא נלמדו (מופיעים אחרי הנושא הנבחר בתכנית).',
+      );
+    }
   } else {
     lines.push('נושאים זמינים לשכבה:', ...context.topics.map(topic => `- ${topic.name} (${topic.recommendedHours} שעות)`));
   }

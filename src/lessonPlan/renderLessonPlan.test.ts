@@ -68,14 +68,17 @@ describe('renderLessonPlanMarkdown', () => {
     const markdown = renderLessonPlanMarkdown(SAMPLE_PLAN);
 
     expect(markdown).toContain('# מערך שיעור - מספרים מרוכבים');
-    expect(markdown).toContain('כיתה: יבי');
+    expect(markdown).toContain("כיתה: יב'");
     expect(markdown).toContain('## מקורות');
+    expect(markdown).toContain('## דגשים למורה');
     expect(markdown).toContain('שיעור ראשון בנושא');
     expect(markdown).toContain('### פתיחה (5 דקות)');
     expect(markdown).toContain('$x^2+1=0$ מעל הממשיים');
     expect(markdown).toContain('דגשי מורה: להדגיש i^2=-1');
     expect(markdown).toContain('עמוד 1, תרגיל 2');
     expect(markdown).toContain('פתרו $x^2+9=0$');
+    expect(markdown).not.toContain('מצב עבודה');
+    expect(markdown).not.toContain('זמן משוער');
   });
 
   it('renders explicit no-homework and no-homework-defined states', () => {
@@ -122,5 +125,84 @@ describe('renderLessonPlanMarkdown', () => {
     expect(markdown).toContain('- ספר מינימלי');
     expect(markdown).not.toContain('ספר מינימלי,');
     expect(markdown).toContain('1. תרגיל');
+  });
+
+  it('preserves structured generated Markdown without adding duplicate numbering', () => {
+    const markdown = renderLessonPlanMarkdown({
+      ...SAMPLE_PLAN,
+      phases: {
+        ...SAMPLE_PLAN.phases,
+        practice: {
+          ...SAMPLE_PLAN.phases.practice,
+          exercises: [{
+            source: 'generated',
+            generatedContent: 'דוגמה 1:\nא. חשבו $i^2$\nב. פתרו $x^2+4=0$',
+            practiceMode: 'לוח_משותף',
+            estimatedMinutes: 8,
+          }],
+        },
+      },
+    });
+
+    expect(markdown).toContain('דוגמה 1:\nא. חשבו $i^2$\nב. פתרו $x^2+4=0$');
+    expect(markdown).not.toContain('1. דוגמה 1');
+  });
+
+  it('formats long answer-key notes as a teacher solution list', () => {
+    const markdown = renderLessonPlanMarkdown({
+      ...SAMPLE_PLAN,
+      phases: {
+        ...SAMPLE_PLAN.phases,
+        practice: {
+          ...SAMPLE_PLAN.phases.practice,
+          exercises: [{
+            source: 'generated',
+            generatedContent: 'דף עבודה:\nא. חשבו $1+1$\nב. חשבו $2+2$',
+            practiceMode: 'עצמאי',
+            estimatedMinutes: 10,
+            notes: 'פתרונות למורה: א. $2$. ב. $4$. ג. $6$. ד. $8$. ה. $10$. ו. $12$. ז. $14$. ח. $16$. ט. $18$. י. $20$. יא. $22$. יב. $24$.',
+          }],
+        },
+      },
+    });
+
+    expect(markdown).toContain('פתרונות קצרים למורה:');
+    expect(markdown).toContain('- א. $2$');
+    expect(markdown).toContain('- יב. $24$');
+  });
+
+  it('keeps teacher-facing exports free of internal exercise metadata even for many generated exercises', () => {
+    const markdown = renderLessonPlanMarkdown({
+      ...SAMPLE_PLAN,
+      phases: {
+        ...SAMPLE_PLAN.phases,
+        practice: {
+          name: 'תרגול מונחה',
+          durationMinutes: 10,
+          description: 'עבודה בקצב גבוה.',
+          exercises: [
+            {
+              source: 'generated',
+              generatedContent: 'תרגול כיתה:\n1. חשבו $2+3i+4-i$\n2. פתרו $x^2+9=0$',
+              practiceMode: 'לוחות_מחיקה',
+              estimatedMinutes: 5,
+              notes: 'בדיקת סימנים',
+            },
+            {
+              source: 'generated',
+              generatedContent: 'דף עבודה:\nא. חשבו $i^2$\nב. פשטו $(1+i)^2$',
+              practiceMode: 'עצמאי',
+              estimatedMinutes: 5,
+            },
+          ],
+        },
+      },
+    });
+
+    expect(markdown).toContain('תרגול כיתה:\n1. חשבו $2+3i+4-i$\n2. פתרו $x^2+9=0$');
+    expect(markdown).not.toContain('מצב עבודה');
+    expect(markdown).not.toContain('לוחות_מחיקה');
+    expect(markdown).not.toContain('זמן משוער');
+    expect(markdown).not.toContain('1. תרגול כיתה');
   });
 });

@@ -6,8 +6,11 @@ import {
   CUSTOM_LESSON_PLAN_TOPIC_ID,
   validateLessonPlanRequestCurriculumTopic,
 } from '@/lessonPlan/curriculumContext';
+import { createBackendByName, type BackendName } from '@/exam/backends';
 import type { LessonPlanRequest, LessonDuration, LessonType } from '@/types/lessonPlan';
 import type { GradeLevel } from '@/types/shared';
+
+type AIBackend = 'auto' | BackendName;
 
 interface GenerateLessonPlanBody {
   topic?: string;
@@ -19,6 +22,7 @@ interface GenerateLessonPlanBody {
   teacherRequest?: string;
   teacherNotes?: string;
   previousLessonContext?: string;
+  backend?: AIBackend;
 }
 
 const GRADES = new Set<GradeLevel>(['זי', 'חי', 'טי', 'יי', 'יאי', 'יבי']);
@@ -65,7 +69,10 @@ export async function POST(request: Request) {
       teacherNotes: renderTeacherNotes(body),
     };
 
-    const generator = new LessonPlanGenerator();
+    const backend = body.backend && body.backend !== 'auto'
+      ? createBackendByName(body.backend)
+      : undefined;
+    const generator = new LessonPlanGenerator(backend);
     const plan = await generator.generate(requestBody);
     const invariantViolations = validateLessonPlanInvariants(plan);
     if (invariantViolations.length > 0) {

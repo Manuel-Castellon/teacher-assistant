@@ -121,7 +121,7 @@ export interface LessonPlan {
   };
 
   // Generation metadata
-  generatedBy: 'claude-api' | 'teacher';
+  generatedBy: 'claude-api' | 'codex-cli' | 'teacher';
   modelVersion?: string;
   promptVersion?: string;
 }

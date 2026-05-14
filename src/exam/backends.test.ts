@@ -1,9 +1,10 @@
 import { jest } from '@jest/globals';
 import { execFileSync } from 'node:child_process';
 import type { ExecFileException } from 'node:child_process';
+import { EventEmitter } from 'node:events';
 import type Anthropic from '@anthropic-ai/sdk';
-import { anthropicBackend, claudeCliBackend, createDefaultBackend, fallbackChain, geminiBackend } from './backends';
-import type { ExecFn } from './backends';
+import { anthropicBackend, claudeCliBackend, codexCliBackend, createBackendByName, createDefaultBackend, fallbackChain, geminiBackend } from './backends';
+import type { CompletionFn, ExecFn, SpawnFn } from './backends';
 import type { AnthropicLike } from '../providers/impl/ClaudeTextGenerator';
 
 const claudeCliAvailable = (() => {
@@ -100,6 +101,50 @@ describe('geminiBackend', () => {
       contents: [{ parts: [{ text: 'user prompt' }] }],
       generationConfig: { maxOutputTokens: 77 },
     });
+  });
+
+  it('maps the Gemini 3 Flash option to the preview model without replacing the default Gemini backend', async () => {
+    const fetchMock = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: '{"ok":true}' }] } }],
+      }),
+    })) as jest.Mock;
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    let complete!: CompletionFn;
+    withEnv({ GEMINI_API_KEY: 'gem-test' }, () => {
+      complete = createBackendByName('gemini-3-flash');
+    });
+
+    await expect(complete('system', 'user')).resolves.toBe('{"ok":true}');
+
+    const [url] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=gem-test');
+  });
+
+  it('maps the Gemini 2.5 Pro option to the Pro model', async () => {
+    const fetchMock = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: '{"ok":true}' }] } }],
+      }),
+    })) as jest.Mock;
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    let complete!: CompletionFn;
+    withEnv({ GEMINI_API_KEY: 'gem-test' }, () => {
+      complete = createBackendByName('gemini-2.5-pro');
+    });
+
+    await expect(complete('system', 'user')).resolves.toBe('{"ok":true}');
+
+    const [url] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=gem-test');
   });
 
   it('throws Gemini API errors', async () => {
@@ -249,5 +294,60 @@ describe('claudeCliBackend', () => {
 
     const complete = claudeCliBackend(fakeExec);
     await expect(complete('system', 'user')).rejects.toThrow(/empty output/);
+  });
+});
+
+describe('codexCliBackend', () => {
+  it('runs codex exec as an ephemeral read-only completion backend and returns trimmed output', async () => {
+    const calls: { cmd: string; args: string[]; prompt: string }[] = [];
+    const fakeSpawn: SpawnFn = ((cmd, args) => {
+      const child = new EventEmitter() as any;
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = {
+        write: (prompt: string) => {
+          calls.push({ cmd, args: args as string[], prompt });
+          return true;
+        },
+        end: () => {
+          queueMicrotask(() => {
+            child.stdout.emit('data', Buffer.from('  {"ok": true}  '));
+            child.emit('close', 0);
+          });
+        },
+      };
+      return child;
+    }) as SpawnFn;
+
+    const complete = codexCliBackend({ spawn: fakeSpawn, cwd: '/tmp/project', model: 'gpt-test' });
+    await expect(complete('system', 'user')).resolves.toBe('{"ok": true}');
+
+    expect(calls[0]).toMatchObject({
+      cmd: 'codex',
+      args: ['exec', '--ephemeral', '--sandbox', 'read-only', '--cd', '/tmp/project', '-m', 'gpt-test', '-'],
+    });
+    expect(calls[0]!.prompt).toContain('non-interactive text completion backend');
+    expect(calls[0]!.prompt).toContain('system\n\n---\n\nuser');
+  });
+
+  it('rejects when codex exits with an error', async () => {
+    const fakeSpawn: SpawnFn = (() => {
+      const child = new EventEmitter() as any;
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = {
+        write: () => true,
+        end: () => {
+          queueMicrotask(() => {
+            child.stderr.emit('data', Buffer.from('bad prompt'));
+            child.emit('close', 1);
+          });
+        },
+      };
+      return child;
+    }) as SpawnFn;
+
+    const complete = codexCliBackend({ spawn: fakeSpawn });
+    await expect(complete('system', 'user')).rejects.toThrow(/bad prompt/);
   });
 });

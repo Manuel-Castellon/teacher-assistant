@@ -8,7 +8,7 @@ a judge model (or human spot-check), with pass/fail thresholds per MVP.
 ## Contract
 - Every MVP that produces AI output ships with an eval suite in `/evals/mvpN/`
 - Rubric is defined and agreed with user BEFORE implementation starts (not after)
-- Run via: `npm run test:evals` (calls `node evals/run.js`)
+- Run via: `npm run test:evals` (calls `node evals/run.mjs`)
 - Scores are recorded in PROGRESS.md before the MVP is marked complete
 - No MVP merges to main without passing eval score
 
@@ -44,5 +44,5 @@ Draft criteria (confirm with user before finalising):
 Requires: math verifier decided and running. Do not define until then.
 
 ## Judge Model
-Default: Claude API with a strict rubric prompt.
+Default live judge is not configured while there is no Anthropic API key. Use fake-mode evals for deterministic sign-off, or wire a provider-specific judge with the same strict rubric prompt.
 For math correctness: defer to IMathVerifier (Wolfram/SymPy), not the judge model.

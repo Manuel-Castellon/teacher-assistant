@@ -39,7 +39,7 @@ export interface GeneratedExam {
 
 /**
  * All AI text generation goes through this interface.
- * Default implementation: Claude API.
+ * Runtime default selection is owned by src/exam/backends.ts.
  * Alternative implementations must satisfy this contract exactly.
  * Swap = change constructor injection, not a refactor.
  */

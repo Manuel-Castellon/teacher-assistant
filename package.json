@@ -11,7 +11,9 @@
     "build": "next build",
     "start": "next start",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:lesson-plan": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runTestsByPath src/lessonPlan/LessonPlanGenerator.test.ts src/lessonPlan/curriculumContext.test.ts src/lessonPlan/generatedArtifacts.test.ts src/lessonPlan/renderLessonPlan.test.ts src/lessonPlan/validateInvariants.test.ts src/exam/backends.test.ts src/exam/exportDocx.test.ts --coverage=false",
     "test:evals": "node evals/run.mjs",
+    "test:signoff": "npm run type-check && npm run test:lesson-plan && npm run test:evals",
     "type-check": "tsc --noEmit",
     "lint": "next lint"
   },

@@ -19,7 +19,7 @@ Missing:
 
 ## MVP 1 — Lesson Plan Generator
 
-Status: in progress, but substantially usable.
+Status: in progress, but substantially usable and browser-smoked.
 
 Done:
 - `LessonPlan` schema and deterministic invariant validator.
@@ -29,12 +29,17 @@ Done:
 - Reusable lesson-plan Markdown renderer.
 - Generated/exported י"ב 5 יח"ל complex-numbers intro lesson plan: JSON, Markdown, DOCX, PDF.
 - Local-only copyrighted resource guardrail for `data/resources/*`.
+- `/lesson-plan` UI with explicit model selector and browser-local recent plans.
+- Model choices: Gemini 2.5 Flash, Gemini 3 Flash Preview, Gemini 2.5 Pro, Claude CLI, GPT-5.5 (Codex).
+- GPT-5.5 (Codex) browser exports approved by user as quality references:
+  - `data/lesson-plans/generated/grade7-equations-common-denominator-90min-approved-gpt55.pdf`
+  - `data/lesson-plans/generated/grade11-complex-algebra-90min-approved-gpt55.pdf`
+- Teacher-facing renderer no longer leaks implementation metadata such as `מצב עבודה` or `זמן משוער`.
 
 Missing:
 - Rubric sign-off for LLM-judged lesson-plan quality.
-- Prompt review before live automated generation spend.
 - Live evals against real model output.
-- UI for lesson-plan generation/export is not built yet.
+- Anthropic API can be re-exposed and smoked when an API key is available.
 
 ## MVP 2 — Exercise / Exam Creator + Verification
 
@@ -124,7 +129,7 @@ Known broken: nothing.
 
 Recent verification:
 - `npm run type-check` passed.
-- `npm test` passed: 102 tests, 100% coverage.
+- `npm run test:lesson-plan` is the focused lesson-plan sign-off command.
 - `npm run test:evals` passed: MVP1 2/2, MVP2 4/4.
 
 Immediate next decision:

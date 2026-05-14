@@ -1,8 +1,9 @@
-import { execFile, execFileSync } from 'node:child_process';
+import { execFile, execFileSync, spawn } from 'node:child_process';
 import Anthropic from '@anthropic-ai/sdk';
 import type { AnthropicLike } from '../providers/impl/ClaudeTextGenerator';
 
 export type CompletionFn = (systemPrompt: string, userPrompt: string) => Promise<string>;
+export type BackendName = 'gemini' | 'gemini-3-flash' | 'gemini-2.5-pro' | 'anthropic' | 'claude-cli' | 'codex';
 
 // ── Anthropic backend ───────────────────────────────────────────────────────
 
@@ -102,6 +103,7 @@ export function geminiBackend(opts: GeminiBackendOptions = {}): CompletionFn {
 // ── Claude CLI backend (local dev fallback) ────────────────────────────────
 
 export type ExecFn = typeof execFile;
+export type SpawnFn = typeof spawn;
 
 export function claudeCliBackend(exec?: ExecFn): CompletionFn {
   const run = exec ?? execFile;
@@ -123,7 +125,75 @@ export function claudeCliBackend(exec?: ExecFn): CompletionFn {
   };
 }
 
-// ── Factory ─────────────────────────────────────────────────────────────────
+// ── Codex CLI backend (OpenAI via codex exec) ─────────────────────────────
+
+export interface CodexCliBackendOptions {
+  model?: string;
+  cwd?: string;
+  timeoutMs?: number;
+  spawn?: SpawnFn;
+}
+
+export function codexCliBackend(opts: CodexCliBackendOptions = {}): CompletionFn {
+  const run = opts.spawn ?? spawn;
+  const model = opts.model ?? 'gpt-5.5';
+  const cwd = opts.cwd ?? process.cwd();
+  const timeoutMs = opts.timeoutMs ?? 180_000;
+
+  return async (systemPrompt, userPrompt) => {
+    const prompt = [
+      'You are running as a non-interactive text completion backend for a web application.',
+      'Do not inspect, create, or edit repository files.',
+      'Return only the final content requested by the application prompt on stdout.',
+      'If the application asks for JSON, return parseable JSON only, with no prose or markdown fences.',
+      '',
+      systemPrompt,
+      '',
+      '---',
+      '',
+      userPrompt,
+    ].join('\n');
+    const text = await new Promise<string>((resolve, reject) => {
+      const child = run('codex', ['exec', '--ephemeral', '--sandbox', 'read-only', '--cd', cwd, '-m', model, '-'], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: timeoutMs,
+      });
+
+      const chunks: Buffer[] = [];
+      const errChunks: Buffer[] = [];
+      child.stdout.on('data', (d: Buffer) => chunks.push(d));
+      child.stderr.on('data', (d: Buffer) => errChunks.push(d));
+
+      child.on('close', (code) => {
+        const stdout = Buffer.concat(chunks).toString().trim();
+        const stderr = Buffer.concat(errChunks).toString().trim();
+        if (code !== 0) return reject(new Error(`codex CLI failed (exit ${code}): ${stderr}`));
+        if (!stdout) return reject(new Error('codex CLI returned empty output'));
+        resolve(stdout);
+      });
+      child.on('error', (err) => reject(new Error(`codex CLI spawn error: ${err.message}`)));
+
+      child.stdin.write(prompt);
+      child.stdin.end();
+    });
+    return text;
+  };
+}
+
+// ── Named factory ──────────────────────────────────────────────────────────
+
+export function createBackendByName(name: BackendName): CompletionFn {
+  switch (name) {
+    case 'gemini': return geminiBackend();
+    case 'gemini-3-flash': return geminiBackend({ model: 'gemini-3-flash-preview' });
+    case 'gemini-2.5-pro': return geminiBackend({ model: 'gemini-2.5-pro' });
+    case 'anthropic': return anthropicBackend();
+    case 'claude-cli': return claudeCliBackend();
+    case 'codex': return codexCliBackend();
+  }
+}
+
+// ── Default factory (fallback chain) ───────────────────────────────────────
 
 export function createDefaultBackend(): CompletionFn {
   const candidates: CompletionFn[] = [];

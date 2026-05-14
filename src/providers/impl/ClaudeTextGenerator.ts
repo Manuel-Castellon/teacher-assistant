@@ -8,6 +8,7 @@ import type {
   GeneratedExam,
 } from '../interfaces/ITextGenerator';
 import type { LessonPlan, LessonPlanRequest } from '../../types/lessonPlan';
+import { gradeLabel } from '../../types/shared';
 import { getLessonPlanCurriculumContext, renderLessonPlanCurriculumContext } from '../../lessonPlan/curriculumContext';
 import { LESSON_PLAN_PROMPT_VERSION, LESSON_PLAN_SYSTEM_PROMPT } from './lessonPlanPrompt';
 
@@ -32,7 +33,7 @@ const DEFAULT_MODEL = 'claude-opus-4-7';
 const DEFAULT_MAX_TOKENS = 16000;
 
 /**
- * Default ITextGenerator backed by the Claude API.
+ * ITextGenerator backed by the Claude API.
  *
  * Lesson-plan exercise content reaches the teacher only after the deterministic
  * invariant validator (`src/lessonPlan/validateInvariants.ts`) passes — see
@@ -112,7 +113,7 @@ function renderLessonPlanUserPrompt(req: LessonPlanRequest): string {
     '',
     `נושא: ${req.topic}`,
     `תת-נושא: ${req.subTopic}`,
-    `כיתה: ${req.grade}`,
+    `כיתה: ${gradeLabel(req.grade)}`,
     `משך השיעור: ${req.duration} דקות`,
     `סוג השיעור: ${req.lessonType}`,
   ];
@@ -140,13 +141,24 @@ function extractText(message: Anthropic.Message): string {
   return out.join('').trim();
 }
 
-/**
- * Tolerates the model wrapping the JSON in ```json fences — strips them if present.
- */
 function parseLessonPlanJson(raw: string): LessonPlan {
   let text = raw.trim();
   if (text.startsWith('```')) {
     text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
   }
-  return JSON.parse(text) as LessonPlan;
+  const obj = JSON.parse(text) as Record<string, unknown>;
+  if (!obj.phases || typeof obj.phases !== 'object') {
+    throw new Error(
+      `AI returned JSON without a "phases" object. Got top-level keys: [${Object.keys(obj).join(', ')}]`,
+    );
+  }
+  const phases = obj.phases as Record<string, unknown>;
+  for (const required of ['opening', 'practice', 'independentWork'] as const) {
+    if (!phases[required] || typeof phases[required] !== 'object') {
+      throw new Error(
+        `AI returned phases without "${required}". Got phase keys: [${Object.keys(phases).join(', ')}]`,
+      );
+    }
+  }
+  return obj as unknown as LessonPlan;
 }

@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { LessonDuration, LessonPlan, LessonType } from '@/types/lessonPlan';
-import type { GradeLevel } from '@/types/shared';
+import { gradeLabel, type GradeLevel } from '@/types/shared';
 import { CUSTOM_LESSON_PLAN_TOPIC_ID, getLessonPlanCurriculumTopicOptions } from '@/lessonPlan/curriculumContext';
+import type { BackendName } from '@/exam/backends';
 
 interface GenerateLessonPlanResponse {
   plan?: LessonPlan;
@@ -19,6 +20,8 @@ interface SavedLessonPlan {
   response: GenerateLessonPlanResponse;
 }
 
+type AIBackend = 'auto' | BackendName;
+
 interface LessonPlanFormState {
   topic: string;
   subTopic: string;
@@ -29,6 +32,7 @@ interface LessonPlanFormState {
   teacherRequest: string;
   teacherNotes: string;
   previousLessonContext: string;
+  backend: AIBackend;
 }
 
 const SAVED_LESSON_PLANS_KEY = 'teacher-assistant.saved-lesson-plans.v1';
@@ -56,6 +60,15 @@ const LESSON_TYPE_OPTIONS: { value: LessonType; label: string }[] = [
   { value: 'מבחן', label: 'מבחן' },
 ];
 
+const BACKEND_OPTIONS: { value: AIBackend; label: string }[] = [
+  { value: 'auto', label: 'אוטומטי' },
+  { value: 'gemini', label: 'Gemini 2.5 Flash' },
+  { value: 'gemini-3-flash', label: 'Gemini 3 Flash Preview' },
+  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+  { value: 'claude-cli', label: 'Claude CLI' },
+  { value: 'codex', label: 'GPT-5.5 (Codex)' },
+];
+
 const INITIAL_FORM: LessonPlanFormState = {
   topic: 'גאומטריה',
   subTopic: 'שטחים של מרובעים',
@@ -67,6 +80,7 @@ const INITIAL_FORM: LessonPlanFormState = {
     'מערך שיעור בנושא גאומטריה לתלמידי כיתה ז\'. תרגילים מתקדמים בשטחים של מרובעים (מקבילית, טרפז, מלבן, ריבוע), שימוש בנוסחאות בכל הכיוונים: חישוב שטח מנתוני צלעות וחישוב אורכי צלעות בעזרת שטח. אפשר לכלול משוואות, אבל רק ממעלה ראשונה.',
   teacherNotes: '',
   previousLessonContext: '',
+  backend: 'auto',
 };
 
 export default function LessonPlanPage() {
@@ -148,7 +162,7 @@ export default function LessonPlanPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
-      const data = (await resp.json()) as GenerateLessonPlanResponse;
+      const data = await readJsonOrError<GenerateLessonPlanResponse>(resp);
       if (!resp.ok || data.error) {
         setError(data.error ?? `שגיאה ${resp.status}`);
         setResult(data);
@@ -164,7 +178,7 @@ export default function LessonPlanPage() {
     }
   }
 
-  async function handleDownload() {
+  async function handleDownload(format: 'docx' | 'pdf') {
     if (!result?.markdown) return;
     setExporting(true);
     setError(null);
@@ -172,10 +186,10 @@ export default function LessonPlanPage() {
       const resp = await fetch('/api/exam/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markdown: result.markdown, filename: 'מערך שיעור' }),
+        body: JSON.stringify({ markdown: result.markdown, filename: 'מערך שיעור', format }),
       });
       if (!resp.ok) {
-        const err = await resp.json() as { error?: string };
+        const err = await readJsonOrError<{ error?: string }>(resp);
         setError(err.error ?? 'שגיאה ביצוא');
         return;
       }
@@ -183,7 +197,7 @@ export default function LessonPlanPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'מערך שיעור.docx';
+      a.download = `מערך שיעור.${format}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -212,7 +226,7 @@ export default function LessonPlanPage() {
           <div style={savedListStyle}>
             {savedPlans.map(saved => (
               <button key={saved.id} type="button" onClick={() => openSavedPlan(saved)} style={btnSecondary}>
-                {saved.request.grade} · {saved.request.topic} · {new Date(saved.savedAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                {gradeLabel(saved.request.grade)} · {saved.request.topic} · {new Date(saved.savedAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
               </button>
             ))}
           </div>
@@ -235,6 +249,12 @@ export default function LessonPlanPage() {
             value={form.lessonType}
             options={LESSON_TYPE_OPTIONS}
             onChange={v => updateForm({ lessonType: v as LessonType })}
+          />
+          <SelectField
+            label="מודל AI"
+            value={form.backend}
+            options={BACKEND_OPTIONS}
+            onChange={v => updateForm({ backend: v as AIBackend })}
           />
           <SelectField
             label="נושא בתכנית"
@@ -282,6 +302,8 @@ export default function LessonPlanPage() {
         </button>
       </section>
 
+      {loading && <GeneratingIndicator />}
+
       {error && <div style={errorStyle}>{error}</div>}
 
       {result?.plan && (
@@ -290,12 +312,15 @@ export default function LessonPlanPage() {
             <div>
               <h2 style={sectionTitleStyle}>{result.plan.topic}</h2>
               <p style={subtitleStyle}>
-                {result.plan.grade} · {result.plan.duration} דקות · {result.plan.lessonType}
+                {gradeLabel(result.plan.grade)} · {result.plan.duration} דקות · {result.plan.lessonType}
               </p>
             </div>
             <div style={actionsStyle}>
-              <button type="button" onClick={handleDownload} disabled={exporting || !result.markdown} style={btnDownload}>
+              <button type="button" onClick={() => handleDownload('docx')} disabled={exporting || !result.markdown} style={btnDownload}>
                 {exporting ? 'מייצא...' : 'הורד DOCX'}
+              </button>
+              <button type="button" onClick={() => handleDownload('pdf')} disabled={exporting || !result.markdown} style={btnDownloadPdf}>
+                {exporting ? 'מייצא...' : 'הורד PDF'}
               </button>
               <button type="button" onClick={() => setShowPreview(prev => !prev)} style={btnSecondary}>
                 {showPreview ? 'הסתר תצוגה' : 'הצג תצוגה'}
@@ -312,6 +337,19 @@ export default function LessonPlanPage() {
       )}
     </main>
   );
+}
+
+async function readJsonOrError<T extends { error?: string }>(resp: Response): Promise<T> {
+  const text = await resp.text();
+  if (!text.trim()) {
+    return { error: `שגיאה ${resp.status}` } as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return { error: text } as T;
+  }
 }
 
 function Field({ label, value, onChange, type = 'text', placeholder }: {
@@ -415,6 +453,101 @@ function CurriculumHints({ topics, selectedTopicId }: {
     </details>
   );
 }
+
+const GENERATING_MESSAGES = [
+  'קורא את בקשת המורה...',
+  'בוחר תרגילים מתאימים...',
+  'מתאים לתכנית הלימודים...',
+  'בונה את שלבי השיעור...',
+  'בודק שהזמנים מסתדרים...',
+  'מכין דף עבודה...',
+  'כמעט מוכן...',
+];
+
+function GeneratingIndicator() {
+  const [elapsed, setElapsed] = useState(0);
+  const [msgIndex, setMsgIndex] = useState(0);
+  const startRef = useRef(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startRef.current) / 1000));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setMsgIndex(prev => (prev + 1) % GENERATING_MESSAGES.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+  const timeStr = minutes > 0
+    ? `${minutes}:${String(seconds).padStart(2, '0')}`
+    : `${seconds} שניות`;
+
+  return (
+    <div style={indicatorContainer}>
+      <div style={indicatorBar}>
+        <div style={indicatorFill} />
+      </div>
+      <div style={indicatorTextRow}>
+        <span style={indicatorMessage}>{GENERATING_MESSAGES[msgIndex]}</span>
+        <span style={indicatorTime}>{timeStr}</span>
+      </div>
+      <style>{`
+        @keyframes lp-progress-slide {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+const indicatorContainer: React.CSSProperties = {
+  marginTop: '1rem',
+  padding: '0.85rem 1rem',
+  background: '#f0f5ff',
+  border: '1px solid #c7d8f0',
+  borderRadius: 8,
+};
+
+const indicatorBar: React.CSSProperties = {
+  height: 4,
+  borderRadius: 2,
+  background: '#dce6f5',
+  overflow: 'hidden',
+  marginBottom: '0.6rem',
+};
+
+const indicatorFill: React.CSSProperties = {
+  width: '50%',
+  height: '100%',
+  borderRadius: 2,
+  background: '#3b82f6',
+  animation: 'lp-progress-slide 1.8s ease-in-out infinite',
+};
+
+const indicatorTextRow: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  fontSize: '0.88rem',
+};
+
+const indicatorMessage: React.CSSProperties = {
+  color: '#1e4a7a',
+  fontWeight: 500,
+};
+
+const indicatorTime: React.CSSProperties = {
+  color: '#6b7280',
+  fontVariantNumeric: 'tabular-nums',
+};
 
 const hintsDetailsStyle: React.CSSProperties = {
   margin: '0.5rem 0 0.75rem',
@@ -558,6 +691,11 @@ const btnSecondary: React.CSSProperties = {
 const btnDownload: React.CSSProperties = {
   ...btnPrimary,
   background: '#2e7d32',
+};
+
+const btnDownloadPdf: React.CSSProperties = {
+  ...btnPrimary,
+  background: '#b71c1c',
 };
 
 const linkButtonStyle: React.CSSProperties = {

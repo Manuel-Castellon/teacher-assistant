@@ -1,40 +1,25 @@
-# CHECKPOINT.md — In-flight state (overwrite freely)
+# CHECKPOINT.md
 
-> Live cursor for the current task. PROGRESS.md is the milestone log; this file is "where I am RIGHT NOW".
+## Last completed
+- Lesson-plan model selector wired end-to-end: Gemini 2.5 Flash, Gemini 3 Flash Preview, Gemini 2.5 Pro, Claude CLI, GPT-5.5 (Codex).
+- GPT-5.5 (Codex CLI) is routed through `codexCliBackend()` as an ephemeral read-only completion backend.
+- Teacher-facing renderer fixed for approved output style: `דגשים למורה`, no `מצב עבודה` / `זמן משוער`, structured generated Markdown preserved.
+- Approved GPT-5.5 browser-export PDFs renamed descriptively:
+  - `data/lesson-plans/generated/grade7-equations-common-denominator-90min-approved-gpt55.pdf`
+  - `data/lesson-plans/generated/grade11-complex-algebra-90min-approved-gpt55.pdf`
+- Lesson-plan sign-off docs added at `docs/lesson-plan-signoff.md`; focused script added as `npm run test:lesson-plan`.
+- `npm run test:signoff` passed: type-check, 61 focused tests, MVP1 2/2 and MVP2 4/4 evals.
+- Full deterministic suite passed with `npm test -- --coverage=false`: 128 tests.
 
-## Current task
-Lesson-plan UI readiness for 3 specific subjects.
+## Next
+- Anthropic API backend support remains in code for a future key, but is not exposed in the current lesson-plan UI because no key is configured.
+- Gemini 2.5 Pro is wired but failed for the current free key; keep it as an explicit experimental option, not default.
 
-## Last action that succeeded
-- Fixed `parse_spread.py` detail extraction: NOISE_MARKERS now skipped (continue) instead of breaking collection.
-- Ran parser on grade 7 and grade 8 spreads: extracted objectives for all middle school topics.
-- Extracted 12 complex numbers objectives from year-12 raw PDF text (prose format, different from middle school table format).
-- Hand-cleaned garbled math notation in complex numbers objectives and noisy items in grade 7/8.
-- Wrote objectives to `subTopics[].learningObjectives` (not top-level `topic.learningObjectives`) to match the `CurriculumSubTopic` type.
-- Updated test assertion to match new parser-extracted objective text.
-- Playwright verified all 3 target subjects show hints in the UI:
-  - יב' + מספרים מרוכבים: 12 objectives
-  - ז' + פתרון משוואות: 4 objectives
-  - ח' + משפט פיתגורס: 3 objectives
-- Prior session work still in place: CurriculumHints UI component, cross-grade lookup, fallback chain, "(חובה)" teacher field.
-- `npm test` passes: 17 suites, 120 tests, 100% coverage.
-- `npm run type-check` passes.
-
-## What I'm about to do next
-- Teacher can use `localhost:3000/lesson-plan` for all 3 subjects.
-- Pending: teacher test-drive, then iterate on output quality if needed.
-
-## Open question / waiting on user
-- Whether to commit this batch.
-
-## Files modified (this + prior session)
-- `scripts/parse-curriculum/parse_spread.py` — fixed NOISE_MARKERS from break to continue
-- `data/curriculum/middle-school-grade7.json` — populated subTopic learningObjectives for 16 topics
-- `data/curriculum/middle-school-grade8.json` — populated subTopic learningObjectives for 15 topics
-- `data/curriculum/high-school-5units-year12.json` — 12 clean objectives for complex-numbers
-- `src/lessonPlan/curriculumContext.test.ts` — updated assertion for new objective text
-- `src/lessonPlan/curriculumContext.ts` — cross-grade lookup, same-stage filtering, sourceGrade label, objectives removed from prompt render
-- `src/exam/backends.ts` — claudeCliBackend, fallbackChain, runtime fallback factory
-- `src/exam/backends.test.ts` — CLI backend + fallback chain tests
-- `src/lessonPlan/LessonPlanGenerator.test.ts` — handles claude CLI availability
-- `src/app/lesson-plan/page.tsx` — CurriculumHints component, "(חובה)" label, cross-grade topic labels
+## Key files changed
+- `src/exam/backends.ts` — backend names, Gemini 3 Flash Preview, Gemini 2.5 Pro, Codex completion backend.
+- `src/app/lesson-plan/page.tsx` — model selector, progress indicator, PDF/DOCX export buttons, robust non-JSON error display.
+- `src/app/api/lesson-plan/generate/route.ts` — accepts explicit backend param.
+- `src/lessonPlan/renderLessonPlan.ts` — teacher-facing cleanup and long-note formatting.
+- `src/providers/impl/lessonPlanPrompt.ts` — prompt version/style contract for printable Markdown and LaTeX.
+- `package.json` — `test:lesson-plan`, `test:signoff`.
+- `docs/lesson-plan-signoff.md`, `data/lesson-plans/generated/README.md`, `HANDOFF.md`, `CLAUDE.md`.
