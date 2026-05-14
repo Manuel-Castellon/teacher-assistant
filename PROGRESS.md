@@ -4,6 +4,10 @@
 ---
 
 ## Last Completed
+2026-05-14 — Lesson-plan UI ready for 3 target subjects. Fixed curriculum parser to extract learning objectives from raw Ministry source documents (middle school: tab-table detail column; high school: numbered prose items from PDF). Populated `subTopics[].learningObjectives` across all grade 7/8 topics (31 topics total) and 12 hand-cleaned objectives for year-12 complex numbers. Added runtime AI backend fallback chain (Gemini → Anthropic → Claude CLI) with injectable exec for testability. Cross-grade topic lookup with same-stage filtering so advanced schools see next-year topics labeled "(תכנית X')". CurriculumHints `<details>` component shows collapsible objectives in the UI as optional teacher hints. Teacher request field is "(חובה)" with guiding placeholder. Objectives are NOT injected into the AI prompt. Playwright verified all 3 subjects: יב+מרוכבים (12), ז+משוואות (4), ח+פיתגורס (3). `npm test`: 120 tests, 100% coverage. `npm run type-check` clean.
+
+2026-05-14 — Servable lesson-plan MVP added and aligned to the shared AI backend. New `/lesson-plan` UI and `/api/lesson-plan/generate` route live in the Next app, with recent-plan localStorage, Markdown preview, and DOCX export. The lesson-plan generator now uses the same default backend selection as exams, so `GEMINI_API_KEY` is preferred for local play and Anthropic remains a fallback. Added lesson-plan curriculum topic helpers/tests and a dedicated `LessonPlanGenerator` abstraction. `npm run type-check` clean. `npm test` passes: 109 tests, 100% coverage. `curl -I http://localhost:3000/lesson-plan` returns `200 OK`.
+
 2026-05-14 — Copyright/local-resource guardrail added. `data/resources/*` is now gitignored for local-only textbooks, teacher PDFs, and other potentially copyrighted or large references, while `data/resources/README.md` remains trackable to document the convention. Confirmed the local בני גורן PDF is ignored by git. Generated artifacts should cite scope/sequence notes only and must not copy copyrighted exercise sets.
 
 2026-05-14 — Grade י"ב 5 יח"ל complex-numbers intro lesson plan complete. Created structured/readable/exported artifacts under `data/lesson-plans/generated/grade12-5units-complex-intro-45min.{json,md,docx,pdf}`. Follow-up teacher feedback applied: use Israeli convention `a+ib` rather than `a+bi`, and split the student `דף עבודה` into separate printable worksheet/key artifacts. Enriched the local year-12 curriculum JSON with complex-number learning objectives. Added lesson-plan curriculum grounding (`src/lessonPlan/curriculumContext.ts`) and wired it into `ClaudeTextGenerator`, plus a reusable lesson-plan markdown renderer and generated-artifact validation. Generalized Markdown export as `scripts/export-markdown.mjs` while keeping `scripts/export-rubric.mjs` as a wrapper. `npm run type-check` clean. `npm test` passes: 102 tests, 100% coverage. `npm run test:evals` passes: MVP 1 fake-mode 2/2 and MVP 2 fake-mode 4/4.
@@ -27,11 +31,11 @@ Nothing known.
 | ~~Curriculum JSON not parsed~~ | MVP 1 start | ✅ Done 2026-05-05 |
 | ~~Math verifier not decided~~ | MVP 2 start | ✅ Done 2026-05-12: SymPy primary, Wolfram available for 5-unit bagrut |
 | OCR stack untested | MVP 2 (ingestion only) | Deferred: OCR only needed for scanning student work, not for exam generation |
-| No Anthropic API key | Automated generation | User has free Gemini API key; wire GeminiExamGenerator next |
+| No Anthropic API key | Automated generation | `GEMINI_API_KEY` is the primary local-play path for exams and lesson plans; Anthropic remains fallback |
 
 ## Next Session Starts With
 1. Read PROGRESS.md + CHECKPOINT.md, state current state
-2. MVP 1: resolve rubric sign-off + prompt review gates
+2. Confirm whether the lesson-plan MVP needs auth-gated persistence / sharing before any UI expansion.
 3. Decide whether to resume the formal MVP sequence at MVP 1 gates or move to MVP 3 question-bank planning.
 4. Next likely implementation: MVP 4 curriculum tracker / class progress so grade-level topics can be narrowed by actual taught progress.
 
@@ -66,7 +70,7 @@ Nothing known.
 | MVP | Status | Test Coverage | Eval Score | Completed |
 |-----|--------|--------------|------------|-----------|
 | 0   | ✅ Complete | 100% on all covered files (26 tests) | — | 2026-05-07 |
-| 1   | 🟡 In progress (validator + generator + eval harness + curriculum grounding + renderer landed; rubric/live gates still pending) | 100% on landed code | fake: 2/2 deterministic | — |
+| 1   | 🟡 In progress (UI ready for 3 subjects; rubric/live eval gates still pending) | 100% (120 tests) | fake: 2/2 deterministic | — |
 | 2   | ✅ Complete | 100% deterministic coverage (93 tests total) | fake evals: 4/4; Playwright: generation/export/history/preview controls verified | 2026-05-14 |
 | 3   | 🔴 Not started | — | — | — |
 | 4   | 🔴 Not started | — | — | — |
@@ -121,3 +125,4 @@ Nothing known.
 | 2026-05-14 | **MVP 2 real-rubric artifact:** Reviewed `data/exam-examples/מבחן ב מאי 26.pdf`, captured reusable project learnings, and created `data/exam-rubrics/mivhan-b-may-26.json` + `.md` + `.docx` + `.pdf`. Added reusable rubric types/renderer under `src/examRubric/` and `scripts/export-rubric.mjs` for Markdown rubric exports. Tests now 93 passing with 100% coverage; type-check and evals clean. | — |
 | 2026-05-14 | **MVP 1 lesson-plan artifact + grounding:** Created a 45-minute י"ב 5 יח"ל lesson plan for intro complex numbers in JSON/Markdown/DOCX/PDF. Added selected-topic lesson-plan curriculum grounding, enriched complex-number objectives in year-12 curriculum JSON, added a reusable lesson-plan Markdown renderer, and generalized Markdown export as `scripts/export-markdown.mjs`. Tests now 102 passing with 100% coverage; type-check and evals clean. | בני גורן source available as official index only, so it was used for scope/sequence, not copied exercises. |
 | 2026-05-14 | **Local resource guardrail:** Added `.gitignore` rule for `data/resources/*` and a trackable `data/resources/README.md`. Confirmed local בני גורן PDF is ignored. | Keep copyrighted PDFs local-only; do not commit or copy exercise sets. |
+| 2026-05-14 | **MVP 1 lesson-plan UI readiness:** Fixed `parse_spread.py` detail extraction (NOISE_MARKERS skip, not break). Extracted objectives from raw Ministry docs into all grade 7/8 curriculum JSONs (31 topics) + 12 hand-cleaned year-12 complex-numbers objectives. Added runtime fallback chain (Gemini → Anthropic → Claude CLI) with injectable exec. Cross-grade topic lookup with same-stage filtering + "(תכנית X')" labels. CurriculumHints collapsible `<details>` for optional teacher reference. Teacher request "(חובה)". Playwright verified 3 subjects. Tests: 120, 100% coverage, type-check clean. | High school raw PDF text is prose (not tab-table), so parser can't auto-extract those; complex-numbers was hand-cleaned from numbered-list extraction. |

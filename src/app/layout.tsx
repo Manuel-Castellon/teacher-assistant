@@ -26,8 +26,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="he" dir="rtl" className={rubik.variable}>
       <body style={{ fontFamily: 'var(--font-rubik), system-ui, sans-serif' }}>
-        <nav style={{ padding: '0.5rem 1rem', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>עוזר המורה למתמטיקה</span>
+        <nav style={{ padding: '0.6rem 1rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <a href="/" style={{ color: '#111827', textDecoration: 'none', fontWeight: 700 }}>עוזר המורה למתמטיקה</a>
+            <a href="/lesson-plan" style={{ color: '#374151', textDecoration: 'none' }}>מערכי שיעור</a>
+            <a href="/exam" style={{ color: '#374151', textDecoration: 'none' }}>מבחנים</a>
+          </div>
           {session?.user ? (
             <form
               action={async () => {

@@ -12,6 +12,7 @@ export interface LessonPlanCurriculumTopic {
   name: string;
   recommendedHours: number;
   learningObjectives: string[];
+  sourceGrade?: string;
 }
 
 export interface LessonPlanCurriculumContext {
@@ -22,6 +23,8 @@ export interface LessonPlanCurriculumContext {
   selectedTopic?: LessonPlanCurriculumTopic;
 }
 
+export const CUSTOM_LESSON_PLAN_TOPIC_ID = 'custom';
+
 const CURRICULUM_BY_GRADE: Record<GradeLevel, CurriculumUnit> = {
   זי: grade7 as CurriculumUnit,
   חי: grade8 as CurriculumUnit,
@@ -30,6 +33,23 @@ const CURRICULUM_BY_GRADE: Record<GradeLevel, CurriculumUnit> = {
   יאי: year11 as CurriculumUnit,
   יבי: year12 as CurriculumUnit,
 };
+
+const ALL_CURRICULA: CurriculumUnit[] = Object.values(CURRICULUM_BY_GRADE);
+
+const GRADE_LABELS: Record<GradeLevel, string> = {
+  זי: "ז'",
+  חי: "ח'",
+  טי: "ט'",
+  יי: "י'",
+  יאי: "יא'",
+  יבי: "יב'",
+};
+
+const UNIT_TO_GRADE: Map<string, GradeLevel> = new Map(
+  (Object.entries(CURRICULUM_BY_GRADE) as [GradeLevel, CurriculumUnit][]).map(
+    ([grade, unit]) => [unit.id, grade],
+  ),
+);
 
 function toLessonPlanTopic(topic: CurriculumTopic): LessonPlanCurriculumTopic {
   return {
@@ -40,15 +60,25 @@ function toLessonPlanTopic(topic: CurriculumTopic): LessonPlanCurriculumTopic {
   };
 }
 
+function findTopicAcrossGrades(topicId: string): LessonPlanCurriculumTopic | undefined {
+  for (const unit of ALL_CURRICULA) {
+    const match = unit.topics.find(t => t.id === topicId);
+    if (match) return toLessonPlanTopic(match);
+  }
+  return undefined;
+}
+
 export function getLessonPlanCurriculumContext(
   grade: GradeLevel,
   selectedTopicId?: string,
 ): LessonPlanCurriculumContext {
   const unit = CURRICULUM_BY_GRADE[grade];
   const topics = unit.topics.map(toLessonPlanTopic);
-  const selectedTopic = selectedTopicId
-    ? topics.find(topic => topic.id === selectedTopicId)
-    : undefined;
+  let selectedTopic: LessonPlanCurriculumTopic | undefined;
+  if (selectedTopicId) {
+    selectedTopic = topics.find(topic => topic.id === selectedTopicId)
+      ?? findTopicAcrossGrades(selectedTopicId);
+  }
 
   return {
     unitId: unit.id,
@@ -57,6 +87,43 @@ export function getLessonPlanCurriculumContext(
     topics,
     ...(selectedTopic ? { selectedTopic } : {}),
   };
+}
+
+const MIDDLE_SCHOOL: Set<GradeLevel> = new Set(['זי', 'חי', 'טי']);
+const HIGH_SCHOOL: Set<GradeLevel> = new Set(['יי', 'יאי', 'יבי']);
+
+function sameStage(a: GradeLevel, b: GradeLevel): boolean {
+  return (MIDDLE_SCHOOL.has(a) && MIDDLE_SCHOOL.has(b))
+    || (HIGH_SCHOOL.has(a) && HIGH_SCHOOL.has(b));
+}
+
+export function getLessonPlanCurriculumTopicOptions(grade: GradeLevel): LessonPlanCurriculumTopic[] {
+  const own = getLessonPlanCurriculumContext(grade).topics;
+  const ownIds = new Set(own.map(t => t.id));
+  const extras: LessonPlanCurriculumTopic[] = [];
+  for (const unit of ALL_CURRICULA) {
+    if (unit.id === CURRICULUM_BY_GRADE[grade].id) continue;
+    const unitGrade = UNIT_TO_GRADE.get(unit.id);
+    /* istanbul ignore next -- UNIT_TO_GRADE always covers ALL_CURRICULA */
+    if (!unitGrade || !sameStage(grade, unitGrade)) continue;
+    const sourceGrade = GRADE_LABELS[unitGrade];
+    for (const topic of unit.topics) {
+      if (!ownIds.has(topic.id)) {
+        extras.push({ ...toLessonPlanTopic(topic), sourceGrade });
+        ownIds.add(topic.id);
+      }
+    }
+  }
+  return [...own, ...extras];
+}
+
+export function validateLessonPlanRequestCurriculumTopic(
+  _grade: GradeLevel,
+  selectedTopicId?: string,
+): string[] {
+  if (!selectedTopicId || selectedTopicId === CUSTOM_LESSON_PLAN_TOPIC_ID) return [];
+  if (findTopicAcrossGrades(selectedTopicId)) return [];
+  return [`נושא תכנית הלימודים "${selectedTopicId}" לא נמצא בתכנית הלימודים.`];
 }
 
 export function renderLessonPlanCurriculumContext(context: LessonPlanCurriculumContext): string {
@@ -68,19 +135,7 @@ export function renderLessonPlanCurriculumContext(context: LessonPlanCurriculumC
   ];
 
   if (context.selectedTopic) {
-    lines.push(
-      `נושא שנבחר: ${context.selectedTopic.name} (${context.selectedTopic.recommendedHours} שעות)`,
-      '',
-      'יעדי למידה רלוונטיים:',
-    );
-
-    if (context.selectedTopic.learningObjectives.length === 0) {
-      lines.push('- לא הוזנו יעדי למידה מפורטים לנושא זה בקובץ הסילבוס המקומי.');
-    } else {
-      for (const objective of context.selectedTopic.learningObjectives) {
-        lines.push(`- ${objective}`);
-      }
-    }
+    lines.push(`נושא שנבחר: ${context.selectedTopic.name} (${context.selectedTopic.recommendedHours} שעות)`);
   } else {
     lines.push('נושאים זמינים לשכבה:', ...context.topics.map(topic => `- ${topic.name} (${topic.recommendedHours} שעות)`));
   }

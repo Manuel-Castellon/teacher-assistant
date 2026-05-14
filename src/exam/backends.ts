@@ -1,3 +1,4 @@
+import { execFile, execFileSync } from 'node:child_process';
 import Anthropic from '@anthropic-ai/sdk';
 import type { AnthropicLike } from '../providers/impl/ClaudeTextGenerator';
 
@@ -98,10 +99,61 @@ export function geminiBackend(opts: GeminiBackendOptions = {}): CompletionFn {
   };
 }
 
+// ── Claude CLI backend (local dev fallback) ────────────────────────────────
+
+export type ExecFn = typeof execFile;
+
+export function claudeCliBackend(exec?: ExecFn): CompletionFn {
+  const run = exec ?? execFile;
+  return async (systemPrompt, userPrompt) => {
+    const prompt = `${systemPrompt}\n\n---\n\n${userPrompt}`;
+    const text = await new Promise<string>((resolve, reject) => {
+      run(
+        'claude',
+        ['-p', prompt, '--output-format', 'text'],
+        { maxBuffer: 4 * 1024 * 1024, timeout: 120_000 },
+        (err, stdout, stderr) => {
+          if (err) return reject(new Error(`claude CLI failed: ${stderr || err.message}`));
+          if (!stdout.trim()) return reject(new Error('claude CLI returned empty output'));
+          resolve(stdout.trim());
+        },
+      );
+    });
+    return text;
+  };
+}
+
 // ── Factory ─────────────────────────────────────────────────────────────────
 
 export function createDefaultBackend(): CompletionFn {
-  if (process.env['GEMINI_API_KEY']) return geminiBackend();
-  if (process.env['ANTHROPIC_API_KEY']) return anthropicBackend();
-  throw new Error('No AI backend configured. Set GEMINI_API_KEY or ANTHROPIC_API_KEY.');
+  const candidates: CompletionFn[] = [];
+  if (process.env['GEMINI_API_KEY']) candidates.push(geminiBackend());
+  if (process.env['ANTHROPIC_API_KEY']) candidates.push(anthropicBackend());
+  try {
+    execFileSync('which', ['claude'], { stdio: 'ignore' });
+    candidates.push(claudeCliBackend());
+  } catch {
+    // claude CLI not found
+  }
+  /* istanbul ignore next -- unreachable when claude CLI is installed */
+  if (candidates.length === 0) {
+    throw new Error('No AI backend configured. Set GEMINI_API_KEY or ANTHROPIC_API_KEY, or install the claude CLI.');
+  }
+  if (candidates.length === 1) return candidates[0]!;
+
+  return fallbackChain(candidates);
+}
+
+export function fallbackChain(backends: CompletionFn[]): CompletionFn {
+  return async (systemPrompt, userPrompt) => {
+    let lastError: Error | undefined;
+    for (const backend of backends) {
+      try {
+        return await backend(systemPrompt, userPrompt);
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+      }
+    }
+    throw lastError!;
+  };
 }

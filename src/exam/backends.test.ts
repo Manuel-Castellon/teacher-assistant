@@ -1,7 +1,15 @@
 import { jest } from '@jest/globals';
+import { execFileSync } from 'node:child_process';
+import type { ExecFileException } from 'node:child_process';
 import type Anthropic from '@anthropic-ai/sdk';
-import { anthropicBackend, createDefaultBackend, geminiBackend } from './backends';
+import { anthropicBackend, claudeCliBackend, createDefaultBackend, fallbackChain, geminiBackend } from './backends';
+import type { ExecFn } from './backends';
 import type { AnthropicLike } from '../providers/impl/ClaudeTextGenerator';
+
+const claudeCliAvailable = (() => {
+  try { execFileSync('which', ['claude'], { stdio: 'ignore' }); return true; }
+  catch { return false; }
+})();
 
 function withEnv(env: Record<string, string | undefined>, fn: () => void) {
   const prev: Record<string, string | undefined> = {};
@@ -156,9 +164,90 @@ describe('createDefaultBackend', () => {
     });
   });
 
-  it('throws when no backend is configured', () => {
+  it('falls back to claude CLI when no API keys are set and CLI is available', () => {
     withEnv({ GEMINI_API_KEY: undefined, ANTHROPIC_API_KEY: undefined }, () => {
-      expect(() => createDefaultBackend()).toThrow(/No AI backend/);
+      if (claudeCliAvailable) {
+        expect(() => createDefaultBackend()).not.toThrow();
+      } else {
+        expect(() => createDefaultBackend()).toThrow(/No AI backend/);
+      }
     });
+  });
+
+  it('builds a fallback chain when multiple backends are configured', () => {
+    withEnv({ GEMINI_API_KEY: 'gem-test', ANTHROPIC_API_KEY: 'sk-test' }, () => {
+      const backend = createDefaultBackend();
+      expect(typeof backend).toBe('function');
+    });
+  });
+});
+
+describe('fallbackChain', () => {
+  it('returns the first successful result', async () => {
+    const chain = fallbackChain([
+      async () => { throw new Error('fail-1'); },
+      async () => 'ok from second',
+    ]);
+    await expect(chain('sys', 'usr')).resolves.toBe('ok from second');
+  });
+
+  it('throws the last error when all backends fail', async () => {
+    const chain = fallbackChain([
+      async () => { throw new Error('fail-1'); },
+      async () => { throw new Error('fail-2'); },
+    ]);
+    await expect(chain('sys', 'usr')).rejects.toThrow('fail-2');
+  });
+
+  it('wraps non-Error throws', async () => {
+    const chain = fallbackChain([
+      async () => { throw 'string-error'; },
+      async () => { throw new Error('final'); },
+    ]);
+    await expect(chain('sys', 'usr')).rejects.toThrow('final');
+  });
+});
+
+describe('claudeCliBackend', () => {
+  it('returns a completion function', () => {
+    expect(typeof claudeCliBackend()).toBe('function');
+  });
+
+  it('calls claude CLI and returns trimmed output', async () => {
+    const fakeExec: ExecFn = ((_cmd, _args, _opts, cb) => {
+      (cb as (err: ExecFileException | null, stdout: string, stderr: string) => void)(null, '  {"ok": true}  ', '');
+    }) as ExecFn;
+
+    const complete = claudeCliBackend(fakeExec);
+    await expect(complete('system', 'user')).resolves.toBe('{"ok": true}');
+  });
+
+  it('rejects with stderr when claude CLI fails', async () => {
+    const fakeExec: ExecFn = ((_cmd, _args, _opts, cb) => {
+      const err = new Error('exit 1') as ExecFileException;
+      (cb as (err: ExecFileException | null, stdout: string, stderr: string) => void)(err, '', 'process error');
+    }) as ExecFn;
+
+    const complete = claudeCliBackend(fakeExec);
+    await expect(complete('system', 'user')).rejects.toThrow(/process error/);
+  });
+
+  it('rejects with err.message when stderr is empty', async () => {
+    const fakeExec: ExecFn = ((_cmd, _args, _opts, cb) => {
+      const err = new Error('SIGTERM') as ExecFileException;
+      (cb as (err: ExecFileException | null, stdout: string, stderr: string) => void)(err, '', '');
+    }) as ExecFn;
+
+    const complete = claudeCliBackend(fakeExec);
+    await expect(complete('system', 'user')).rejects.toThrow(/SIGTERM/);
+  });
+
+  it('rejects on empty output', async () => {
+    const fakeExec: ExecFn = ((_cmd, _args, _opts, cb) => {
+      (cb as (err: ExecFileException | null, stdout: string, stderr: string) => void)(null, '   ', '');
+    }) as ExecFn;
+
+    const complete = claudeCliBackend(fakeExec);
+    await expect(complete('system', 'user')).rejects.toThrow(/empty output/);
   });
 });

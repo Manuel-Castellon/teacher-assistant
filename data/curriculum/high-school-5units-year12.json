@@ -13,10 +13,16 @@
       "name": "וקטורים בגישה גאומטרית ואלגברית (כולל טריגונומטריה במרחב)",
       "nameEn": "Vectors — Geometric and Algebraic Approach (incl. 3D Trigonometry)",
       "recommendedHours": 50,
-      "gradeLevel": ["יבי"],
-      "unitLevels": [5],
+      "gradeLevel": [
+        "יבי"
+      ],
+      "unitLevels": [
+        5
+      ],
       "isBagrutTopic": true,
-      "prerequisites": ["trigonometry-plane"],
+      "prerequisites": [
+        "trigonometry-plane"
+      ],
       "subTopics": [
         {
           "id": "vectors-3d-content",
@@ -31,10 +37,17 @@
       "name": "גאומטריה אנליטית",
       "nameEn": "Analytic Geometry",
       "recommendedHours": 40,
-      "gradeLevel": ["יבי"],
-      "unitLevels": [5],
+      "gradeLevel": [
+        "יבי"
+      ],
+      "unitLevels": [
+        5
+      ],
       "isBagrutTopic": true,
-      "prerequisites": ["intro-analytic-geometry", "geometry-circle"],
+      "prerequisites": [
+        "intro-analytic-geometry",
+        "geometry-circle"
+      ],
       "subTopics": [
         {
           "id": "analytic-geometry-content",
@@ -49,10 +62,17 @@
       "name": "חשבון דיפרנציאלי ואינטגרלי: פונקציות מעריכיות ולוגריתמיות",
       "nameEn": "Differential and Integral Calculus: Exponential and Logarithmic Functions",
       "recommendedHours": 40,
-      "gradeLevel": ["יבי"],
-      "unitLevels": [5],
+      "gradeLevel": [
+        "יבי"
+      ],
+      "unitLevels": [
+        5
+      ],
       "isBagrutTopic": true,
-      "prerequisites": ["differential-calculus-y11", "integral-calculus"],
+      "prerequisites": [
+        "differential-calculus-y11",
+        "integral-calculus"
+      ],
       "subTopics": [
         {
           "id": "exp-log-calculus-content",
@@ -67,8 +87,12 @@
       "name": "מספרים מרוכבים",
       "nameEn": "Complex Numbers",
       "recommendedHours": 20,
-      "gradeLevel": ["יבי"],
-      "unitLevels": [5],
+      "gradeLevel": [
+        "יבי"
+      ],
+      "unitLevels": [
+        5
+      ],
       "isBagrutTopic": true,
       "prerequisites": [],
       "subTopics": [
@@ -77,12 +101,18 @@
           "name": "תכנים",
           "parentTopicId": "complex-numbers",
           "learningObjectives": [
-            "הרחבת מערכת המספרים מהממשיים למרוכבים והגדרת המספר i כך ש-i^2=-1.",
-            "הצגת מספר מרוכב בצורה הקרטזית a+ib, זיהוי החלק הממשי והחלק המדומה, ושוויון בין מספרים מרוכבים.",
-            "ביצוע פעולות חיבור, חיסור, כפל וחילוק בסיסיות במספרים מרוכבים תוך שימוש ב-i^2=-1.",
-            "הדגשה שאין יחס סדר במספרים מרוכבים, בניגוד למספרים ממשיים.",
-            "הצגה גרפית של מספרים מרוכבים במישור גאוס וקישור לחיבור וחיסור וקטורים.",
-            "פתרון משוואות ריבועיות פשוטות מעל המרוכבים, ובפרט משוואות עם דיסקרימיננטה שלילית."
+            "סקירה היסטורית של התפתחות קבוצות המספרים הטבעיים, השלמים, הרציונאליים והממשיים והרחבתם למספרים המרוכבים.",
+            "הגדרת המספר המרוכב: המספר i מקיים i²=-1. מספר שצורתו a+ib כאשר a ו-b ממשיים נקרא מספר מרוכב.",
+            "שוויון בין מספרים מרוכבים וארבע פעולות החשבון וקיום חוקי החילוף והקיבוץ של החיבור והכפל וחוק הפילוג במספרים המרוכבים. נדגיש כי במספרים המרוכבים אין יחס סדר.",
+            "הצגה גרפית של מספרים מרוכבים במישור גאוס. הפירוש הגאומטרי של חיבור וחיסור מספרים מרוכבים והקשר לחיבור וחיסור וקטורים גאומטריים.",
+            "הערך המוחלט |z| והמספר הצמוד z̄. המרחק בין שתי נקודות |z₁-z₂|.",
+            "שורש של מספר מרוכב ופתרון משוואה ריבועית.",
+            "הצגה קוטבית של מספר מרוכב z=r(cosθ+isinθ) והמעבר בין הייצוג האלגברי לייצוג הקוטבי ולהפך. מכפלת שני מספרים מרוכבים בהצגה הקוטבית והמשמעות הגאומטרית כסיבוב ומתיחה או כווץ.",
+            "משפט דה-מואבר: העלאה בחזקה של מספר מרוכב והוכחת המשפט באינדוקציה.",
+            "שורשי היחידה מסדר n וייצוגם הגרפי כקודקודי מצולע משוכלל בעל n צלעות.",
+            "פתרון המשוואה zⁿ=w וייצוגה הגרפי.",
+            "פתרון בעיות גאומטריות בעזרת מספרים מרוכבים בשילוב עם גאומטריה אנליטית ווקטורים.",
+            "זיהוי מקומות גאומטריים מוכרים המיוצגים באמצעות מספרים מרוכבים: מעגל |z-a|=R, אנך אמצעי |z-a|=|z-b|, מעגל אפולוניוס |z-a|=m|z-b|."
           ]
         }
       ]

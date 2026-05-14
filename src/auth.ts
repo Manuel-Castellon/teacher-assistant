@@ -3,8 +3,9 @@ import Google from 'next-auth/providers/google';
 import PostgresAdapter from '@auth/pg-adapter';
 import { pool } from '@/lib/db';
 
-const authSecret = process.env.AUTH_SECRET
-  ?? (process.env.NODE_ENV === 'development' ? 'teacher-assistant-dev-only-auth-secret' : undefined);
+const configuredAuthSecret = process.env.AUTH_SECRET?.trim();
+const authSecret = configuredAuthSecret
+  || (process.env.NODE_ENV === 'development' ? 'teacher-assistant-dev-only-auth-secret' : undefined);
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...(authSecret ? { secret: authSecret } : {}),

@@ -39,6 +39,8 @@ NON_DOMAIN_HEADERS = {"תחום לימודי"}
 # "הערות" alone in a tab-cell we know real data starts on the next month line.
 HEADER_END_MARKERS = {"פירוט הנושא", "הערות"}
 
+NOISE_MARKERS = {"חומרי למידה נוספים", "חומרי למידה", "משימות אוריינות לביצוע", "משימות אוריינות"}
+
 
 def normalize_ws(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
@@ -118,11 +120,31 @@ def parse(path: Path) -> dict:
                         break
                 k += 1
             if hours is not None and topic:
+                # Collect detail lines after the topic until the next structural marker.
+                details: list[str] = []
+                d = k + 1
+                while d < len(lines):
+                    ld = lines[d]
+                    sd = normalize_ws(ld.strip())
+                    if not sd:
+                        d += 1
+                        continue
+                    if sd in HEBREW_MONTHS or is_domain(sd):
+                        break
+                    if sd in NOISE_MARKERS:
+                        d += 1
+                        continue
+                    if re.match(r"^\d+\s*שעות\s*$", sd):
+                        break
+                    if sd and sd not in NON_DOMAIN_HEADERS and sd not in HEADER_END_MARKERS:
+                        details.append(sd)
+                    d += 1
                 rows.append({
                     "month": current_month,
                     "domain": domain,
                     "hours": hours,
                     "topic": topic,
+                    "details": details,
                 })
                 i = k + 1
                 continue
@@ -131,12 +153,13 @@ def parse(path: Path) -> dict:
     # Aggregate hours by topic name.
     agg: dict[str, dict] = {}
     for r in rows:
-        a = agg.setdefault(r["topic"], {"topic": r["topic"], "hours": 0, "domains": set(), "occurrences": 0})
+        a = agg.setdefault(r["topic"], {"topic": r["topic"], "hours": 0, "domains": set(), "occurrences": 0, "details": []})
         a["hours"] += r["hours"]
         a["domains"].add(r["domain"])
         a["occurrences"] += 1
+        a["details"].extend(r.get("details", []))
     topics = [
-        {"topic": v["topic"], "hours": v["hours"], "domains": sorted(v["domains"]), "occurrences": v["occurrences"]}
+        {"topic": v["topic"], "hours": v["hours"], "domains": sorted(v["domains"]), "occurrences": v["occurrences"], "details": v["details"]}
         for v in agg.values()
     ]
     topics.sort(key=lambda t: -t["hours"])
