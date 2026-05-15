@@ -1,6 +1,6 @@
 # MVP Status Rundown
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 
 Source of truth: `PROGRESS.md` and `CHECKPOINT.md`.
 
@@ -79,18 +79,26 @@ Missing:
 
 ## MVP 4 — Curriculum Tracker / Class Progress
 
-Status: not started.
+Status: in progress; first interactive loop is usable.
 
 Done:
 - Static curriculum JSON exists.
 - Exam and lesson-plan prompts can already use grade/topic curriculum context.
+- `/curriculum` UI tracks class progress in browser-local storage.
+- Authenticated `/api/curriculum/classes` persists class progress to Postgres.
+- Browser-local storage remains cache/fallback for unauthenticated use.
+- Per topic: status, actual hours, last-taught date, and teacher notes.
+- Lesson-plan page can apply the tracker's next-topic suggestion as editable defaults.
+- Lesson-plan suggestions include a deterministic editable `בקשת המורה`, and switching to `ללא הקשר כיתה` clears stale previous-lesson context.
+- Exam page can fill editable question specs from taught/review material.
+- Exam page warns when a selected topic is not yet taught for the selected class, without blocking teacher override.
 
 Missing:
-- Per-class taught-progress model.
-- UI to mark topics/subtopics as not started, in progress, completed.
-- Actual hours spent and last-taught date tracking.
-- Narrowing exam/lesson topic options by what this class has actually learned.
-- Continuity context from prior lessons into future lesson/exam generation.
+- Apply/test the DB migration against the active local Postgres instance before relying on signed-in persistence.
+- Subtopic-level progress.
+- Richer continuity timeline from prior generated/taught lessons.
+- Post-lesson update flow that writes actual taught status/hours/notes back into progress.
+- Prompt-side use of class progress is currently passed through notes/context from the client, not loaded by generation APIs from `classId`.
 
 ## MVP 5 — Grade Tracker
 
@@ -130,7 +138,11 @@ Known broken: nothing.
 Recent verification:
 - `npm run type-check` passed.
 - `npm run test:lesson-plan` is the focused lesson-plan sign-off command.
+- `npm run test:progress` passed for the MVP4 helper logic.
+- `npm run test:signoff` passed after the latest polish.
+- `npm run build` passed.
+- Unauthenticated `/api/curriculum/classes` smoke returns `authenticated:false` and `/curriculum` has 0 Playwright console warnings/errors.
 - `npm run test:evals` passed: MVP1 2/2, MVP2 4/4.
 
 Immediate next decision:
-- Commit/push the current large batch, then choose between MVP1 live lesson-plan gates, MVP3 question bank, or MVP4 curriculum tracker.
+- Apply the DB migration and try the signed-in `/curriculum` -> `/lesson-plan` -> `/exam` loop with real class data; then build the post-lesson update flow.

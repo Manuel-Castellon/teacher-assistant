@@ -4,6 +4,13 @@ import { useEffect, useState } from 'react';
 import type { ExamRequest, ExamPartSpec, ExamQuestionSpec, GeneratedExam, RegenerateQuestionRequest } from '@/exam/types';
 import { CUSTOM_CURRICULUM_TOPIC_ID, getCurriculumTopicOptions } from '@/exam/curriculumContext';
 import type { GradeLevel } from '@/types/shared';
+import {
+  buildExamFromTaughtMaterial,
+  CLASS_PROGRESS_STORAGE_KEY,
+  getExamTopicWarning,
+  renderClassContext,
+  type ClassProgressProfile,
+} from '@/curriculumProgress/progress';
 
 interface VerificationResult {
   questionRef: string;
@@ -71,6 +78,8 @@ export default function ExamPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [savedExams, setSavedExams] = useState<SavedExam[]>([]);
   const [regeneratingQuestion, setRegeneratingQuestion] = useState<number | null>(null);
+  const [classProfiles, setClassProfiles] = useState<ClassProgressProfile[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState('');
   const curriculumTopicOptions = getCurriculumTopicOptions(grade);
 
   useEffect(() => {
@@ -80,7 +89,27 @@ export default function ExamPage() {
     } catch {
       setSavedExams([]);
     }
+
+    try {
+      const raw = window.localStorage.getItem(CLASS_PROGRESS_STORAGE_KEY);
+      const profiles = raw ? JSON.parse(raw) as ClassProgressProfile[] : [];
+      setClassProfiles(profiles);
+
+      const params = new URLSearchParams(window.location.search);
+      const classId = params.get('classId') ?? '';
+      const profile = profiles.find(item => item.id === classId);
+      if (profile) {
+        setSelectedClassId(profile.id);
+        if (params.get('mode') === 'taught') {
+          applyExamFromTaughtMaterial(profile);
+        }
+      }
+    } catch {
+      setClassProfiles([]);
+    }
   }, []);
+
+  const selectedClass = classProfiles.find(item => item.id === selectedClassId);
 
   function updatePart(idx: number, patch: Partial<ExamPartSpec>) {
     setParts(prev => prev.map((p, i) => i === idx ? { ...p, ...patch } : p));
@@ -132,6 +161,31 @@ export default function ExamPage() {
       curriculumTopicId: topicId,
       topic: selectedTopic?.name ?? '',
     });
+  }
+
+  function applyExamFromTaughtMaterial(profile: ClassProgressProfile) {
+    const topics = buildExamFromTaughtMaterial(profile);
+    setClassName(profile.name);
+    setGrade(profile.grade);
+    setTeacherNotes(renderClassContext(profile));
+
+    if (topics.length === 0) {
+      setParts([emptyPart()]);
+      return;
+    }
+
+    const basePoints = Math.floor(totalPoints / topics.length);
+    const remainder = totalPoints - basePoints * topics.length;
+    setParts([{
+      title: 'חומר שנלמד',
+      questionSpecs: topics.map((topic, index) => ({
+        topic: topic.topic,
+        curriculumTopicId: topic.topicId,
+        questionType: 'מעורב',
+        points: basePoints + (index === 0 ? remainder : 0),
+        subQuestionCount: 2,
+      })),
+    }]);
   }
 
   function addQuestion(partIdx: number) {
@@ -311,6 +365,35 @@ export default function ExamPage() {
         </div>
       )}
 
+      {classProfiles.length > 0 && (
+        <div style={{ border: '1px solid #d7dee8', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem', background: '#f8fbff' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <strong>הקשר כיתה</strong>
+            <a href="/curriculum" style={linkButtonStyle}>עדכן התקדמות</a>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) auto', gap: '0.75rem', alignItems: 'end' }}>
+            <SelectField
+              label="כיתה למעקב"
+              value={selectedClassId}
+              options={[
+                { value: '', label: 'ללא הקשר כיתה' },
+                ...classProfiles.map(profile => ({ value: profile.id, label: `${profile.name}` })),
+              ]}
+              onChange={setSelectedClassId}
+            />
+            <button
+              type="button"
+              disabled={!selectedClass}
+              onClick={() => selectedClass && applyExamFromTaughtMaterial(selectedClass)}
+              style={{ ...btnSecondary, opacity: selectedClass ? 1 : 0.55 }}
+            >
+              מלא מחומר שנלמד
+            </button>
+          </div>
+          <p style={hintTextStyle}>המעקב מציע נושאים שסומנו כהושלמו או דורשים חזרה. אפשר להוסיף, למחוק או לשנות ידנית כל שאלה.</p>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
         <Field label="שכבה / כיתה" value={className} onChange={setClassName} />
         <Field label="תאריך" value={date} onChange={setDate} />
@@ -380,6 +463,9 @@ export default function ExamPage() {
                   }
                 }} />
               </div>
+              {selectedClass && selectedClass.grade === grade && q.curriculumTopicId && q.curriculumTopicId !== CUSTOM_CURRICULUM_TOPIC_ID && (
+                <TopicWarning profile={selectedClass} topicId={q.curriculumTopicId} />
+              )}
               <div style={{ marginTop: '0.5rem' }}>
                 <label style={labelStyle}>אילוצים (שורה לכל אילוץ)</label>
                 <textarea
@@ -594,6 +680,12 @@ function SelectField<T extends string>({ label, value, options, onChange }: {
   );
 }
 
+function TopicWarning({ profile, topicId }: { profile: ClassProgressProfile; topicId: string }) {
+  const warning = getExamTopicWarning(profile, topicId);
+  if (!warning) return null;
+  return <div style={warningStyle}>{warning}</div>;
+}
+
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
@@ -682,6 +774,30 @@ const btnSecondary: React.CSSProperties = {
   fontSize: '0.85rem',
   fontFamily: 'inherit',
   cursor: 'pointer',
+};
+
+const linkButtonStyle: React.CSSProperties = {
+  ...btnSecondary,
+  textDecoration: 'none',
+  color: '#111827',
+  display: 'inline-block',
+};
+
+const hintTextStyle: React.CSSProperties = {
+  margin: '0.6rem 0 0',
+  color: '#64748b',
+  fontSize: '0.88rem',
+  lineHeight: 1.5,
+};
+
+const warningStyle: React.CSSProperties = {
+  marginTop: '0.5rem',
+  padding: '0.5rem 0.65rem',
+  border: '1px solid #fde68a',
+  borderRadius: 4,
+  background: '#fffbeb',
+  color: '#92400e',
+  fontSize: '0.85rem',
 };
 
 const btnDanger: React.CSSProperties = {

@@ -29,6 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <nav style={{ padding: '0.6rem 1rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="/" style={{ color: '#111827', textDecoration: 'none', fontWeight: 700 }}>עוזר המורה למתמטיקה</a>
+            <a href="/curriculum" style={{ color: '#374151', textDecoration: 'none' }}>תכנית לימודים</a>
             <a href="/lesson-plan" style={{ color: '#374151', textDecoration: 'none' }}>מערכי שיעור</a>
             <a href="/exam" style={{ color: '#374151', textDecoration: 'none' }}>מבחנים</a>
           </div>

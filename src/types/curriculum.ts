@@ -38,7 +38,7 @@ export interface TeacherProgress {
   topicId: string;
   subTopicId?: string;
   classId: string;
-  status: 'לא_הותחל' | 'בתהליך' | 'הושלם'; // לא_הותחל | בתהליך | הושלם
+  status: 'not_started' | 'in_progress' | 'completed' | 'needs_review';
   hoursSpent: number;
   lastTaughtDate?: string;
   notes?: string;

@@ -5,6 +5,12 @@ import type { LessonDuration, LessonPlan, LessonType } from '@/types/lessonPlan'
 import { gradeLabel, type GradeLevel } from '@/types/shared';
 import { CUSTOM_LESSON_PLAN_TOPIC_ID, getLessonPlanCurriculumTopicOptions } from '@/lessonPlan/curriculumContext';
 import type { BackendName } from '@/exam/backends';
+import {
+  buildLessonSuggestion,
+  CLASS_PROGRESS_STORAGE_KEY,
+  renderClassContext,
+  type ClassProgressProfile,
+} from '@/curriculumProgress/progress';
 
 interface GenerateLessonPlanResponse {
   plan?: LessonPlan;
@@ -91,6 +97,8 @@ export default function LessonPlanPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [savedPlans, setSavedPlans] = useState<SavedLessonPlan[]>([]);
+  const [classProfiles, setClassProfiles] = useState<ClassProgressProfile[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState('');
 
   const curriculumTopicOptions = getLessonPlanCurriculumTopicOptions(form.grade);
 
@@ -101,7 +109,26 @@ export default function LessonPlanPage() {
     } catch {
       setSavedPlans([]);
     }
+
+    try {
+      const raw = window.localStorage.getItem(CLASS_PROGRESS_STORAGE_KEY);
+      const profiles = raw ? JSON.parse(raw) as ClassProgressProfile[] : [];
+      setClassProfiles(profiles);
+
+      const params = new URLSearchParams(window.location.search);
+      const classId = params.get('classId') ?? '';
+      const topicId = params.get('topicId') ?? undefined;
+      const profile = profiles.find(item => item.id === classId);
+      if (profile) {
+        setSelectedClassId(profile.id);
+        applyClassSuggestion(profile, topicId);
+      }
+    } catch {
+      setClassProfiles([]);
+    }
   }, []);
+
+  const selectedClass = classProfiles.find(item => item.id === selectedClassId);
 
   function updateForm(patch: Partial<LessonPlanFormState>) {
     setForm(prev => ({ ...prev, ...patch }));
@@ -117,6 +144,31 @@ export default function LessonPlanPage() {
       ...prev,
       curriculumTopicId: topicId,
       topic: topicId && topicId !== CUSTOM_LESSON_PLAN_TOPIC_ID ? selectedTopic?.name ?? prev.topic : prev.topic,
+    }));
+  }
+
+  function handleClassContextChange(classId: string) {
+    setSelectedClassId(classId);
+    if (!classId) {
+      updateForm({ previousLessonContext: '' });
+    }
+  }
+
+  function applyClassSuggestion(profile: ClassProgressProfile, preferredTopicId?: string) {
+    const suggestion = buildLessonSuggestion(profile, preferredTopicId);
+    const topicId = preferredTopicId ?? suggestion?.topicId;
+    const topicOptions = getLessonPlanCurriculumTopicOptions(profile.grade);
+    const selectedTopic = topicId ? topicOptions.find(topic => topic.id === topicId) : undefined;
+    const context = renderClassContext(profile);
+    setForm(prev => ({
+      ...prev,
+      grade: profile.grade,
+      curriculumTopicId: selectedTopic?.id ?? suggestion?.topicId ?? prev.curriculumTopicId,
+      topic: selectedTopic?.name ?? suggestion?.topic ?? prev.topic,
+      subTopic: suggestion?.subTopic ?? selectedTopic?.learningObjectives[0] ?? prev.subTopic,
+      lessonType: suggestion?.lessonType ?? prev.lessonType,
+      teacherRequest: suggestion?.teacherRequest ?? '',
+      previousLessonContext: context,
     }));
   }
 
@@ -180,13 +232,14 @@ export default function LessonPlanPage() {
 
   async function handleDownload(format: 'docx' | 'pdf') {
     if (!result?.markdown) return;
+    const filename = buildLessonPlanFilename(result.plan, form);
     setExporting(true);
     setError(null);
     try {
       const resp = await fetch('/api/exam/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markdown: result.markdown, filename: 'מערך שיעור', format }),
+        body: JSON.stringify({ markdown: result.markdown, filename, format }),
       });
       if (!resp.ok) {
         const err = await readJsonOrError<{ error?: string }>(resp);
@@ -197,7 +250,7 @@ export default function LessonPlanPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `מערך שיעור.${format}`;
+      a.download = `${filename}.${format}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -230,6 +283,38 @@ export default function LessonPlanPage() {
               </button>
             ))}
           </div>
+        </section>
+      )}
+
+      {classProfiles.length > 0 && (
+        <section style={panelStyle}>
+          <div style={panelHeaderStyle}>
+            <strong>הקשר כיתה</strong>
+            <a href="/curriculum" style={linkButtonStyle}>עדכן התקדמות</a>
+          </div>
+          <div style={classContextGridStyle}>
+            <SelectField
+              label="כיתה למעקב"
+              value={selectedClassId}
+              options={[
+                { value: '', label: 'ללא הקשר כיתה' },
+                ...classProfiles.map(profile => ({
+                  value: profile.id,
+                  label: `${profile.name} · ${gradeLabel(profile.grade)}`,
+                })),
+              ]}
+              onChange={handleClassContextChange}
+            />
+            <button
+              type="button"
+              disabled={!selectedClass}
+              onClick={() => selectedClass && applyClassSuggestion(selectedClass)}
+              style={{ ...btnSecondary, opacity: selectedClass ? 1 : 0.55 }}
+            >
+              השתמש בהצעה מהמעקב
+            </button>
+          </div>
+          <p style={hintTextStyle}>ההצעה ממלאת ברירות מחדל בלבד. אפשר לשנות ידנית כל נושא, סוג שיעור או הערת מורה.</p>
         </section>
       )}
 
@@ -337,6 +422,20 @@ export default function LessonPlanPage() {
       )}
     </main>
   );
+}
+
+function buildLessonPlanFilename(plan: LessonPlan | undefined, fallback: LessonPlanFormState): string {
+  const topic = plan?.topic?.trim() || fallback.topic.trim() || 'ללא נושא';
+  const grade = gradeLabel(plan?.grade ?? fallback.grade);
+  return sanitizeFilename(`מערך שיעור ${topic} כיתה ${grade}`);
+}
+
+function sanitizeFilename(filename: string): string {
+  return filename
+    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120);
 }
 
 async function readJsonOrError<T extends { error?: string }>(resp: Response): Promise<T> {
@@ -621,6 +720,20 @@ const savedListStyle: React.CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap',
   gap: '0.5rem',
+};
+
+const classContextGridStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(220px, 1fr) auto',
+  gap: '0.75rem',
+  alignItems: 'end',
+};
+
+const hintTextStyle: React.CSSProperties = {
+  margin: '0.6rem 0 0',
+  color: '#64748b',
+  fontSize: '0.88rem',
+  lineHeight: 1.5,
 };
 
 const formSurfaceStyle: React.CSSProperties = {

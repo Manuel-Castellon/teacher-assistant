@@ -118,12 +118,16 @@ CREATE INDEX curriculum_sub_topics_parent_idx ON curriculum_sub_topics(parent_to
 
 CREATE TABLE classes (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  teacher_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name            TEXT NOT NULL,                   -- e.g. "כיתה ז' 3"
   grade_level     grade_level NOT NULL,
   unit_level      unit_level,                      -- only for high-school classes
   academic_year   TEXT NOT NULL,
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE INDEX classes_teacher_idx ON classes(teacher_id);
 
 CREATE TABLE students (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -138,15 +142,16 @@ CREATE INDEX students_class_idx ON students(class_id);
 
 CREATE TABLE teacher_progress (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  curriculum_unit_id    TEXT NOT NULL REFERENCES curriculum_units(id),
-  topic_id              TEXT NOT NULL REFERENCES curriculum_topics(id),
+  curriculum_unit_id    TEXT NOT NULL,
+  topic_id              TEXT NOT NULL,
   sub_topic_id          TEXT REFERENCES curriculum_sub_topics(id),
   class_id              UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
-  status                TEXT NOT NULL CHECK (status IN ('לא_הותחל','בתהליך','הושלם')),
+  status                TEXT NOT NULL CHECK (status IN ('not_started','in_progress','completed','needs_review')),
   hours_spent           NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (hours_spent >= 0),
   last_taught_date      DATE,
   notes                 TEXT,
-  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (class_id, topic_id)
 );
 
 CREATE INDEX teacher_progress_class_topic_idx
@@ -253,6 +258,8 @@ $$;
 CREATE TRIGGER lesson_plans_updated_at BEFORE UPDATE ON lesson_plans
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER teacher_progress_updated_at BEFORE UPDATE ON teacher_progress
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER classes_updated_at BEFORE UPDATE ON classes
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER student_grade_records_updated_at BEFORE UPDATE ON student_grade_records
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();

@@ -4,6 +4,10 @@
 ---
 
 ## Last Completed
+2026-05-15 — MVP 4 first interactive loop landed and was polished after smoke use. Added `/curriculum` for browser-local class progress tracking by grade/topic: status (`לא הותחל`, `בתהליך`, `הושלם`, `דורש חזרה`), actual hours, last-taught date, and notes. Added `src/curriculumProgress/progress.ts` with deterministic helpers for summaries, next-lesson suggestions, taught-material exam defaults, class-context rendering, and not-yet-taught warnings. `/lesson-plan` can now load class progress and apply the next-topic suggestion as editable defaults, including previous lesson/class context and a deterministic editable `בקשת המורה` built from class name, topic, status, learning objective, and progress notes. Switching to `ללא הקשר כיתה` clears stale previous-lesson context without deleting progress or wiping the teacher request. `/exam` can fill editable question specs from topics marked completed/needs-review and warns when selected topics are not yet taught; warnings do not block generation so the teacher can always override. Lesson-plan DOCX/PDF downloads now default to descriptive filenames like `מערך שיעור משפט פיתגורס כיתה ח'`. Lesson-plan parsing now surfaces backend `{error,message}` envelopes directly instead of reporting a misleading missing-`phases` schema error. Added `npm run test:progress` and included it in `npm run test:signoff`. Verification: latest `npm run test:signoff` passed with 62 lesson-plan tests, 3 progress tests, MVP1 2/2 evals, and MVP2 4/4 evals; `npm run build` passed; full deterministic `npm test -- --coverage=false` previously passed with 131 tests; `/curriculum`, `/lesson-plan`, and `/exam` return 200 from the running dev server.
+
+2026-05-15 — MVP 4 server persistence slice added. `/api/curriculum/classes` now provides authenticated load/save for class progress using `classes` + `teacher_progress` in Postgres, with `src/curriculumProgress/serverStore.ts` mapping between SQL rows and `ClassProgressProfile`. `/curriculum` loads server profiles when signed in, writes changes back to the server, migrates local profiles into an empty signed-in account, and keeps browser-local storage as cache/fallback. Unauthenticated GET/PUT return `200 { authenticated: false, ... }`, so local fallback works without console noise. `db/schema.sql` now has `classes.teacher_id`, `classes.updated_at`, English progress status keys including `needs_review`, and class/topic uniqueness; existing local DBs can apply `db/migrations/2026-05-15-class-progress-persistence.sql`. Verification: `npm run test:signoff` passed with 62 lesson-plan tests, 7 progress/server-store tests, MVP1 2/2 and MVP2 4/4 evals; `npm run build` passed; unauthenticated API smoke returns `{"authenticated":false,"profiles":[]}`; Playwright `/curriculum` smoke reports 0 warnings/errors.
+
 2026-05-14 — Lesson-plan model/sign-off hardening complete. `/lesson-plan` now has explicit model selection for Gemini 2.5 Flash, Gemini 3 Flash Preview, Gemini 2.5 Pro, Claude CLI, and GPT-5.5 via Codex CLI. Codex is invoked as an ephemeral read-only completion backend, not as a repo-editing agent. The renderer now preserves structured generated Markdown while removing internal metadata (`מצב עבודה`, `זמן משוער`, enum values), uses `דגשים למורה`, and formats long answer-key notes as teacher solution lists. User-approved GPT-5.5 browser-export PDFs were renamed to `data/lesson-plans/generated/grade7-equations-common-denominator-90min-approved-gpt55.pdf` and `data/lesson-plans/generated/grade11-complex-algebra-90min-approved-gpt55.pdf`. Added `docs/lesson-plan-signoff.md`, `npm run test:lesson-plan`, and `npm run test:signoff` so future sessions use pipeline checks instead of long manual reminders. Gemini 2.5 Pro is wired but failed with the current free key, so it remains an explicit experiment. Anthropic API backend support remains in code for a future key, but is not exposed in the current lesson-plan UI because no key is configured. `npm run test:signoff` passed; full deterministic `npm test -- --coverage=false` passed with 128 tests.
 
 2026-05-14 — Lesson-plan UI ready for 3 target subjects. Fixed curriculum parser to extract learning objectives from raw Ministry source documents (middle school: tab-table detail column; high school: numbered prose items from PDF). Populated `subTopics[].learningObjectives` across all grade 7/8 topics (31 topics total) and 12 hand-cleaned objectives for year-12 complex numbers. Added runtime AI backend fallback chain (Gemini → Anthropic → Claude CLI) with injectable exec for testability. Cross-grade topic lookup with same-stage filtering so advanced schools see next-year topics labeled "(תכנית X')". CurriculumHints `<details>` component shows collapsible objectives in the UI as optional teacher hints. Teacher request field is "(חובה)" with guiding placeholder. Objectives are NOT injected into the AI prompt. Playwright verified all 3 subjects: יב+מרוכבים (12), ז+משוואות (4), ח+פיתגורס (3). `npm test`: 120 tests, 100% coverage. `npm run type-check` clean.
@@ -38,9 +42,9 @@ Nothing known.
 
 ## Next Session Starts With
 1. Read PROGRESS.md + CHECKPOINT.md, state current state
-2. Confirm whether the lesson-plan MVP needs auth-gated persistence / sharing before any UI expansion.
-3. Decide whether to resume the formal MVP sequence at MVP 1 gates or move to MVP 3 question-bank planning.
-4. Next likely implementation: MVP 4 curriculum tracker / class progress so grade-level topics can be narrowed by actual taught progress.
+2. Try the `/curriculum` -> `/lesson-plan` -> `/exam` loop with one real class and note friction.
+3. Apply the MVP4 DB migration locally before testing signed-in class sync: `psql "$DATABASE_URL" -f db/migrations/2026-05-15-class-progress-persistence.sql`.
+4. Highest-value likely implementation: lightweight post-lesson update flow that writes actual taught status/hours/notes back into class progress.
 
 ## Done so far in MVP 0
 - ✅ Git repo initialized (`main` branch)
@@ -73,10 +77,10 @@ Nothing known.
 | MVP | Status | Test Coverage | Eval Score | Completed |
 |-----|--------|--------------|------------|-----------|
 | 0   | ✅ Complete | 100% on all covered files (26 tests) | — | 2026-05-07 |
-| 1   | 🟡 In progress (UI ready for 3 subjects; rubric/live eval gates still pending) | 100% (120 tests) | fake: 2/2 deterministic | — |
+| 1   | 🟡 In progress (UI ready; rubric/live eval gates still pending) | focused signoff: 62 tests | fake: 2/2 deterministic | — |
 | 2   | ✅ Complete | 100% deterministic coverage (93 tests total) | fake evals: 4/4; Playwright: generation/export/history/preview controls verified | 2026-05-14 |
 | 3   | 🔴 Not started | — | — | — |
-| 4   | 🔴 Not started | — | — | — |
+| 4   | 🟡 In progress (browser-local tracker + lesson/exam suggestions usable) | 100% focused helper tests | — | — |
 | 5   | 🔴 Not started | — | — | — |
 | 6   | 🔴 Not started | — | — | — |
 

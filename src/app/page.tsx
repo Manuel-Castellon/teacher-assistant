@@ -7,6 +7,10 @@ export default function Home() {
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginTop: '1.5rem' }}>
+        <a href="/curriculum" style={tileStyle}>
+          <strong style={tileTitleStyle}>מעקב תכנית לימודים</strong>
+          <span style={tileTextStyle}>ניהול התקדמות בפועל לפי כיתה, כולל הצעה לשיעור הבא ומבחן מחומר שנלמד.</span>
+        </a>
         <a href="/lesson-plan" style={tileStyle}>
           <strong style={tileTitleStyle}>יצירת מערך שיעור</strong>
           <span style={tileTextStyle}>בקשה חופשית מהמורה, בחירת שכבה ונושא בתכנית, תצוגה מקדימה והורדת DOCX.</span>

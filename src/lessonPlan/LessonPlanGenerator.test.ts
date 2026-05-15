@@ -102,6 +102,13 @@ describe('LessonPlanGenerator', () => {
     expect(parseLessonPlanJson(`\`\`\`json\n${JSON.stringify(BASE_PLAN)}\n\`\`\``).id).toBe('generated-test-plan');
   });
 
+  it('surfaces AI error envelopes instead of reporting missing phases', () => {
+    expect(() => parseLessonPlanJson(JSON.stringify({
+      error: { message: 'quota exceeded' },
+      message: 'try another model',
+    }))).toThrow('AI backend returned an error response instead of a lesson plan: quota exceeded — try another model');
+  });
+
   it('generates with an injected completion backend and stamps metadata', async () => {
     const calls: { system: string; user: string }[] = [];
     const generator = new LessonPlanGenerator(async (system, user) => {
