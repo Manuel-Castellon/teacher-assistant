@@ -137,6 +137,8 @@ export interface LessonPlanRequest {
   teacherNotes?: string;
   curriculumTopicId?: string;
   classId?: string;
+  /** When true, ask the generator to create a printable student worksheet when suitable. */
+  includeWorksheet?: boolean;
   /** Summary of previous lesson for continuity — include postLessonNotes from last plan */
   previousLessonContext?: string;
 }

@@ -79,6 +79,7 @@ describe('LessonPlanGenerator', () => {
       duration: 45,
       lessonType: 'תרגול',
       curriculumTopicId: 'ms-grade7-t10',
+      includeWorksheet: false,
       textbook: {
         name: 'ספר בדיקה',
         grade: "ז'",
@@ -95,6 +96,7 @@ describe('LessonPlanGenerator', () => {
     expect(prompt).toContain('ספר בדיקה');
     expect(prompt).toContain('רק משוואות ממעלה ראשונה');
     expect(prompt).toContain('למדו שטח מלבן');
+    expect(prompt).toContain('דף עבודה לתלמידים: לא - לא ליצור דף עבודה לתלמידים');
   });
 
   it('parses plain and fenced lesson-plan JSON', () => {

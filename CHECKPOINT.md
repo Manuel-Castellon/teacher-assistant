@@ -1,50 +1,49 @@
 # CHECKPOINT.md
 
 ## Last completed
-- MVP 4 first slice landed: `/curriculum` tracks class-by-class curriculum progress in browser-local storage.
-- MVP 4 server persistence started: authenticated users now load/save class progress through `/api/curriculum/classes`.
-- Unauthenticated users keep the browser-local fallback; the API returns `{ authenticated: false }` without noisy 401 console errors.
-- Added `db/migrations/2026-05-15-class-progress-persistence.sql` for existing local DBs; fresh schema is updated in `db/schema.sql`.
-- Teachers can mark each topic as not started, in progress, completed, or needs review, with actual hours, last-taught date, and notes.
-- `/curriculum` suggests the next lesson and can open `/lesson-plan` with class context and the suggested topic prefilled.
-- Lesson suggestions now also prefill a deterministic, editable `בקשת המורה` from class name, topic, status, learning objective, and teacher progress notes.
-- Selecting `ללא הקשר כיתה` in `/lesson-plan` clears stale `הקשר מהשיעור הקודם` without deleting class progress or wiping the teacher request.
-- `/exam` can build editable defaults from taught/review topics and warns when selected topics are not yet taught for the chosen class.
-- Manual override remains available everywhere: suggestions only prefill fields and warnings do not block generation.
-- Lesson-plan DOCX/PDF downloads now default to descriptive filenames such as `מערך שיעור משפט פיתגורס כיתה ח'`.
-- Lesson-plan JSON parsing now detects AI/provider error envelopes (`{error,message}`) and surfaces the real backend error instead of a misleading missing-`phases` schema error.
-- Added `src/curriculumProgress/progress.ts` and `npm run test:progress`; `npm run test:signoff` now includes progress tests.
-- Lesson-plan model selector wired end-to-end: Gemini 2.5 Flash, Gemini 3 Flash Preview, Gemini 2.5 Pro, Claude CLI, GPT-5.5 (Codex).
-- GPT-5.5 (Codex CLI) is routed through `codexCliBackend()` as an ephemeral read-only completion backend.
-- Teacher-facing renderer fixed for approved output style: `דגשים למורה`, no `מצב עבודה` / `זמן משוער`, structured generated Markdown preserved.
-- Approved GPT-5.5 browser-export PDFs renamed descriptively:
-  - `data/lesson-plans/generated/grade7-equations-common-denominator-90min-approved-gpt55.pdf`
-  - `data/lesson-plans/generated/grade11-complex-algebra-90min-approved-gpt55.pdf`
-- Lesson-plan sign-off docs added at `docs/lesson-plan-signoff.md`; focused script added as `npm run test:lesson-plan`.
-- `npm run test:signoff` passed: type-check, 62 focused lesson-plan tests, 7 progress/server-store tests, MVP1 2/2 and MVP2 4/4 evals.
-- `npm run build` passed after the latest client-page changes.
-- Full deterministic suite passed with `npm test -- --coverage=false`: 128 tests.
+- Session resumed from `CLAUDE.md`, `PROGRESS.md`, `CHECKPOINT.md`, `HANDOFF.md`, `MVP_STATUS.md`, and `AGENTS.md`.
+- Current state stated: MVP 4 is active; missing slice is post-lesson update flow from generated/taught lesson back into class progress.
+- Created branch `mvp-4-post-lesson-flow` from clean `main`.
+- Inspected `src/curriculumProgress/progress.ts`, `serverStore.ts`, `/api/curriculum/classes`, `/curriculum`, `/lesson-plan`, `/exam`, and focused progress tests.
+- Added `recordPostLessonProgress()` and focused tests for cumulative hours, last-taught date, status updates, and dated note appending.
+- `npm run test:progress` passed: 9 progress/server-store tests.
+- Wired `/lesson-plan` result view with an `עדכון אחרי השיעור` panel for selected class/topic: status, hours taught, date, actual notes, local cache update, and `/api/curriculum/classes` sync.
+- Guarded post-lesson saves so only topics belonging to the selected class grade are written to class progress.
+- `npm run type-check` passed after UI wiring.
+- `npm run test:signoff` passed: type-check, 62 lesson-plan tests, 9 progress/server-store tests, MVP1 2/2 evals, MVP2 4/4 evals.
+- `npm run build` passed.
+- Started `npm run dev`; local app is serving on `http://localhost:3000`.
+- `curl -I http://localhost:3000/lesson-plan` and `/curriculum` both returned `200 OK`.
+- After interruption, restarted `npm run dev` and re-smoked `/lesson-plan`, `/curriculum`, and unauthenticated `/api/curriculum/classes`.
+- `psql` is not installed in this shell and safe `.env.local` check did not find `DATABASE_URL`, so the DB migration was not applied from here.
+- Playwright local fallback smoke passed: seeded a class and saved plan, opened `/lesson-plan?classId=playwright-class-7a&topicId=ms-grade7-t01`, saved post-lesson progress, and verified localStorage updated topic `ms-grade7-t01` to `completed`, `hoursSpent: 3.5`, `lastTaughtDate: 2026-05-16`, with the dated note appended.
+- Playwright console check reported 0 warnings/errors.
+- Re-ran `npm run test:progress` after resume/docs update; 9 tests passed.
+- Updated `PROGRESS.md`, `HANDOFF.md`, and `MVP_STATUS.md` for the post-lesson flow.
+- New priority completed: worksheet generation toggle for lesson plans.
+- Added `includeWorksheet` to the lesson-plan request path, worksheet policy helper, UI checkbox, API prompt instructions, and generator prompt line.
+- Worksheet toggle is visible for teachable lesson types and hidden/forced off for `מבחן`.
+- Backed out repo-level Playwright dependency/config/spec churn; validation used the existing Playwright MCP browser instead.
+- `npm run type-check` passed.
+- `npm run test:lesson-plan` passed: 67 focused lesson-plan/API/prompt tests.
+- Playwright MCP worksheet smoke passed: toggle off sent `includeWorksheet: false` and no worksheet result; toggle on sent `includeWorksheet: true` and rendered `דף עבודה לתלמידים`; `מבחן` hid the checkbox and sent `includeWorksheet: false`.
+- Playwright MCP comprehensive loop passed: `/curriculum` suggestion -> `/lesson-plan` with worksheet -> post-lesson feedback -> `/exam` taught-material generation. The exam request included topic `ms-grade7-t01`, completed progress, cumulative `3.5` hours, and the dated feedback note.
+- Playwright MCP console check reported 0 warnings/errors.
+- `npm run test:signoff` passed: type-check, 67 lesson-plan tests, 9 progress/server-store tests, MVP1 2/2 evals, MVP2 4/4 evals.
+- `npm run build` passed.
+- Committed on branch `mvp-4-post-lesson-flow` with message `mvp-4: add worksheet toggle and post-lesson loop`.
 
 ## Next
-- Move MVP 4 persistence from browser-local storage to auth-gated server storage when cross-device/classroom use matters.
-- Broaden class-progress context in prompts after teacher tries the current loop in real workflow.
-- Anthropic API backend support remains in code for a future key, but is not exposed in the current lesson-plan UI because no key is configured.
-- Gemini 2.5 Pro is wired but failed for the current free key; keep it as an explicit experimental option, not default.
+- Try a real model generation with the worksheet toggle on/off and inspect whether the generated worksheet/key quality matches the hand-built artifacts in `data/lesson-plans/generated`.
+- Try the full real-class loop with a teacher-selected class and real model output.
+- DB migration remains tabled: apply later on a machine with `psql` and `DATABASE_URL`.
 
 ## Key files changed
-- `src/curriculumProgress/progress.ts` — class progress model, summaries, lesson/exam suggestions, warnings.
-- `src/curriculumProgress/serverStore.ts` — Postgres load/save mapping for class progress.
-- `src/app/curriculum/page.tsx` — class progress tracker UI.
-- `src/app/api/curriculum/classes/route.ts` — authenticated class progress API with local fallback contract.
-- `db/schema.sql`, `db/migrations/2026-05-15-class-progress-persistence.sql` — teacher-owned class progress persistence.
-- `src/app/lesson-plan/page.tsx` — optional class context, tracker-driven editable lesson suggestion, descriptive export filenames.
-- `src/app/exam/page.tsx` — optional class context, taught-material exam defaults, not-yet-taught warnings.
-- `src/curriculumProgress/progress.test.ts`, `package.json` — focused progress signoff.
-- `src/lessonPlan/LessonPlanGenerator.ts` — clearer provider error-envelope reporting before schema validation.
-- `src/exam/backends.ts` — backend names, Gemini 3 Flash Preview, Gemini 2.5 Pro, Codex completion backend.
-- `src/app/lesson-plan/page.tsx` — model selector, progress indicator, PDF/DOCX export buttons, robust non-JSON error display.
-- `src/app/api/lesson-plan/generate/route.ts` — accepts explicit backend param.
-- `src/lessonPlan/renderLessonPlan.ts` — teacher-facing cleanup and long-note formatting.
-- `src/providers/impl/lessonPlanPrompt.ts` — prompt version/style contract for printable Markdown and LaTeX.
-- `package.json` — `test:lesson-plan`, `test:signoff`.
-- `docs/lesson-plan-signoff.md`, `data/lesson-plans/generated/README.md`, `HANDOFF.md`, `CLAUDE.md`.
+- `src/curriculumProgress/progress.ts` — post-lesson update helper.
+- `src/curriculumProgress/progress.test.ts` — post-lesson helper coverage.
+- `src/app/lesson-plan/page.tsx` — post-lesson update panel and progress persistence from generated plans.
+- `src/lessonPlan/worksheetPolicy.ts` — worksheet suitability/default policy.
+- `src/lessonPlan/worksheetPolicy.test.ts`, `src/app/api/lesson-plan/generate/route.test.ts` — worksheet prompt contract tests.
+- `src/types/lessonPlan.ts`, `src/lessonPlan/LessonPlanGenerator.ts`, `src/providers/impl/lessonPlanPrompt.ts`, `src/app/api/lesson-plan/generate/route.ts`, `src/app/lesson-plan/page.tsx` — worksheet toggle request/prompt/UI wiring.
+- `package.json` — expanded `test:lesson-plan` to include worksheet contract tests.
+- `PROGRESS.md`, `HANDOFF.md`, `MVP_STATUS.md`, `CHECKPOINT.md` — current status and next steps.

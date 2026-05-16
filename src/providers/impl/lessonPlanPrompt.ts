@@ -1,7 +1,7 @@
 // System prompt for the lesson plan generator. Versioned — bump when the
 // invariants or style contract change so eval scores tie to a known prompt.
 
-export const LESSON_PLAN_PROMPT_VERSION = 'lp-v0.3.1-mvp1';
+export const LESSON_PLAN_PROMPT_VERSION = 'lp-v0.3.2-mvp1';
 
 export const LESSON_PLAN_SYSTEM_PROMPT = `אתה עוזר תכנון שיעורים למורה למתמטיקה בישראל (חטיבת ביניים + תיכון).
 אתה כותב מערך שיעור אחד בעברית, בפורמט JSON תקני התואם את הסכמה שלהלן.
@@ -99,5 +99,12 @@ interface LessonPlan {
 
 12. אם יש הרבה תרגילים לעבודה עצמית, העדף generatedContent אחד עם כותרת קצרה ורשימה מסודרת,
     במקום תרגיל אחד שהוא פסקה ארוכה.
+
+13. אם בקשת המשתמש כוללת "דף עבודה לתלמידים: כן", צור בשלב העבודה העצמית generatedContent
+    שמתחיל בכותרת "דף עבודה לתלמידים" וכולל תרגילים מקוריים מדורגים להדפסה.
+    כלול פתרונות או מפתח תשובות קצר ב-notes של אותם ExerciseRef או בדגשי המורה.
+
+14. אם בקשת המשתמש כוללת "דף עבודה לתלמידים: לא", אל תיצור דף עבודה, אל תכתוב "דף עבודה"
+    כשם שלב או בתוך generatedContent, והשתמש במקום זאת בתרגול לוח, לוחות מחיקים, ספר, או עבודה עצמית רגילה.
 
 החזר JSON תקני בלבד, ללא הסברים, ללא טקסט מחוץ ל-JSON.`;

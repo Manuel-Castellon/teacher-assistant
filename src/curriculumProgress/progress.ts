@@ -47,6 +47,14 @@ export interface ClassProgressSummary {
   examReadyTopics: TopicProgressView[];
 }
 
+export interface PostLessonProgressUpdate {
+  topicId: string;
+  status: TopicProgressStatus;
+  hoursTaught: number;
+  taughtDate: string;
+  notes?: string;
+}
+
 export const STATUS_LABELS: Record<TopicProgressStatus, string> = {
   not_started: 'לא הותחל',
   in_progress: 'בתהליך',
@@ -144,6 +152,28 @@ export function updateTopicProgress(
       [topicId]: stripEmptyTopicProgress(next),
     },
   };
+}
+
+export function recordPostLessonProgress(
+  profile: ClassProgressProfile,
+  update: PostLessonProgressUpdate,
+  now: string,
+): ClassProgressProfile {
+  const current = normalizeTopicProgress(update.topicId, profile.topics[update.topicId]);
+  const hoursTaught = Number.isFinite(update.hoursTaught) ? Math.max(0, update.hoursTaught) : 0;
+  const notes = appendProgressNote(current.notes, update.taughtDate, update.notes);
+
+  return updateTopicProgress(
+    profile,
+    update.topicId,
+    {
+      status: update.status,
+      hoursSpent: current.hoursSpent + hoursTaught,
+      lastTaughtDate: update.taughtDate,
+      ...(notes ? { notes } : { notes: '' }),
+    },
+    now,
+  );
 }
 
 export function getExamTopicWarning(profile: ClassProgressProfile, topicId?: string): string | undefined {
@@ -259,6 +289,13 @@ function sentenceWithPeriod(text: string): string {
   return /[.!?؟。:;״"]$/.test(trimmed) || /[.!?]$/.test(trimmed)
     ? trimmed
     : `${trimmed}.`;
+}
+
+function appendProgressNote(existing: string | undefined, taughtDate: string, note: string | undefined): string {
+  const trimmed = note?.trim();
+  if (!trimmed) return existing?.trim() ?? '';
+  const datedNote = taughtDate ? `${taughtDate}: ${trimmed}` : trimmed;
+  return [existing?.trim(), datedNote].filter(Boolean).join('\n');
 }
 
 function normalizeTopicProgress(topicId: string, progress?: TopicProgress): TopicProgress {

@@ -6,6 +6,7 @@ import {
   emptyTopicProgress,
   getCurriculumUnitForGrade,
   getExamTopicWarning,
+  recordPostLessonProgress,
   renderClassContext,
   updateTopicProgress,
 } from './progress';
@@ -138,5 +139,65 @@ describe('curriculum progress helpers', () => {
     expect(getExamTopicWarning(profile, unit.topics[3]!.id)).toBe('הנושא עדיין לא סומן כנלמד בכיתה הזו.');
     expect(getExamTopicWarning(profile, thirdTopic.id)).toBe('הנושא עדיין בתהליך, כדאי לוודא שהמבחן לא מתקדם מדי.');
     expect(getExamTopicWarning(profile, firstTopic.id)).toBeUndefined();
+  });
+
+  it('records post-lesson progress as cumulative hours with dated notes', () => {
+    let profile = createClassProgressProfile({
+      id: 'class-7a',
+      name: "ז' 1",
+      grade: 'זי',
+      now,
+    });
+    profile = updateTopicProgress(profile, firstTopic.id, {
+      status: 'in_progress',
+      hoursSpent: 2,
+      notes: 'לפני השיעור: התחילו לזהות נתונים',
+    }, later);
+
+    const afterLesson = recordPostLessonProgress(profile, {
+      topicId: firstTopic.id,
+      status: 'completed',
+      hoursTaught: 1.5,
+      taughtDate: '2026-05-16',
+      notes: 'הספקנו עד בעיות מילוליות; צריך לפתוח בזה בפעם הבאה',
+    }, '2026-05-16T11:00:00.000Z');
+
+    expect(afterLesson.updatedAt).toBe('2026-05-16T11:00:00.000Z');
+    expect(afterLesson.topics[firstTopic.id]).toEqual({
+      topicId: firstTopic.id,
+      status: 'completed',
+      hoursSpent: 3.5,
+      lastTaughtDate: '2026-05-16',
+      notes: [
+        'לפני השיעור: התחילו לזהות נתונים',
+        '2026-05-16: הספקנו עד בעיות מילוליות; צריך לפתוח בזה בפעם הבאה',
+      ].join('\n'),
+    });
+    expect(renderClassContext(afterLesson)).toContain('הושלם, 3.5 שעות');
+    expect(renderClassContext(afterLesson)).toContain('2026-05-16: הספקנו עד בעיות מילוליות');
+  });
+
+  it('records post-lesson status/date even when lesson hours and notes are empty', () => {
+    const profile = createClassProgressProfile({
+      id: 'class-7a',
+      name: "ז' 1",
+      grade: 'זי',
+      now,
+    });
+
+    const afterLesson = recordPostLessonProgress(profile, {
+      topicId: secondTopic.id,
+      status: 'needs_review',
+      hoursTaught: Number.NaN,
+      taughtDate: '2026-05-16',
+      notes: '   ',
+    }, '2026-05-16T11:00:00.000Z');
+
+    expect(afterLesson.topics[secondTopic.id]).toEqual({
+      topicId: secondTopic.id,
+      status: 'needs_review',
+      hoursSpent: 0,
+      lastTaughtDate: '2026-05-16',
+    });
   });
 });

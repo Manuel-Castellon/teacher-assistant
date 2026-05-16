@@ -3,6 +3,7 @@ import { gradeLabel } from '../types/shared';
 import { createDefaultBackend, type CompletionFn } from '../exam/backends';
 import { getLessonPlanCurriculumContext, renderLessonPlanCurriculumContext } from './curriculumContext';
 import { LESSON_PLAN_PROMPT_VERSION, LESSON_PLAN_SYSTEM_PROMPT } from '../providers/impl/lessonPlanPrompt';
+import { renderWorksheetPreference } from './worksheetPolicy';
 
 export class LessonPlanGenerator {
   readonly promptVersion = LESSON_PLAN_PROMPT_VERSION;
@@ -37,6 +38,7 @@ export function renderLessonPlanUserPrompt(req: LessonPlanRequest): string {
     `כיתה: ${gradeLabel(req.grade)}`,
     `משך השיעור: ${req.duration} דקות`,
     `סוג השיעור: ${req.lessonType}`,
+    `דף עבודה לתלמידים: ${renderWorksheetPreference(req.includeWorksheet ?? true)}`,
   ];
 
   if (req.textbook) {

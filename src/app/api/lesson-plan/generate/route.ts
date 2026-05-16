@@ -7,6 +7,10 @@ import {
   validateLessonPlanRequestCurriculumTopic,
 } from '@/lessonPlan/curriculumContext';
 import { createBackendByName, type BackendName } from '@/exam/backends';
+import {
+  renderWorksheetPreference,
+  resolveIncludeWorksheet,
+} from '@/lessonPlan/worksheetPolicy';
 import type { LessonPlanRequest, LessonDuration, LessonType } from '@/types/lessonPlan';
 import type { GradeLevel } from '@/types/shared';
 
@@ -22,6 +26,7 @@ interface GenerateLessonPlanBody {
   teacherRequest?: string;
   teacherNotes?: string;
   previousLessonContext?: string;
+  includeWorksheet?: boolean;
   backend?: AIBackend;
 }
 
@@ -49,6 +54,7 @@ export async function POST(request: Request) {
     const grade = body.grade as GradeLevel;
     const duration = body.duration as LessonDuration;
     const lessonType = body.lessonType as LessonType;
+    const includeWorksheet = resolveIncludeWorksheet(lessonType, body.includeWorksheet);
     const curriculumTopicId =
       body.curriculumTopicId && body.curriculumTopicId !== CUSTOM_LESSON_PLAN_TOPIC_ID
         ? body.curriculumTopicId
@@ -64,9 +70,10 @@ export async function POST(request: Request) {
       grade,
       duration,
       lessonType,
+      includeWorksheet,
       ...(curriculumTopicId ? { curriculumTopicId } : {}),
       ...(body.previousLessonContext?.trim() ? { previousLessonContext: body.previousLessonContext.trim() } : {}),
-      teacherNotes: renderTeacherNotes(body),
+      teacherNotes: renderTeacherNotes(body, includeWorksheet),
     };
 
     const backend = body.backend && body.backend !== 'auto'
@@ -110,7 +117,7 @@ function validateGenerateLessonPlanBody(body: GenerateLessonPlanBody): string[] 
   return errors;
 }
 
-function renderTeacherNotes(body: GenerateLessonPlanBody): string {
+export function renderTeacherNotes(body: GenerateLessonPlanBody, includeWorksheet: boolean): string {
   const lines = [
     'בקשת מורה חופשית:',
     body.teacherRequest?.trim() ?? '',
@@ -122,9 +129,14 @@ function renderTeacherNotes(body: GenerateLessonPlanBody): string {
 
   lines.push(
     '',
+    'העדפת דף עבודה:',
+    renderWorksheetPreference(includeWorksheet),
+    '',
     'דרישות MVP:',
     '- להחזיר מערך שיעור מוכן לשימוש בכיתה.',
-    '- אם נדרש דף עבודה, לכלול תרגילים מקוריים בתוך שלבי המערך.',
+    includeWorksheet
+      ? '- ליצור דף עבודה לתלמידים כאשר זה מתאים לסוג השיעור: תרגילים מקוריים מדורגים, מוכנים להדפסה, עם פתרונות/מפתח קצר למורה.'
+      : '- לא ליצור דף עבודה לתלמידים; להשתמש בתרגול לוח, לוחות מחיקים, ספר, או עבודה עצמית רגילה.',
     '- לשמור על התאמה לגיל ולתכנית הלימודים המקומית.',
   );
 

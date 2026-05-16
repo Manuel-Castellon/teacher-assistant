@@ -1,6 +1,6 @@
 # MVP Status Rundown
 
-Last updated: 2026-05-15
+Last updated: 2026-05-16
 
 Source of truth: `PROGRESS.md` and `CHECKPOINT.md`.
 
@@ -30,6 +30,8 @@ Done:
 - Generated/exported י"ב 5 יח"ל complex-numbers intro lesson plan: JSON, Markdown, DOCX, PDF.
 - Local-only copyrighted resource guardrail for `data/resources/*`.
 - `/lesson-plan` UI with explicit model selector and browser-local recent plans.
+- `/lesson-plan` UI has a worksheet toggle for suitable lesson types and forces worksheets off for `מבחן`.
+- Lesson-plan prompt/API path carries `includeWorksheet` and gives explicit worksheet/no-worksheet instructions to the model.
 - Model choices: Gemini 2.5 Flash, Gemini 3 Flash Preview, Gemini 2.5 Pro, Claude CLI, GPT-5.5 (Codex).
 - GPT-5.5 (Codex) browser exports approved by user as quality references:
   - `data/lesson-plans/generated/grade7-equations-common-denominator-90min-approved-gpt55.pdf`
@@ -90,6 +92,7 @@ Done:
 - Per topic: status, actual hours, last-taught date, and teacher notes.
 - Lesson-plan page can apply the tracker's next-topic suggestion as editable defaults.
 - Lesson-plan suggestions include a deterministic editable `בקשת המורה`, and switching to `ללא הקשר כיתה` clears stale previous-lesson context.
+- Lesson-plan result view can save post-lesson status, hours taught now, date, and actual notes back into class progress.
 - Exam page can fill editable question specs from taught/review material.
 - Exam page warns when a selected topic is not yet taught for the selected class, without blocking teacher override.
 
@@ -97,7 +100,6 @@ Missing:
 - Apply/test the DB migration against the active local Postgres instance before relying on signed-in persistence.
 - Subtopic-level progress.
 - Richer continuity timeline from prior generated/taught lessons.
-- Post-lesson update flow that writes actual taught status/hours/notes back into progress.
 - Prompt-side use of class progress is currently passed through notes/context from the client, not loaded by generation APIs from `classId`.
 
 ## MVP 5 — Grade Tracker
@@ -141,8 +143,11 @@ Recent verification:
 - `npm run test:progress` passed for the MVP4 helper logic.
 - `npm run test:signoff` passed after the latest polish.
 - `npm run build` passed.
+- Latest worksheet/post-lesson sign-off: 67 lesson-plan tests, 9 progress/server-store tests, MVP1 2/2 evals, MVP2 4/4 evals.
+- Playwright MCP worksheet smoke passed for toggle on/off and forced-off exam-day behavior.
+- Playwright MCP closed-loop smoke passed for `/curriculum` -> `/lesson-plan` with worksheet -> post-lesson feedback -> `/exam`.
 - Unauthenticated `/api/curriculum/classes` smoke returns `authenticated:false` and `/curriculum` has 0 Playwright console warnings/errors.
 - `npm run test:evals` passed: MVP1 2/2, MVP2 4/4.
 
 Immediate next decision:
-- Apply the DB migration and try the signed-in `/curriculum` -> `/lesson-plan` -> `/exam` loop with real class data; then build the post-lesson update flow.
+- Try real model generation with worksheet toggle on/off, then apply the DB migration and try the signed-in `/curriculum` -> `/lesson-plan` -> post-lesson update -> `/exam` loop with real class data.

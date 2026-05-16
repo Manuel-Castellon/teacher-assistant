@@ -6,10 +6,18 @@ import { gradeLabel, type GradeLevel } from '@/types/shared';
 import { CUSTOM_LESSON_PLAN_TOPIC_ID, getLessonPlanCurriculumTopicOptions } from '@/lessonPlan/curriculumContext';
 import type { BackendName } from '@/exam/backends';
 import {
+  resolveIncludeWorksheet,
+  supportsWorksheetForLessonType,
+} from '@/lessonPlan/worksheetPolicy';
+import {
   buildLessonSuggestion,
   CLASS_PROGRESS_STORAGE_KEY,
+  getCurriculumUnitForGrade,
+  recordPostLessonProgress,
   renderClassContext,
+  STATUS_LABELS,
   type ClassProgressProfile,
+  type TopicProgressStatus,
 } from '@/curriculumProgress/progress';
 
 interface GenerateLessonPlanResponse {
@@ -38,6 +46,7 @@ interface LessonPlanFormState {
   teacherRequest: string;
   teacherNotes: string;
   previousLessonContext: string;
+  includeWorksheet: boolean;
   backend: AIBackend;
 }
 
@@ -75,6 +84,12 @@ const BACKEND_OPTIONS: { value: AIBackend; label: string }[] = [
   { value: 'codex', label: 'GPT-5.5 (Codex)' },
 ];
 
+const PROGRESS_STATUS_OPTIONS: { value: TopicProgressStatus; label: string }[] = [
+  { value: 'in_progress', label: STATUS_LABELS.in_progress },
+  { value: 'completed', label: STATUS_LABELS.completed },
+  { value: 'needs_review', label: STATUS_LABELS.needs_review },
+];
+
 const INITIAL_FORM: LessonPlanFormState = {
   topic: 'גאומטריה',
   subTopic: 'שטחים של מרובעים',
@@ -86,6 +101,7 @@ const INITIAL_FORM: LessonPlanFormState = {
     'מערך שיעור בנושא גאומטריה לתלמידי כיתה ז\'. תרגילים מתקדמים בשטחים של מרובעים (מקבילית, טרפז, מלבן, ריבוע), שימוש בנוסחאות בכל הכיוונים: חישוב שטח מנתוני צלעות וחישוב אורכי צלעות בעזרת שטח. אפשר לכלול משוואות, אבל רק ממעלה ראשונה.',
   teacherNotes: '',
   previousLessonContext: '',
+  includeWorksheet: true,
   backend: 'auto',
 };
 
@@ -99,6 +115,12 @@ export default function LessonPlanPage() {
   const [savedPlans, setSavedPlans] = useState<SavedLessonPlan[]>([]);
   const [classProfiles, setClassProfiles] = useState<ClassProgressProfile[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
+  const [postLessonStatus, setPostLessonStatus] = useState<TopicProgressStatus>('completed');
+  const [postLessonHours, setPostLessonHours] = useState('1');
+  const [postLessonDate, setPostLessonDate] = useState(new Date().toISOString().slice(0, 10));
+  const [postLessonNotes, setPostLessonNotes] = useState('');
+  const [progressSaveStatus, setProgressSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'local' | 'error'>('idle');
+  const [progressSaveMessage, setProgressSaveMessage] = useState('');
 
   const curriculumTopicOptions = getLessonPlanCurriculumTopicOptions(form.grade);
 
@@ -129,6 +151,9 @@ export default function LessonPlanPage() {
   }, []);
 
   const selectedClass = classProfiles.find(item => item.id === selectedClassId);
+  const postLessonTopicId = getTrackableTopicId(form.curriculumTopicId, selectedClass);
+  const worksheetSupported = supportsWorksheetForLessonType(form.lessonType);
+  const effectiveIncludeWorksheet = resolveIncludeWorksheet(form.lessonType, form.includeWorksheet);
 
   function updateForm(patch: Partial<LessonPlanFormState>) {
     setForm(prev => ({ ...prev, ...patch }));
@@ -136,6 +161,16 @@ export default function LessonPlanPage() {
 
   function handleGradeChange(grade: GradeLevel) {
     setForm(prev => ({ ...prev, grade, curriculumTopicId: '' }));
+  }
+
+  function handleLessonTypeChange(lessonType: LessonType) {
+    setForm(prev => ({
+      ...prev,
+      lessonType,
+      includeWorksheet: supportsWorksheetForLessonType(lessonType)
+        ? (supportsWorksheetForLessonType(prev.lessonType) ? prev.includeWorksheet : true)
+        : false,
+    }));
   }
 
   function handleCurriculumTopicChange(topicId: string) {
@@ -149,6 +184,8 @@ export default function LessonPlanPage() {
 
   function handleClassContextChange(classId: string) {
     setSelectedClassId(classId);
+    setProgressSaveStatus('idle');
+    setProgressSaveMessage('');
     if (!classId) {
       updateForm({ previousLessonContext: '' });
     }
@@ -172,6 +209,58 @@ export default function LessonPlanPage() {
     }));
   }
 
+  async function persistClassProfiles(nextProfiles: ClassProgressProfile[], nextSelectedClassId: string) {
+    setClassProfiles(nextProfiles);
+    setSelectedClassId(nextSelectedClassId);
+    window.localStorage.setItem(CLASS_PROGRESS_STORAGE_KEY, JSON.stringify(nextProfiles));
+
+    const resp = await fetch('/api/curriculum/classes', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profiles: nextProfiles }),
+    });
+    if (!resp.ok) throw new Error(`שגיאה ${resp.status}`);
+    const data = await readJsonOrError<{ authenticated?: boolean; profiles?: ClassProgressProfile[]; error?: string }>(resp);
+    if (data.error) throw new Error(data.error);
+    if (!data.authenticated) return { authenticated: false, profiles: nextProfiles };
+
+    const profiles = data.profiles ?? nextProfiles;
+    setClassProfiles(profiles);
+    setSelectedClassId(profiles.some(profile => profile.id === nextSelectedClassId) ? nextSelectedClassId : profiles[0]?.id ?? '');
+    window.localStorage.setItem(CLASS_PROGRESS_STORAGE_KEY, JSON.stringify(profiles));
+    return { authenticated: true, profiles };
+  }
+
+  async function handleSavePostLessonProgress() {
+    if (!selectedClass || !postLessonTopicId) return;
+
+    setProgressSaveStatus('saving');
+    setProgressSaveMessage('שומר התקדמות...');
+    const now = new Date().toISOString();
+    const nextProfile = recordPostLessonProgress(selectedClass, {
+      topicId: postLessonTopicId,
+      status: postLessonStatus,
+      hoursTaught: Number(postLessonHours),
+      taughtDate: postLessonDate,
+      notes: postLessonNotes,
+    }, now);
+    const nextProfiles = classProfiles.map(profile => profile.id === selectedClass.id ? nextProfile : profile);
+
+    try {
+      const saved = await persistClassProfiles(nextProfiles, selectedClass.id);
+      updateForm({ previousLessonContext: renderClassContext(nextProfile) });
+      setPostLessonNotes('');
+      setProgressSaveStatus(saved.authenticated ? 'saved' : 'local');
+      setProgressSaveMessage(saved.authenticated ? 'נשמר במעקב הכיתה' : 'נשמר מקומית בדפדפן');
+    } catch (err) {
+      setClassProfiles(nextProfiles);
+      window.localStorage.setItem(CLASS_PROGRESS_STORAGE_KEY, JSON.stringify(nextProfiles));
+      updateForm({ previousLessonContext: renderClassContext(nextProfile) });
+      setProgressSaveStatus('error');
+      setProgressSaveMessage(err instanceof Error ? `נשמר מקומית; סנכרון נכשל: ${err.message}` : 'נשמר מקומית; סנכרון נכשל');
+    }
+  }
+
   function rememberPlan(request: LessonPlanFormState, response: GenerateLessonPlanResponse) {
     const saved: SavedLessonPlan = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -191,7 +280,11 @@ export default function LessonPlanPage() {
   }
 
   function openSavedPlan(saved: SavedLessonPlan) {
-    setForm(saved.request);
+    setForm({
+      ...INITIAL_FORM,
+      ...saved.request,
+      includeWorksheet: resolveIncludeWorksheet(saved.request.lessonType, saved.request.includeWorksheet),
+    });
     setResult(saved.response);
     setShowPreview(true);
     setError(null);
@@ -207,7 +300,10 @@ export default function LessonPlanPage() {
     setError(null);
     setResult(null);
 
-    const request = { ...form };
+    const request = {
+      ...form,
+      includeWorksheet: effectiveIncludeWorksheet,
+    };
     try {
       const resp = await fetch('/api/lesson-plan/generate', {
         method: 'POST',
@@ -333,7 +429,7 @@ export default function LessonPlanPage() {
             label="סוג שיעור"
             value={form.lessonType}
             options={LESSON_TYPE_OPTIONS}
-            onChange={v => updateForm({ lessonType: v as LessonType })}
+            onChange={v => handleLessonTypeChange(v as LessonType)}
           />
           <SelectField
             label="מודל AI"
@@ -357,6 +453,23 @@ export default function LessonPlanPage() {
             onChange={handleCurriculumTopicChange}
           />
         </div>
+
+        {worksheetSupported ? (
+          <label style={toggleRowStyle}>
+            <input
+              type="checkbox"
+              checked={form.includeWorksheet}
+              onChange={e => updateForm({ includeWorksheet: e.target.checked })}
+              style={checkboxStyle}
+            />
+            <span>
+              <strong>צור דף עבודה לתלמידים</strong>
+              <span style={toggleHintStyle}> מתאים לשיעורי הקנייה, תרגול וחזרה; אפשר לבטל אם רוצים רק תרגול כיתתי.</span>
+            </span>
+          </label>
+        ) : (
+          <p style={hintTextStyle}>בסוג שיעור מבחן לא נוצר דף עבודה לתלמידים.</p>
+        )}
 
         <CurriculumHints topics={curriculumTopicOptions} selectedTopicId={form.curriculumTopicId} />
 
@@ -387,7 +500,7 @@ export default function LessonPlanPage() {
         </button>
       </section>
 
-      {loading && <GeneratingIndicator />}
+      {loading && <GeneratingIndicator includeWorksheet={effectiveIncludeWorksheet} />}
 
       {error && <div style={errorStyle}>{error}</div>}
 
@@ -417,6 +530,60 @@ export default function LessonPlanPage() {
             <div style={successStyle}>בדיקות המבנה עברו: פתיחה עצמאית, עבודה עצמית אחרונה, וסכום זמנים תקין.</div>
           )}
 
+          {selectedClass && (
+            <section style={postLessonPanelStyle}>
+              <div style={panelHeaderStyle}>
+                <strong>עדכון אחרי השיעור</strong>
+                <a href="/curriculum" style={linkButtonStyle}>פתח מעקב כיתה</a>
+              </div>
+              {postLessonTopicId ? (
+                <>
+                  <div style={postLessonGridStyle}>
+                    <SelectField
+                      label="סטטוס אחרי השיעור"
+                      value={postLessonStatus}
+                      options={PROGRESS_STATUS_OPTIONS}
+                      onChange={value => setPostLessonStatus(value as TopicProgressStatus)}
+                    />
+                    <Field
+                      label="שעות שנלמדו עכשיו"
+                      type="number"
+                      value={postLessonHours}
+                      onChange={setPostLessonHours}
+                    />
+                    <Field
+                      label="תאריך"
+                      type="date"
+                      value={postLessonDate}
+                      onChange={setPostLessonDate}
+                    />
+                  </div>
+                  <TextArea
+                    label="מה קרה בפועל"
+                    value={postLessonNotes}
+                    onChange={setPostLessonNotes}
+                    placeholder="למשל: הספקנו רק את סעיפים א-ג; לפתוח בפעם הבאה בתרגול בעיות מילוליות"
+                  />
+                  <div style={postLessonActionsStyle}>
+                    <button
+                      type="button"
+                      onClick={handleSavePostLessonProgress}
+                      disabled={progressSaveStatus === 'saving'}
+                      style={{ ...btnPrimary, opacity: progressSaveStatus === 'saving' ? 0.6 : 1 }}
+                    >
+                      {progressSaveStatus === 'saving' ? 'שומר...' : 'שמור למעקב הכיתה'}
+                    </button>
+                    {progressSaveMessage && (
+                      <span style={progressMessageStyle(progressSaveStatus)}>{progressSaveMessage}</span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p style={hintTextStyle}>בחרו נושא בתכנית כדי לשמור את תוצאות השיעור למעקב הכיתה.</p>
+              )}
+            </section>
+          )}
+
           {showPreview && result.markdown && <MarkdownPreview markdown={result.markdown} />}
         </section>
       )}
@@ -436,6 +603,14 @@ function sanitizeFilename(filename: string): string {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 120);
+}
+
+function getTrackableTopicId(topicId: string, profile?: ClassProgressProfile): string {
+  if (!topicId || topicId === CUSTOM_LESSON_PLAN_TOPIC_ID) return '';
+  if (!profile) return topicId;
+  const belongsToClassGrade = getCurriculumUnitForGrade(profile.grade).topics.some(topic => topic.id === topicId);
+  if (!belongsToClassGrade) return '';
+  return topicId;
 }
 
 async function readJsonOrError<T extends { error?: string }>(resp: Response): Promise<T> {
@@ -563,10 +738,13 @@ const GENERATING_MESSAGES = [
   'כמעט מוכן...',
 ];
 
-function GeneratingIndicator() {
+const GENERATING_MESSAGES_WITHOUT_WORKSHEET = GENERATING_MESSAGES.filter(message => message !== 'מכין דף עבודה...');
+
+function GeneratingIndicator({ includeWorksheet }: { includeWorksheet: boolean }) {
   const [elapsed, setElapsed] = useState(0);
   const [msgIndex, setMsgIndex] = useState(0);
   const startRef = useRef(Date.now());
+  const messages = includeWorksheet ? GENERATING_MESSAGES : GENERATING_MESSAGES_WITHOUT_WORKSHEET;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -577,10 +755,10 @@ function GeneratingIndicator() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setMsgIndex(prev => (prev + 1) % GENERATING_MESSAGES.length);
+      setMsgIndex(prev => (prev + 1) % messages.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [messages.length]);
 
   const minutes = Math.floor(elapsed / 60);
   const seconds = elapsed % 60;
@@ -594,7 +772,7 @@ function GeneratingIndicator() {
         <div style={indicatorFill} />
       </div>
       <div style={indicatorTextRow}>
-        <span style={indicatorMessage}>{GENERATING_MESSAGES[msgIndex]}</span>
+        <span style={indicatorMessage}>{messages[msgIndex % messages.length]}</span>
         <span style={indicatorTime}>{timeStr}</span>
       </div>
       <style>{`
@@ -750,6 +928,29 @@ const gridStyle: React.CSSProperties = {
   marginBottom: '1rem',
 };
 
+const toggleRowStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '0.55rem',
+  border: '1px solid #d7dee8',
+  borderRadius: 6,
+  padding: '0.7rem 0.8rem',
+  marginBottom: '0.8rem',
+  background: '#f8fbff',
+  lineHeight: 1.5,
+};
+
+const checkboxStyle: React.CSSProperties = {
+  width: 18,
+  height: 18,
+  marginTop: 3,
+};
+
+const toggleHintStyle: React.CSSProperties = {
+  color: '#64748b',
+  fontSize: '0.88rem',
+};
+
 const stackStyle: React.CSSProperties = {
   display: 'grid',
   gap: '0.9rem',
@@ -854,6 +1055,47 @@ const actionsStyle: React.CSSProperties = {
   gap: '0.5rem',
   flexWrap: 'wrap',
 };
+
+const postLessonPanelStyle: React.CSSProperties = {
+  border: '1px solid #d7dee8',
+  borderRadius: 8,
+  padding: '0.9rem',
+  background: '#fff',
+  marginBottom: '1rem',
+};
+
+const postLessonGridStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+  gap: '0.75rem',
+  marginBottom: '0.75rem',
+};
+
+const postLessonActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  gap: '0.75rem',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  marginTop: '0.75rem',
+};
+
+function progressMessageStyle(status: 'idle' | 'saving' | 'saved' | 'local' | 'error'): React.CSSProperties {
+  const colors = {
+    idle: { background: '#f8fafc', border: '#cbd5e1', color: '#475569' },
+    saving: { background: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
+    saved: { background: '#ecfdf5', border: '#a7f3d0', color: '#065f46' },
+    local: { background: '#f8fafc', border: '#cbd5e1', color: '#475569' },
+    error: { background: '#fffbeb', border: '#fde68a', color: '#92400e' },
+  }[status];
+  return {
+    padding: '0.45rem 0.7rem',
+    border: `1px solid ${colors.border}`,
+    borderRadius: 4,
+    background: colors.background,
+    color: colors.color,
+    fontSize: '0.86rem',
+  };
+}
 
 const sectionTitleStyle: React.CSSProperties = {
   margin: 0,
