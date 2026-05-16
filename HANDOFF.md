@@ -1,6 +1,6 @@
 # Handoff Snapshot
 
-Date: 2026-05-16
+Date: 2026-05-16 (post classId resolver + continuity timeline + exam PDF UI)
 
 ## Current State
 
@@ -10,6 +10,9 @@ Date: 2026-05-16
 - Class progress now has an authenticated server persistence path via `/api/curriculum/classes`.
 - Browser-local storage remains the unauthenticated/offline fallback and cache.
 - Lesson/exam pages can consume class progress as suggestions, but teachers can always override manually.
+- Generation APIs accept `classId` + `classContextSource` and resolve the prompt's class context server-side when authenticated (fresh load per request); signed-out clients keep their localStorage-rendered snapshot as a fallback. UI selectors expose `auto` / `manual` / `none` on `/lesson-plan` and `/exam`.
+- `/curriculum` and `/lesson-plan` show a per-class continuity timeline derived from dated post-lesson notes + `lastTaughtDate`.
+- `/exam` exposes docx+pdf buttons for both exam and answer key via the existing `/api/exam/export` route.
 - `/lesson-plan` can now write post-lesson outcomes back into class progress after a generated plan.
 - `/lesson-plan` has a `צור דף עבודה לתלמידים` toggle for suitable lesson types; exam-day lessons force worksheets off.
 - Lesson-plan suggestions include a deterministic editable `בקשת המורה`; this is local template rendering, not an LLM call.

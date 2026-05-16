@@ -1,6 +1,6 @@
 # MVP Status Rundown
 
-Last updated: 2026-05-16
+Last updated: 2026-05-16 (post classId resolver + continuity timeline + exam PDF UI)
 
 Source of truth: `PROGRESS.md` and `CHECKPOINT.md`.
 
@@ -56,13 +56,13 @@ Done:
 - Question type taxonomy: `חישובי`, `בעיה מילולית`, `הוכחה`, `קריאה וניתוח`, `מעורב`.
 - Saved exam history, structured preview, one-question regeneration.
 - DOCX export with RTL bidi post-processing.
+- PDF export via the same `/api/exam/export` route; `/exam` exposes docx+pdf buttons for both exam and answer key, `/lesson-plan` already used the pdf format.
 - MVP2 deterministic eval suite and Playwright smoke coverage.
 - Real exam rubric extraction infrastructure and May 2026 rubric exported as JSON/Markdown/DOCX/PDF. This has immediate MVP2 value because it attaches to generated/real exams, but the reusable criterion-level rubric model is mainly groundwork for MVP6 supervised grading.
 
 Missing:
 - OCR ingestion for scanned/student work is deferred.
 - UI for browsing/exporting rubric artifacts is not built.
-- PDF export exists via script, not via app route/UI.
 
 ## MVP 3 — Question Bank / Bagrut Archive
 
@@ -95,12 +95,12 @@ Done:
 - Lesson-plan result view can save post-lesson status, hours taught now, date, and actual notes back into class progress.
 - Exam page can fill editable question specs from taught/review material.
 - Exam page warns when a selected topic is not yet taught for the selected class, without blocking teacher override.
+- Generation APIs (`/api/lesson-plan/generate`, `/api/exam/generate`) accept `classId` + `classContextSource` (`auto` / `manual` / `none`); signed-in path loads the profile fresh from Postgres per request, signed-out path keeps the client-rendered snapshot as a fallback. UI selectors expose all three modes.
+- Per-class continuity timeline derived from dated post-lesson notes + `lastTaughtDate`: 8-entry panel on `/curriculum` and a compact 4-entry strip on `/lesson-plan`.
 
 Missing:
 - Apply/test the DB migration against the active local Postgres instance before relying on signed-in persistence.
 - Subtopic-level progress.
-- Richer continuity timeline from prior generated/taught lessons.
-- Prompt-side use of class progress is currently passed through notes/context from the client, not loaded by generation APIs from `classId`.
 
 ## MVP 5 — Grade Tracker
 
@@ -140,14 +140,10 @@ Known broken: nothing.
 Recent verification:
 - `npm run type-check` passed.
 - `npm run test:lesson-plan` is the focused lesson-plan sign-off command.
-- `npm run test:progress` passed for the MVP4 helper logic.
-- `npm run test:signoff` passed after the latest polish.
+- `npm run test:progress` passed: 20 tests (progress + serverStore + classContextResolver).
+- `npm run test:signoff` passed after classId resolver + timeline + exam PDF UI: 67 lesson-plan, 20 progress, MVP1 2/2, MVP2 4/4.
 - `npm run build` passed.
-- Latest worksheet/post-lesson sign-off: 67 lesson-plan tests, 9 progress/server-store tests, MVP1 2/2 evals, MVP2 4/4 evals.
-- Playwright MCP worksheet smoke passed for toggle on/off and forced-off exam-day behavior.
-- Playwright MCP closed-loop smoke passed for `/curriculum` -> `/lesson-plan` with worksheet -> post-lesson feedback -> `/exam`.
-- Unauthenticated `/api/curriculum/classes` smoke returns `authenticated:false` and `/curriculum` has 0 Playwright console warnings/errors.
-- `npm run test:evals` passed: MVP1 2/2, MVP2 4/4.
+- Playwright MCP smoke (unauthenticated, localStorage seeded): three classContextSource modes on `/lesson-plan` and `/exam` sent expected payloads; `/curriculum` and `/lesson-plan` continuity timelines rendered with correct sort/labels; `/api/exam/export` returned a real PDF (`%PDF` magic, 15KB); four exam download buttons rendered after generation. 0 console warnings/errors.
 
 Immediate next decision:
-- Try real model generation with worksheet toggle on/off, then apply the DB migration and try the signed-in `/curriculum` -> `/lesson-plan` -> post-lesson update -> `/exam` loop with real class data.
+- Pick the next milestone from the open options: MVP 1 LLM-judge rubric (dev-only eval), MVP 2 rubric browser/export UI, MVP 3 question-bank schema + tagging stub, or MVP 4 subtopic-level progress. Real-class signed-in loop and DB migration remain tabled until a usable local Postgres path exists.

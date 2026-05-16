@@ -31,8 +31,10 @@
   - PDF route returned real `%PDF` bytes (15KB) with correct headers; all four exam download buttons rendered after generation.
   - Console: 0 warnings / 0 errors across runs.
 
+- Documentation rolled forward into PROGRESS.md / MVP_STATUS.md / HANDOFF.md and committed.
+- Branch pushed: `mvp-4-post-lesson-flow` is up on `origin`. PR not opened.
+
 ## Next
-- Optional: PRIOR worksheet sign-off doc updates (CHECKPOINT.md / docs/lesson-plan-signoff.md from before this session) are still in the working tree and folded into this commit.
 - Resume options when ready:
   - MVP 1 LLM-judge rubric (dev-only eval; modest token cost when run).
   - MVP 2 rubric artifacts browser/export UI.
