@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { pool } from '@/lib/db';
+import { saveGeneratedArtifact } from '@/artifacts/serverStore';
 import { ExamGenerator } from '@/exam/ExamGenerator';
 import { renderExamMarkdown, renderAnswerKeyMarkdown } from '@/exam/renderExam';
 import { SympyMathVerifier } from '@/providers/impl/SympyMathVerifier';
@@ -54,10 +55,22 @@ export async function POST(request: Request) {
 
     const examMarkdown = renderExamMarkdown(exam);
     const answerKeyMarkdown = renderAnswerKeyMarkdown(exam);
+    const examArtifact = await persistExamArtifact({
+      ...(userId ? { userId } : {}),
+      ...(resolved.classId ? { classId: resolved.classId } : {}),
+      exam,
+      examRequest,
+      examMarkdown,
+      answerKeyMarkdown,
+      verification,
+    });
 
     const rubricMode: RubricMode = body.rubricMode ?? 'deterministic';
     const rubricResult = await persistRubric({
       mode: rubricMode,
+      ...(userId ? { userId } : {}),
+      ...(resolved.classId ? { classId: resolved.classId } : {}),
+      ...(examArtifact.artifactId ? { sourceArtifactId: examArtifact.artifactId } : {}),
       exam,
       examRequest,
       examMarkdown,
@@ -69,9 +82,12 @@ export async function POST(request: Request) {
       examMarkdown,
       answerKeyMarkdown,
       verification,
+      artifactId: examArtifact.artifactId,
+      artifactWarning: examArtifact.warning,
       rubricId: rubricResult.rubricId,
+      rubricArtifactId: rubricResult.artifactId,
       rubricMode: rubricResult.appliedMode,
-      rubricWarning: rubricResult.warning,
+      rubricWarning: [rubricResult.warning, rubricResult.artifactWarning].filter(Boolean).join('\n') || undefined,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
@@ -91,6 +107,9 @@ function stripWrapperFields(body: GenerateExamBody): ExamRequest {
 
 interface PersistRubricInput {
   mode: RubricMode;
+  userId?: string;
+  classId?: string;
+  sourceArtifactId?: string;
   exam: GeneratedExam;
   examRequest: ExamRequest;
   examMarkdown: string;
@@ -99,8 +118,46 @@ interface PersistRubricInput {
 
 interface PersistRubricResult {
   rubricId?: string;
+  artifactId?: string;
   appliedMode: RubricMode;
   warning?: string;
+  artifactWarning?: string;
+}
+
+interface PersistExamArtifactInput {
+  userId?: string;
+  classId?: string;
+  exam: GeneratedExam;
+  examRequest: ExamRequest;
+  examMarkdown: string;
+  answerKeyMarkdown: string;
+  verification: Awaited<ReturnType<SympyMathVerifier['verifyExamItems']>>;
+}
+
+async function persistExamArtifact(input: PersistExamArtifactInput): Promise<{ artifactId?: string; warning?: string }> {
+  if (!input.userId) return {};
+
+  try {
+    const saved = await saveGeneratedArtifact(pool, {
+      teacherId: input.userId,
+      kind: 'exam',
+      title: `${input.exam.header.subject} - ${input.exam.header.className}`,
+      grade: input.examRequest.grade,
+      ...(input.classId ? { classId: input.classId } : {}),
+      payload: input.exam,
+      markdown: input.examMarkdown,
+      metadata: {
+        request: input.examRequest,
+        answerKeyMarkdown: input.answerKeyMarkdown,
+        verification: input.verification,
+      },
+    });
+    return { artifactId: saved.id };
+  } catch (err) {
+    return {
+      warning: `שמירת המבחן למסד הנתונים נכשלה: ${err instanceof Error ? err.message : 'unknown'}`,
+    };
+  }
 }
 
 async function persistRubric(input: PersistRubricInput): Promise<PersistRubricResult> {
@@ -129,7 +186,37 @@ async function persistRubric(input: PersistRubricInput): Promise<PersistRubricRe
   }
 
   saveExamRubric(rubric);
-  return { rubricId: id, appliedMode, ...(warning ? { warning } : {}) };
+  let artifactId: string | undefined;
+  let artifactWarning: string | undefined;
+  if (input.userId) {
+    try {
+      const saved = await saveGeneratedArtifact(pool, {
+        teacherId: input.userId,
+        kind: 'rubric',
+        title: rubric.title,
+        grade: input.examRequest.grade,
+        ...(input.classId ? { classId: input.classId } : {}),
+        ...(input.sourceArtifactId ? { sourceArtifactId: input.sourceArtifactId } : {}),
+        payload: rubric,
+        metadata: {
+          rubricId: id,
+          mode: appliedMode,
+          filesystemPath: `data/exam-rubrics/${id}.json`,
+        },
+      });
+      artifactId = saved.id;
+    } catch (err) {
+      artifactWarning = `שמירת המחוון למסד הנתונים נכשלה: ${err instanceof Error ? err.message : 'unknown'}`;
+    }
+  }
+
+  return {
+    rubricId: id,
+    ...(artifactId ? { artifactId } : {}),
+    appliedMode,
+    ...(warning ? { warning } : {}),
+    ...(artifactWarning ? { artifactWarning } : {}),
+  };
 }
 
 export function mergeClassContextIntoNotes(

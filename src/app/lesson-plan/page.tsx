@@ -25,6 +25,22 @@ interface GenerateLessonPlanResponse {
   plan?: LessonPlan;
   markdown?: string;
   worksheetMarkdown?: string;
+  artifactId?: string;
+  artifactWarning?: string;
+  worksheetVerification?: {
+    provider: 'sympy';
+    total: number;
+    verified: number;
+    failed: number;
+    skipped: number;
+    warning?: string;
+    results: {
+      questionRef: string;
+      isValid: boolean;
+      computedAnswer: string | null;
+      message: string;
+    }[];
+  };
   invariantViolations?: { code: string; message: string }[];
   error?: string;
 }
@@ -612,6 +628,22 @@ export default function LessonPlanPage() {
             <div style={successStyle}>בדיקות המבנה עברו: פתיחה עצמאית, עבודה עצמית אחרונה, וסכום זמנים תקין.</div>
           )}
 
+          {result.artifactId && (
+            <div style={successStyle}>נשמר בארכיון המורה: {result.artifactId}</div>
+          )}
+
+          {result.artifactWarning && (
+            <div style={warningStyle}>{result.artifactWarning}</div>
+          )}
+
+          {result.worksheetVerification && (
+            <div style={result.worksheetVerification.failed > 0 || result.worksheetVerification.warning ? warningStyle : successStyle}>
+              אימות דף עבודה: {result.worksheetVerification.verified}/{result.worksheetVerification.total} פריטים אומתו ב-SymPy
+              {result.worksheetVerification.skipped > 0 ? ` · ${result.worksheetVerification.skipped} דורשים בדיקה ידנית` : ''}
+              {result.worksheetVerification.warning ? ` · ${result.worksheetVerification.warning}` : ''}
+            </div>
+          )}
+
           {selectedClass && (
             <section style={postLessonPanelStyle}>
               <div style={panelHeaderStyle}>
@@ -1185,6 +1217,15 @@ const successStyle: React.CSSProperties = {
   background: '#ecfdf5',
   border: '1px solid #a7f3d0',
   color: '#065f46',
+};
+
+const warningStyle: React.CSSProperties = {
+  marginBottom: '1rem',
+  padding: '0.75rem',
+  borderRadius: 6,
+  background: '#fffbeb',
+  border: '1px solid #fde68a',
+  color: '#92400e',
 };
 
 const resultStyle: React.CSSProperties = {

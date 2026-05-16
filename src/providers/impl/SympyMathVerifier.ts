@@ -8,7 +8,7 @@ const PROJECT_ROOT = process.cwd();
 const VERIFY_SCRIPT = resolve(PROJECT_ROOT, 'scripts/verify-math.py');
 const VENV_PYTHON = resolve(PROJECT_ROOT, '.venv/bin/python3');
 
-interface SympyResult {
+export interface SympyResult {
   questionRef: string;
   isValid: boolean;
   computedAnswer: string | null;

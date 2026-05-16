@@ -31,7 +31,7 @@ ALTER TABLE teacher_progress
 
 ALTER TABLE teacher_progress
   ADD CONSTRAINT teacher_progress_status_check
-  CHECK (status IN ('not_started','in_progress','completed','needs_review'));
+  CHECK (status IN ('not_started','in_progress','completed','needs_review','skipped'));
 
 ALTER TABLE teacher_progress
   DROP CONSTRAINT IF EXISTS teacher_progress_curriculum_unit_id_fkey,

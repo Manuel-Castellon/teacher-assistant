@@ -179,7 +179,7 @@ CREATE TABLE lesson_plans (
 
   bagrut_review           JSONB,                   -- { studentSurveyTopic, exerciseSources[] }
 
-  generated_by            TEXT NOT NULL CHECK (generated_by IN ('claude-api','teacher')),
+  generated_by            TEXT NOT NULL CHECK (generated_by IN ('claude-api','codex-cli','teacher')),
   model_version           TEXT,
   prompt_version          TEXT,
 
@@ -189,6 +189,71 @@ CREATE TABLE lesson_plans (
 
 CREATE INDEX lesson_plans_class_idx ON lesson_plans(class_id);
 CREATE INDEX lesson_plans_curriculum_topic_idx ON lesson_plans(curriculum_topic_id);
+
+-- ── Generated artifacts (teacher-owned AI outputs) ─────────────────────────
+
+CREATE TABLE generated_artifacts (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  teacher_id            TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind                  TEXT NOT NULL CHECK (kind IN ('lesson_plan','exam','rubric')),
+  title                 TEXT NOT NULL,
+  grade_level           grade_level,
+  class_id              UUID REFERENCES classes(id) ON DELETE SET NULL,
+  curriculum_topic_id   TEXT,
+  source_artifact_id    UUID REFERENCES generated_artifacts(id) ON DELETE SET NULL,
+  payload               JSONB NOT NULL,
+  markdown              TEXT,
+  metadata              JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX generated_artifacts_teacher_idx
+  ON generated_artifacts(teacher_id, created_at DESC);
+CREATE INDEX generated_artifacts_kind_idx
+  ON generated_artifacts(kind, created_at DESC);
+CREATE INDEX generated_artifacts_class_idx
+  ON generated_artifacts(class_id, created_at DESC);
+CREATE INDEX generated_artifacts_curriculum_topic_idx
+  ON generated_artifacts(curriculum_topic_id);
+
+-- ── MVP 3 question bank seed schema ────────────────────────────────────────
+
+CREATE TABLE question_bank_items (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  teacher_id            TEXT REFERENCES users(id) ON DELETE CASCADE,
+  source_artifact_id    UUID REFERENCES generated_artifacts(id) ON DELETE SET NULL,
+  source_kind           TEXT NOT NULL CHECK (source_kind IN ('generated_exam','generated_lesson','manual','bagrut_archive','teacher_provided')),
+  source_label          TEXT,
+  grade_level           grade_level NOT NULL,
+  curriculum_topic_id   TEXT,
+  question_type         TEXT NOT NULL CHECK (question_type IN ('חישובי','בעיה_מילולית','הוכחה','קריאה_וניתוח','מעורב')),
+  difficulty            TEXT CHECK (difficulty IN ('בסיסי','בינוני','מתקדם','אתגר')),
+  representation_type   TEXT CHECK (representation_type IN ('טקסט','גרף','טבלה','שרטוט','ציר_מספרים','מעורב')),
+  prompt_markdown       TEXT NOT NULL,
+  answer_markdown       TEXT,
+  verification_item     JSONB,
+  rubric_json           JSONB,
+  metadata              JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE question_bank_tags (
+  question_id   UUID NOT NULL REFERENCES question_bank_items(id) ON DELETE CASCADE,
+  tag           TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (question_id, tag)
+);
+
+CREATE INDEX question_bank_items_teacher_idx
+  ON question_bank_items(teacher_id, created_at DESC);
+CREATE INDEX question_bank_items_topic_idx
+  ON question_bank_items(curriculum_topic_id);
+CREATE INDEX question_bank_items_grade_type_idx
+  ON question_bank_items(grade_level, question_type);
+CREATE INDEX question_bank_tags_tag_idx
+  ON question_bank_tags(tag);
 
 -- ── Grading (StudentGradeRecord, ExamResult, BonusTask, SubQuestion) ──────
 --
@@ -256,6 +321,10 @@ END;
 $$;
 
 CREATE TRIGGER lesson_plans_updated_at BEFORE UPDATE ON lesson_plans
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER generated_artifacts_updated_at BEFORE UPDATE ON generated_artifacts
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER question_bank_items_updated_at BEFORE UPDATE ON question_bank_items
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER teacher_progress_updated_at BEFORE UPDATE ON teacher_progress
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();

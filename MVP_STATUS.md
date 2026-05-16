@@ -32,6 +32,7 @@ Done:
 - `/lesson-plan` UI with explicit model selector and browser-local recent plans.
 - `/lesson-plan` UI has a worksheet toggle for suitable lesson types and forces worksheets off for `מבחן`.
 - Lesson-plan prompt/API path carries `includeWorksheet` and gives explicit worksheet/no-worksheet instructions to the model.
+- Worksheet math verification now runs for structured generated worksheet exercises (`verificationItem`) and surfaces verified/failed/skipped counts in the UI.
 - Model choices: Gemini 2.5 Flash, Gemini 3 Flash Preview, Gemini 2.5 Pro, Claude CLI, GPT-5.5 (Codex).
 - GPT-5.5 (Codex) browser exports approved by user as quality references:
   - `data/lesson-plans/generated/grade7-equations-common-denominator-90min-approved-gpt55.pdf`
@@ -39,8 +40,8 @@ Done:
 - Teacher-facing renderer no longer leaks implementation metadata such as `מצב עבודה` or `זמן משוער`.
 
 Missing:
-- Rubric sign-off for LLM-judged lesson-plan quality.
-- Live evals against real model output.
+- Broader rubric sign-off for LLM-judged lesson-plan quality.
+- Live evals against more real model outputs, including cases where worksheet verification items are missing or fail.
 - Anthropic API can be re-exposed and smoked when an API key is available.
 
 ## MVP 2 — Exercise / Exam Creator + Verification
@@ -67,17 +68,17 @@ Missing:
 
 ## MVP 3 — Question Bank / Bagrut Archive
 
-Status: not started.
+Status: schema/tagging stub started.
 
 Done:
 - Some source notes exist for Bagrut/question-bank seeding.
 - Exam/rubric data models now give useful shapes for future question-bank items.
+- Initial DB schema and TypeScript store stubs exist for question-bank items and tags.
 
 Missing:
-- Question bank schema and storage.
 - Bagrut archive ingestion/parsing.
+- Question-bank list/search/reuse UI.
 - Tagging by curriculum topic, grade, difficulty, representation type, and source.
-- Search/reuse UI.
 - Deduplication and copyright/source policy for imported questions.
 
 ## MVP 4 — Curriculum Tracker / Class Progress
@@ -139,8 +140,12 @@ Missing:
 Known broken: nothing.
 
 Recent verification:
+- Real `/lesson-plan` generation smoke produced a worksheet with 3/3 SymPy-verified worksheet items.
+- Real `/exam` generation smoke produced 2/2 verified items and deterministic rubric `rubric-20260516-194359-fd56d9`.
+- `/api/artifacts` unauthenticated smoke returned `200 { authenticated:false, artifacts:[] }`.
 - `npm run type-check` passed.
 - `npm run test:lesson-plan` is the focused lesson-plan sign-off command.
+- `npm run test:artifacts` passed: 5 tests (generated artifacts + question-bank store).
 - `npm run test:progress` passed: 20 tests (progress + serverStore + classContextResolver).
 - `npm run test:rubrics` passed: 27 tests (renderRubric + loadRubrics + buildRubricFromExam + saveRubric + aiRubricGenerator + /api/rubrics route).
 - `npm run test:signoff` passed after auto-rubric: 67 lesson-plan, 20 progress, 27 rubric, MVP1 2/2, MVP2 4/4.

@@ -1,6 +1,27 @@
 # CHECKPOINT.md
 
 ## Last completed
+- 2026-05-16 — Highest-value follow-up batch:
+  - `/lesson-plan` worksheet math verification: generated worksheet exercises can now carry a structured `verificationItem`; the API runs SymPy over deterministic worksheet items and returns `worksheetVerification`. The UI shows verified/failed/skipped counts and warns when worksheet math needs manual review. Prompt version bumped to `lp-v0.3.4-mvp1` and now tells models to create one ExerciseRef per printed worksheet exercise rather than duplicating a full worksheet plus repeated sub-items.
+  - Wolfram key was considered for this path. Decision: keep SymPy as default because it is offline, deterministic, and already uses structured expressions; use Wolfram later only as a non-blocking fallback for SymPy parser/modeling gaps.
+  - Added Postgres-backed generated artifact persistence foundation: `generated_artifacts` table, `src/artifacts/serverStore.ts`, `GET /api/artifacts`, and signed-in save hooks for generated lesson plans, exams, and rubrics. Generation remains non-blocking if DB persistence fails.
+  - Added MVP3 question-bank schema/tagging stub: `question_bank_items`, `question_bank_tags`, `src/questionBank/types.ts`, and `src/questionBank/serverStore.ts`.
+  - Added Node migration runner `npm run db:migrate` for shells without `psql`.
+  - Updated migrations: `2026-05-15-class-progress-persistence.sql` now includes the `skipped` progress status; new `2026-05-16-generated-artifacts-question-bank.sql` adds generated artifacts and question-bank tables.
+  - Live smoke: `/lesson-plan` real generation produced a worksheet with 3/3 SymPy-verified worksheet items. `/exam` real generation produced an exam with 2/2 verified items and deterministic rubric `rubric-20260516-194359-fd56d9`; `/api/rubrics/<id>` and `/rubrics?rubric=<id>` returned 200.
+  - UI smoke: Playwright MCP could not be used because the MCP browser transport stayed closed after clearing an old locked profile (`Transport closed`). A local Playwright browser smoke was used only where practical: `/exam` UI passed with generated exam, `מחוון נוצר`, `אימות מתמטי: 2/2 תקינים`, download buttons visible, and no console warnings/errors. `/lesson-plan` UI smoke was started but interrupted before completion; API-level lesson-plan worksheet verification had already passed.
+  - DB migration attempt: `npm run db:migrate` ran, but this machine still has no `DATABASE_URL` in the environment or `.env.local`, so signed-in DB persistence could not be exercised end-to-end.
+
+- Quality gates for this batch:
+  - `npm run type-check` passed.
+  - `npm run test:lesson-plan` passed: 74 tests.
+  - `npm run test:artifacts` passed: 5 tests.
+
+- Remaining concrete blockers:
+  - Add a real `DATABASE_URL` and run `npm run db:migrate`, then smoke signed-in `/curriculum` → `/lesson-plan` → post-lesson update → `/exam`.
+  - Re-run true Playwright MCP for `/lesson-plan` UI once the MCP transport is healthy.
+  - Decide whether to keep or remove smoke-generated rubric artifacts after manual review.
+
 - 2026-05-16 — Smoke-test fixes from `Smoke tests results.txt`:
   - `/curriculum`: notes preserve typed spacing; added first-class `skipped` status (`מדולג כרגע`) in `src/curriculumProgress/progress.ts`, UI, tests, and DB CHECK constraint. Skipped topics are not completed/exam-ready and warn if selected for an exam.
   - `/curriculum` ST-03: kept both grade-8 entries because the raw source contains both `מערכת משוואות בשני נעלמים` and `מערכת משוואות ושאלות מילוליות`. Added expandable `יעדי למידה` visibility per topic; the later repeated entry currently shows zero extracted objectives rather than being merged/deleted.

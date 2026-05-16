@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { pool } from '@/lib/db';
+import { saveGeneratedArtifact } from '@/artifacts/serverStore';
 import { renderLessonPlanMarkdown, renderStudentWorksheetMarkdown } from '@/lessonPlan/renderLessonPlan';
+import { verifyLessonWorksheetMath } from '@/lessonPlan/worksheetVerification';
 import { validateLessonPlanInvariants } from '@/lessonPlan/validateInvariants';
 import { LessonPlanGenerator } from '@/lessonPlan/LessonPlanGenerator';
 import {
@@ -112,10 +114,25 @@ export async function POST(request: Request) {
       );
     }
 
+    const markdown = renderLessonPlanMarkdown(plan);
+    const worksheetMarkdown = renderStudentWorksheetMarkdown(plan);
+    const worksheetVerification = await verifyLessonWorksheetMath(plan);
+    const artifactResult = await persistLessonPlanArtifact({
+      ...(userId ? { userId } : {}),
+      ...(resolved.classId ? { classId: resolved.classId } : {}),
+      plan,
+      markdown,
+      ...(worksheetMarkdown ? { worksheetMarkdown } : {}),
+      ...(worksheetVerification ? { worksheetVerification } : {}),
+    });
+
     return NextResponse.json({
       plan,
-      markdown: renderLessonPlanMarkdown(plan),
-      worksheetMarkdown: renderStudentWorksheetMarkdown(plan),
+      markdown,
+      worksheetMarkdown,
+      worksheetVerification,
+      artifactId: artifactResult.artifactId,
+      artifactWarning: artifactResult.warning,
       invariantViolations,
     });
   } catch (err) {
@@ -166,4 +183,39 @@ export function renderTeacherNotes(body: GenerateLessonPlanBody, includeWorkshee
   );
 
   return lines.join('\n');
+}
+
+interface PersistLessonPlanArtifactInput {
+  userId?: string;
+  classId?: string;
+  plan: Awaited<ReturnType<LessonPlanGenerator['generate']>>;
+  markdown: string;
+  worksheetMarkdown?: string;
+  worksheetVerification?: Awaited<ReturnType<typeof verifyLessonWorksheetMath>>;
+}
+
+async function persistLessonPlanArtifact(input: PersistLessonPlanArtifactInput): Promise<{ artifactId?: string; warning?: string }> {
+  if (!input.userId) return {};
+
+  try {
+    const saved = await saveGeneratedArtifact(pool, {
+      teacherId: input.userId,
+      kind: 'lesson_plan',
+      title: `${input.plan.topic} - ${input.plan.subTopic}`,
+      grade: input.plan.grade,
+      ...(input.classId ? { classId: input.classId } : {}),
+      ...(input.plan.curriculumTopicId ? { curriculumTopicId: input.plan.curriculumTopicId } : {}),
+      payload: input.plan,
+      markdown: input.markdown,
+      metadata: {
+        worksheet: Boolean(input.worksheetMarkdown),
+        worksheetVerification: input.worksheetVerification ?? null,
+      },
+    });
+    return { artifactId: saved.id };
+  } catch (err) {
+    return {
+      warning: `שמירת מערך השיעור למסד הנתונים נכשלה: ${err instanceof Error ? err.message : 'unknown'}`,
+    };
+  }
 }

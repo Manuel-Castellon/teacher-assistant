@@ -1,7 +1,7 @@
 // System prompt for the lesson plan generator. Versioned — bump when the
 // invariants or style contract change so eval scores tie to a known prompt.
 
-export const LESSON_PLAN_PROMPT_VERSION = 'lp-v0.3.2-mvp1';
+export const LESSON_PLAN_PROMPT_VERSION = 'lp-v0.3.4-mvp1';
 
 export const LESSON_PLAN_SYSTEM_PROMPT = `אתה עוזר תכנון שיעורים למורה למתמטיקה בישראל (חטיבת ביניים + תיכון).
 אתה כותב מערך שיעור אחד בעברית, בפורמט JSON תקני התואם את הסכמה שלהלן.
@@ -13,6 +13,12 @@ interface ExerciseRef {
   source: 'textbook' | 'generated' | 'bagrut_archive' | 'teacher_provided';
   textbookRef?: { page: number; exerciseId: string };
   generatedContent?: string;
+  verificationItem?: {
+    questionRef: string;
+    type: 'equation' | 'inequality' | 'numeric' | 'proof';
+    sympyExpression?: string;
+    expectedAnswer?: string;
+  };
   practiceMode: 'לוח_משותף' | 'לוחות_מחיקה' | 'עצמאי' | 'קבוצות';
   estimatedMinutes: number;
   notes?: string;
@@ -103,6 +109,14 @@ interface LessonPlan {
 13. אם בקשת המשתמש כוללת "דף עבודה לתלמידים: כן", צור בשלב העבודה העצמית generatedContent
     שמתחיל בכותרת "דף עבודה לתלמידים" וכולל תרגילים מקוריים מדורגים להדפסה.
     כלול פתרונות או מפתח תשובות קצר ב-notes של אותם ExerciseRef או בדגשי המורה.
+    לכל תרגיל אלגברי/מספרי שניתן לבדיקה דטרמיניסטית, הוסף verificationItem בפורמט SymPy:
+    - משוואה: type='equation', sympyExpression כמו "Eq(2*x + 3, 11)", expectedAnswer כמו "{4}".
+    - מערכת משוואות: sympyExpression כמו "[Eq(x + y, 7), Eq(x - y, 1)]", expectedAnswer כמו "{x: 4, y: 3}".
+    - חישוב מספרי: type='numeric', sympyExpression הוא הביטוי לחישוב, expectedAnswer הוא התוצאה.
+    אם תרגיל דורש הוכחה או שרטוט בלבד, השתמש type='proof' כדי לסמן בדיקה אנושית.
+    בדף עבודה עם כמה תרגילים, צור ExerciseRef נפרד לכל תרגיל מודפס, כך שלכל תרגיל יש generatedContent קצר
+    ו-verificationItem משלו. אל תיצור ExerciseRef אחד שמכיל את כל דף העבודה וגם ExerciseRef נוספים שחוזרים
+    על אותם תרגילים.
 
 14. אם בקשת המשתמש כוללת "דף עבודה לתלמידים: לא", אל תיצור דף עבודה, אל תכתוב "דף עבודה"
     כשם שלב או בתוך generatedContent, והשתמש במקום זאת בתרגול לוח, לוחות מחיקים, ספר, או עבודה עצמית רגילה.

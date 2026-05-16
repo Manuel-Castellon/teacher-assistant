@@ -2,6 +2,7 @@
 // Do not change the structure without re-validating against real examples.
 
 import type { GradeLevel } from './shared';
+import type { VerificationItem } from '../exam/types';
 
 export type LessonDuration = 45 | 90; // minutes — the two standard lesson lengths
 
@@ -47,6 +48,12 @@ export interface ExerciseRef {
   /** Populated only after Verifier Agent runs */
   verificationStatus?: 'pending' | 'verified' | 'failed';
   verificationError?: string;
+  /**
+   * Optional structured verifier input for generated math.
+   * Models should include this for generated worksheet/algebra items when a
+   * deterministic answer check is possible.
+   */
+  verificationItem?: VerificationItem;
 
   practiceMode: PracticeMode;
   estimatedMinutes: number;

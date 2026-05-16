@@ -26,7 +26,10 @@ interface GenerateResponse {
   examMarkdown: string;
   answerKeyMarkdown: string;
   verification: VerificationResult[];
+  artifactId?: string;
+  artifactWarning?: string;
   rubricId?: string;
+  rubricArtifactId?: string;
   rubricMode?: RubricMode;
   rubricWarning?: string;
   error?: string;
@@ -602,6 +605,19 @@ export default function ExamPage() {
 
       {result && (
         <div style={{ marginTop: '2rem' }}>
+          {(result.artifactId || result.artifactWarning) && (
+            <div style={{
+              padding: '0.75rem 1rem',
+              borderRadius: 6,
+              marginBottom: '1rem',
+              background: result.artifactWarning ? '#fffbeb' : '#ecfdf5',
+              border: result.artifactWarning ? '1px solid #fde68a' : '1px solid #a7f3d0',
+              color: result.artifactWarning ? '#92400e' : '#065f46',
+            }}>
+              {result.artifactId ? `המבחן נשמר בארכיון המורה: ${result.artifactId}` : result.artifactWarning}
+            </div>
+          )}
+
           {result.rubricId && (
             <div style={{
               padding: '0.75rem 1rem',

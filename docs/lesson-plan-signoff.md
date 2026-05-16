@@ -105,7 +105,9 @@ Before approving a generated lesson plan for real use, the teacher should:
 
 Next Engineering Step
 
-Add or reuse a math-answer verification pass before treating generated algebra worksheets as approved. Until then, GPT-5.5 approved PDFs remain the quality references and Gemini output remains a draft.
+The first math-answer verification pass is now wired into `/api/lesson-plan/generate` for generated worksheets. Worksheet exercises that include structured `verificationItem` data are checked with SymPy and surfaced in the `/lesson-plan` result panel; missing or failed checks warn the teacher before printing.
+
+Wolfram remains a good fallback candidate for later parser gaps, but not the default verifier: SymPy is offline, deterministic, faster, and already uses structured inputs. Use Wolfram only for cases SymPy cannot model cleanly, and keep its network/quota failures non-blocking.
 
 ## Pipeline Notes
 
