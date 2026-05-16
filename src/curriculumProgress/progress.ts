@@ -283,6 +283,61 @@ function renderLessonTeacherRequest(
   ].join('\n');
 }
 
+export interface ClassActivityEntry {
+  date: string;
+  topicId: string;
+  topicName: string;
+  status: TopicProgressStatus;
+  note: string;
+}
+
+const DATED_NOTE_PATTERN = /^(\d{4}-\d{2}-\d{2}):\s*(.*)$/;
+
+export function buildClassActivityTimeline(profile: ClassProgressProfile, limit = 12): ClassActivityEntry[] {
+  const unit = getCurriculumUnitForGrade(profile.grade);
+  const topicOrder = new Map<string, number>(unit.topics.map((topic, index) => [topic.id, index]));
+  const topicNames = new Map<string, string>(unit.topics.map(topic => [topic.id, topic.name]));
+
+  const entries: ClassActivityEntry[] = [];
+  for (const topic of Object.values(profile.topics)) {
+    if (!topicNames.has(topic.topicId)) continue;
+    const seenDates = new Set<string>();
+    const lines = topic.notes ? topic.notes.split('\n') : [];
+
+    for (const line of lines) {
+      const match = DATED_NOTE_PATTERN.exec(line.trim());
+      if (!match) continue;
+      const [, date, note] = match;
+      if (!date) continue;
+      seenDates.add(date);
+      entries.push({
+        date,
+        topicId: topic.topicId,
+        topicName: topicNames.get(topic.topicId)!,
+        status: topic.status,
+        note: note?.trim() ?? '',
+      });
+    }
+
+    if (topic.lastTaughtDate && !seenDates.has(topic.lastTaughtDate)) {
+      entries.push({
+        date: topic.lastTaughtDate,
+        topicId: topic.topicId,
+        topicName: topicNames.get(topic.topicId)!,
+        status: topic.status,
+        note: '',
+      });
+    }
+  }
+
+  entries.sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    return (topicOrder.get(a.topicId) ?? 0) - (topicOrder.get(b.topicId) ?? 0);
+  });
+
+  return entries.slice(0, Math.max(0, limit));
+}
+
 function sentenceWithPeriod(text: string): string {
   const trimmed = text.trim();
   if (!trimmed) return '';

@@ -33,6 +33,15 @@ interface ProgressRow extends Record<string, unknown> {
   notes: string | null;
 }
 
+export async function loadClassProgressProfile(
+  db: Queryable,
+  teacherId: string,
+  classId: string,
+): Promise<ClassProgressProfile | undefined> {
+  const profiles = await listClassProgressProfiles(db, teacherId);
+  return profiles.find(profile => profile.id === classId);
+}
+
 export async function listClassProgressProfiles(
   db: Queryable,
   teacherId: string,

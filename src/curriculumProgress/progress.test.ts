@@ -1,4 +1,5 @@
 import {
+  buildClassActivityTimeline,
   buildClassProgressSummary,
   buildExamFromTaughtMaterial,
   buildLessonSuggestion,
@@ -199,5 +200,88 @@ describe('curriculum progress helpers', () => {
       hoursSpent: 0,
       lastTaughtDate: '2026-05-16',
     });
+  });
+
+  it('builds an activity timeline from dated notes and last-taught dates', () => {
+    let profile = createClassProgressProfile({ id: 'class-7t', name: "ז' 3", grade: 'זי', now });
+    profile = recordPostLessonProgress(
+      profile,
+      {
+        topicId: firstTopic.id,
+        status: 'in_progress',
+        hoursTaught: 1.5,
+        taughtDate: '2026-05-10',
+        notes: 'התחלנו פתיחה',
+      },
+      now,
+    );
+    profile = recordPostLessonProgress(
+      profile,
+      {
+        topicId: firstTopic.id,
+        status: 'completed',
+        hoursTaught: 1.5,
+        taughtDate: '2026-05-14',
+        notes: 'סיכום וחזרה',
+      },
+      later,
+    );
+    profile = updateTopicProgress(
+      profile,
+      secondTopic.id,
+      { status: 'in_progress', hoursSpent: 1, lastTaughtDate: '2026-05-12' },
+      later,
+    );
+
+    const timeline = buildClassActivityTimeline(profile);
+
+    expect(timeline).toEqual([
+      {
+        date: '2026-05-14',
+        topicId: firstTopic.id,
+        topicName: firstTopic.name,
+        status: 'completed',
+        note: 'סיכום וחזרה',
+      },
+      {
+        date: '2026-05-12',
+        topicId: secondTopic.id,
+        topicName: secondTopic.name,
+        status: 'in_progress',
+        note: '',
+      },
+      {
+        date: '2026-05-10',
+        topicId: firstTopic.id,
+        topicName: firstTopic.name,
+        status: 'completed',
+        note: 'התחלנו פתיחה',
+      },
+    ]);
+  });
+
+  it('returns an empty timeline when nothing has been taught yet', () => {
+    const profile = createClassProgressProfile({ id: 'class-7u', name: "ז' 4", grade: 'זי', now });
+    expect(buildClassActivityTimeline(profile)).toEqual([]);
+  });
+
+  it('respects the limit parameter for the timeline', () => {
+    let profile = createClassProgressProfile({ id: 'class-7v', name: "ז' 5", grade: 'זי', now });
+    for (let i = 0; i < 5; i++) {
+      profile = recordPostLessonProgress(
+        profile,
+        {
+          topicId: firstTopic.id,
+          status: 'in_progress',
+          hoursTaught: 1,
+          taughtDate: `2026-05-0${i + 1}`,
+          notes: `שיעור ${i + 1}`,
+        },
+        now,
+      );
+    }
+
+    expect(buildClassActivityTimeline(profile, 2)).toHaveLength(2);
+    expect(buildClassActivityTimeline(profile, 2)[0]?.date).toBe('2026-05-05');
   });
 });

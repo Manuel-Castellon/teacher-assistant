@@ -36,6 +36,14 @@ interface SavedExam {
 
 const SAVED_EXAMS_KEY = 'teacher-assistant.saved-exams.v1';
 
+type ClassContextSource = 'auto' | 'manual' | 'none';
+
+const CLASS_CONTEXT_SOURCE_OPTIONS: { value: ClassContextSource; label: string }[] = [
+  { value: 'auto', label: 'אוטומטי מהמעקב' },
+  { value: 'manual', label: 'ידני (השתמש בהערות המורה)' },
+  { value: 'none', label: 'ללא הקשר כיתה' },
+];
+
 const GRADE_OPTIONS: { value: GradeLevel; label: string }[] = [
   { value: 'זי', label: "ז'" },
   { value: 'חי', label: "ח'" },
@@ -80,6 +88,7 @@ export default function ExamPage() {
   const [regeneratingQuestion, setRegeneratingQuestion] = useState<number | null>(null);
   const [classProfiles, setClassProfiles] = useState<ClassProgressProfile[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
+  const [classContextSource, setClassContextSource] = useState<ClassContextSource>('auto');
   const curriculumTopicOptions = getCurriculumTopicOptions(grade);
 
   useEffect(() => {
@@ -167,7 +176,9 @@ export default function ExamPage() {
     const topics = buildExamFromTaughtMaterial(profile);
     setClassName(profile.name);
     setGrade(profile.grade);
-    setTeacherNotes(renderClassContext(profile));
+    if (classContextSource === 'manual') {
+      setTeacherNotes(renderClassContext(profile));
+    }
 
     if (topics.length === 0) {
       setParts([emptyPart()]);
@@ -214,6 +225,12 @@ export default function ExamPage() {
     };
   }
 
+  function buildGenerateBody(): ExamRequest & { classId?: string; classContextSource?: ClassContextSource } {
+    const base = buildRequest();
+    if (!selectedClassId) return base;
+    return { ...base, classId: selectedClassId, classContextSource };
+  }
+
   function rememberExam(request: ExamRequest, response: GenerateResponse) {
     const saved: SavedExam = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -257,12 +274,13 @@ export default function ExamPage() {
     setResult(null);
 
     const request = buildRequest();
+    const payload = buildGenerateBody();
 
     try {
       const resp = await fetch('/api/exam/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request),
+        body: JSON.stringify(payload),
       });
       const data = (await resp.json()) as GenerateResponse;
       if (!resp.ok || data.error) {
@@ -315,16 +333,17 @@ export default function ExamPage() {
   const passedCount = result?.verification.filter(v => v.isValid).length ?? 0;
   const failedCount = result?.verification.filter(v => !v.isValid).length ?? 0;
 
-  async function handleDownload(type: 'exam' | 'answers') {
+  async function handleDownload(type: 'exam' | 'answers', format: 'docx' | 'pdf' = 'docx') {
     if (!result) return;
     const markdown = type === 'exam' ? result.examMarkdown : result.answerKeyMarkdown;
     const filename = type === 'exam' ? 'מבחן' : 'פתרון';
-    setExporting(type);
+    const key = `${type}:${format}`;
+    setExporting(key);
     try {
       const resp = await fetch('/api/exam/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markdown, filename }),
+        body: JSON.stringify({ markdown, filename, format }),
       });
       if (!resp.ok) {
         const err = await resp.json() as { error?: string };
@@ -335,7 +354,7 @@ export default function ExamPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${filename}.docx`;
+      a.download = `${filename}.${format}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -390,6 +409,21 @@ export default function ExamPage() {
               מלא מחומר שנלמד
             </button>
           </div>
+          {selectedClass && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <SelectField
+                label="הקשר כיתה בפרומפט"
+                value={classContextSource}
+                options={CLASS_CONTEXT_SOURCE_OPTIONS}
+                onChange={v => setClassContextSource(v as ClassContextSource)}
+              />
+              <p style={hintTextStyle}>
+                {classContextSource === 'auto' && 'הקשר הכיתה ייטען מהמעקב בעת יצירת המבחן ויצורף להערות המורה.'}
+                {classContextSource === 'manual' && '"מלא מחומר שנלמד" כותב את ההקשר לתוך הערות המורה לעריכה.'}
+                {classContextSource === 'none' && 'לא יצורף הקשר כיתה. טקסט שכבר נמצא ב"הערות למורה" יישלח כפי שהוא.'}
+              </p>
+            </div>
+          )}
           <p style={hintTextStyle}>המעקב מציע נושאים שסומנו כהושלמו או דורשים חזרה. אפשר להוסיף, למחוק או לשנות ידנית כל שאלה.</p>
         </div>
       )}
@@ -560,22 +594,38 @@ export default function ExamPage() {
           </div>
 
           {/* Download buttons */}
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem' }}>
             <button
               type="button"
-              onClick={() => handleDownload('exam')}
+              onClick={() => handleDownload('exam', 'docx')}
               disabled={exporting !== null}
               style={{ ...btnDownload, opacity: exporting ? 0.6 : 1 }}
             >
-              {exporting === 'exam' ? 'מייצא...' : 'הורד מבחן (docx)'}
+              {exporting === 'exam:docx' ? 'מייצא...' : 'הורד מבחן (docx)'}
             </button>
             <button
               type="button"
-              onClick={() => handleDownload('answers')}
+              onClick={() => handleDownload('exam', 'pdf')}
+              disabled={exporting !== null}
+              style={{ ...btnDownload, background: '#b71c1c', opacity: exporting ? 0.6 : 1 }}
+            >
+              {exporting === 'exam:pdf' ? 'מייצא...' : 'הורד מבחן (pdf)'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDownload('answers', 'docx')}
               disabled={exporting !== null}
               style={{ ...btnDownload, background: '#43a047', opacity: exporting ? 0.6 : 1 }}
             >
-              {exporting === 'answers' ? 'מייצא...' : 'הורד פתרון (docx)'}
+              {exporting === 'answers:docx' ? 'מייצא...' : 'הורד פתרון (docx)'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDownload('answers', 'pdf')}
+              disabled={exporting !== null}
+              style={{ ...btnDownload, background: '#8e0000', opacity: exporting ? 0.6 : 1 }}
+            >
+              {exporting === 'answers:pdf' ? 'מייצא...' : 'הורד פתרון (pdf)'}
             </button>
           </div>
 

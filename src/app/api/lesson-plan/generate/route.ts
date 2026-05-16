@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { pool } from '@/lib/db';
 import { renderLessonPlanMarkdown } from '@/lessonPlan/renderLessonPlan';
 import { validateLessonPlanInvariants } from '@/lessonPlan/validateInvariants';
 import { LessonPlanGenerator } from '@/lessonPlan/LessonPlanGenerator';
@@ -11,6 +13,10 @@ import {
   renderWorksheetPreference,
   resolveIncludeWorksheet,
 } from '@/lessonPlan/worksheetPolicy';
+import {
+  resolveClassContext,
+  type ClassContextSource,
+} from '@/curriculumProgress/classContextResolver';
 import type { LessonPlanRequest, LessonDuration, LessonType } from '@/types/lessonPlan';
 import type { GradeLevel } from '@/types/shared';
 
@@ -28,6 +34,8 @@ interface GenerateLessonPlanBody {
   previousLessonContext?: string;
   includeWorksheet?: boolean;
   backend?: AIBackend;
+  classId?: string;
+  classContextSource?: ClassContextSource;
 }
 
 const GRADES = new Set<GradeLevel>(['זי', 'חי', 'טי', 'יי', 'יאי', 'יבי']);
@@ -64,6 +72,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: curriculumErrors.join('\n') }, { status: 400 });
     }
 
+    const userId = await getAuthenticatedUserId();
+    const classId = body.classId?.trim() || undefined;
+    const resolved = await resolveClassContext({
+      ...(body.classContextSource ? { source: body.classContextSource } : {}),
+      ...(classId ? { classId } : {}),
+      ...(body.previousLessonContext ? { previousLessonContext: body.previousLessonContext } : {}),
+      ...(userId ? { userId } : {}),
+      db: pool,
+    });
+
     const requestBody: LessonPlanRequest = {
       topic,
       subTopic,
@@ -72,7 +90,8 @@ export async function POST(request: Request) {
       lessonType,
       includeWorksheet,
       ...(curriculumTopicId ? { curriculumTopicId } : {}),
-      ...(body.previousLessonContext?.trim() ? { previousLessonContext: body.previousLessonContext.trim() } : {}),
+      ...(resolved.context ? { previousLessonContext: resolved.context } : {}),
+      ...(resolved.classId ? { classId: resolved.classId } : {}),
       teacherNotes: renderTeacherNotes(body, includeWorksheet),
     };
 
@@ -115,6 +134,11 @@ function validateGenerateLessonPlanBody(body: GenerateLessonPlanBody): string[] 
   if (!body.lessonType || !LESSON_TYPES.has(body.lessonType)) errors.push('סוג שיעור לא תקין.');
 
   return errors;
+}
+
+async function getAuthenticatedUserId(): Promise<string | undefined> {
+  const session = await auth();
+  return session?.user?.id ?? session?.user?.email ?? undefined;
 }
 
 export function renderTeacherNotes(body: GenerateLessonPlanBody, includeWorksheet: boolean): string {

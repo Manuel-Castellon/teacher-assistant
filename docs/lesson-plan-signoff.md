@@ -65,6 +65,48 @@ Approved PDF references live in `data/lesson-plans/generated/`:
 - `grade7-equations-common-denominator-90min-approved-gpt55.pdf`
 - `grade11-complex-algebra-90min-approved-gpt55.pdf`
 
+## Real Model Worksheet Sign-Off — 2026-05-16
+
+Scope:
+
+- model: `Gemini 3 Flash Preview`
+- grade: `ז'`
+- duration: `90 דקות`
+- lesson type: `תרגול`
+- topic: `משוואות`
+- sub-topic: `פתרון משוואות עם מכנה משותף`
+- curriculum topic: `ms-grade7-t03`
+- teacher request: heterogeneous class, short review, common mistakes, graded practice
+- teacher notes: class struggles with common denominators and minus signs
+
+Mechanical result:
+
+- worksheet on: generation completed, JSON parsed, invariant checks passed, and the rendered plan included `דף עבודה לתלמידים`;
+- worksheet off: generation completed, JSON parsed, invariant checks passed, and the rendered plan avoided a worksheet section while still giving notebook/self practice;
+- API/prompt contract for the worksheet toggle is therefore structurally signed off.
+
+Quality result:
+
+- not approved for unsupervised teacher-ready use;
+- answer keys contained wrong algebra answers in both variants;
+- worksheet-off included a malformed `\frac` escape in one displayed equation;
+- conclusion: Gemini 3 Flash Preview is acceptable for smoke tests and UI flow checks, but generated math exercises/answer keys need teacher review or deterministic verification before classroom use.
+
+Manual Teacher Steps
+
+Before approving a generated lesson plan for real use, the teacher should:
+
+1. Check every exercise answer key, including warm-up, board practice, independent work, worksheet, and homework.
+2. Verify that the difficulty progression matches the actual class: basic examples first, then common-denominator work, then minus/sign traps.
+3. Confirm that the timing is realistic for the class and that independent work is at least 15 minutes, preferably 30 minutes in a 90-minute practice lesson.
+4. Decide whether the worksheet should be printed, copied into a notebook workflow, or replaced with textbook/classroom exercises.
+5. Mark any generated item as either usable, needs edit, or reject.
+6. After teaching, record what actually happened in the post-lesson update panel: status, hours taught, date, and notes for the next lesson.
+
+Next Engineering Step
+
+Add or reuse a math-answer verification pass before treating generated algebra worksheets as approved. Until then, GPT-5.5 approved PDFs remain the quality references and Gemini output remains a draft.
+
 ## Pipeline Notes
 
 - Manual Markdown artifacts still export through `scripts/export-markdown.mjs`.

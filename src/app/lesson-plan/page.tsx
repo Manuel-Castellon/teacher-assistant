@@ -10,6 +10,7 @@ import {
   supportsWorksheetForLessonType,
 } from '@/lessonPlan/worksheetPolicy';
 import {
+  buildClassActivityTimeline,
   buildLessonSuggestion,
   CLASS_PROGRESS_STORAGE_KEY,
   getCurriculumUnitForGrade,
@@ -36,6 +37,8 @@ interface SavedLessonPlan {
 
 type AIBackend = 'auto' | BackendName;
 
+type ClassContextSource = 'auto' | 'manual' | 'none';
+
 interface LessonPlanFormState {
   topic: string;
   subTopic: string;
@@ -48,7 +51,14 @@ interface LessonPlanFormState {
   previousLessonContext: string;
   includeWorksheet: boolean;
   backend: AIBackend;
+  classContextSource: ClassContextSource;
 }
+
+const CLASS_CONTEXT_SOURCE_OPTIONS: { value: ClassContextSource; label: string }[] = [
+  { value: 'auto', label: 'אוטומטי מהמעקב' },
+  { value: 'manual', label: 'ידני (ערוך טקסט)' },
+  { value: 'none', label: 'ללא הקשר כיתה' },
+];
 
 const SAVED_LESSON_PLANS_KEY = 'teacher-assistant.saved-lesson-plans.v1';
 
@@ -103,6 +113,7 @@ const INITIAL_FORM: LessonPlanFormState = {
   previousLessonContext: '',
   includeWorksheet: true,
   backend: 'auto',
+  classContextSource: 'auto',
 };
 
 export default function LessonPlanPage() {
@@ -152,6 +163,7 @@ export default function LessonPlanPage() {
 
   const selectedClass = classProfiles.find(item => item.id === selectedClassId);
   const postLessonTopicId = getTrackableTopicId(form.curriculumTopicId, selectedClass);
+  const activityTimeline = selectedClass ? buildClassActivityTimeline(selectedClass, 4) : [];
   const worksheetSupported = supportsWorksheetForLessonType(form.lessonType);
   const effectiveIncludeWorksheet = resolveIncludeWorksheet(form.lessonType, form.includeWorksheet);
 
@@ -187,8 +199,28 @@ export default function LessonPlanPage() {
     setProgressSaveStatus('idle');
     setProgressSaveMessage('');
     if (!classId) {
-      updateForm({ previousLessonContext: '' });
+      updateForm({ previousLessonContext: '', classContextSource: 'none' });
+      return;
     }
+    if (form.classContextSource === 'none') {
+      updateForm({ classContextSource: 'auto' });
+    }
+  }
+
+  function handleClassContextSourceChange(source: ClassContextSource) {
+    if (source === 'manual' && !form.previousLessonContext) {
+      const profile = classProfiles.find(item => item.id === selectedClassId);
+      updateForm({
+        classContextSource: source,
+        previousLessonContext: profile ? renderClassContext(profile) : '',
+      });
+      return;
+    }
+    if (source !== 'manual') {
+      updateForm({ classContextSource: source, previousLessonContext: '' });
+      return;
+    }
+    updateForm({ classContextSource: source });
   }
 
   function applyClassSuggestion(profile: ClassProgressProfile, preferredTopicId?: string) {
@@ -196,7 +228,6 @@ export default function LessonPlanPage() {
     const topicId = preferredTopicId ?? suggestion?.topicId;
     const topicOptions = getLessonPlanCurriculumTopicOptions(profile.grade);
     const selectedTopic = topicId ? topicOptions.find(topic => topic.id === topicId) : undefined;
-    const context = renderClassContext(profile);
     setForm(prev => ({
       ...prev,
       grade: profile.grade,
@@ -205,7 +236,7 @@ export default function LessonPlanPage() {
       subTopic: suggestion?.subTopic ?? selectedTopic?.learningObjectives[0] ?? prev.subTopic,
       lessonType: suggestion?.lessonType ?? prev.lessonType,
       teacherRequest: suggestion?.teacherRequest ?? '',
-      previousLessonContext: context,
+      previousLessonContext: prev.classContextSource === 'manual' ? renderClassContext(profile) : prev.previousLessonContext,
     }));
   }
 
@@ -300,9 +331,13 @@ export default function LessonPlanPage() {
     setError(null);
     setResult(null);
 
+    const profile = classProfiles.find(item => item.id === selectedClassId);
+    const previousLessonContext = resolvePreviousLessonContextForRequest(form, profile);
     const request = {
       ...form,
+      previousLessonContext,
       includeWorksheet: effectiveIncludeWorksheet,
+      ...(selectedClassId ? { classId: selectedClassId } : {}),
     };
     try {
       const resp = await fetch('/api/lesson-plan/generate', {
@@ -410,6 +445,35 @@ export default function LessonPlanPage() {
               השתמש בהצעה מהמעקב
             </button>
           </div>
+          {selectedClass && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <SelectField
+                label="הקשר כיתה בפרומפט"
+                value={form.classContextSource}
+                options={CLASS_CONTEXT_SOURCE_OPTIONS}
+                onChange={v => handleClassContextSourceChange(v as ClassContextSource)}
+              />
+              <p style={hintTextStyle}>
+                {form.classContextSource === 'auto' && 'הקשר הכיתה נטען מהמעקב בזמן יצירת המערך (טרי בכל בקשה).'}
+                {form.classContextSource === 'manual' && 'אפשר לערוך את ההקשר בשדה "הקשר מהשיעור הקודם" למטה.'}
+                {form.classContextSource === 'none' && 'המערך ייווצר ללא הקשר כיתה.'}
+              </p>
+            </div>
+          )}
+          {selectedClass && activityTimeline.length > 0 && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <strong style={{ display: 'block', marginBottom: '0.4rem' }}>פעילות אחרונה</strong>
+              <ul style={miniTimelineStyle}>
+                {activityTimeline.map((entry, idx) => (
+                  <li key={`${entry.date}-${entry.topicId}-${idx}`} style={miniTimelineItemStyle}>
+                    <span style={miniTimelineDateStyle}>{formatTimelineDate(entry.date)}</span>
+                    <span style={miniTimelineTopicStyle}>{entry.topicName}</span>
+                    {entry.note && <span style={miniTimelineNoteStyle}>· {entry.note}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <p style={hintTextStyle}>ההצעה ממלאת ברירות מחדל בלבד. אפשר לשנות ידנית כל נושא, סוג שיעור או הערת מורה.</p>
         </section>
       )}
@@ -488,10 +552,14 @@ export default function LessonPlanPage() {
             placeholder="למשל: לא להעמיס בהקנייה, להכין דף עבודה, לעבוד בלוחות מחיקים"
           />
           <TextArea
-            label="הקשר מהשיעור הקודם"
+            label={form.classContextSource === 'manual'
+              ? 'הקשר מהשיעור הקודם (ידני)'
+              : 'הקשר מהשיעור הקודם'}
             value={form.previousLessonContext}
             onChange={previousLessonContext => updateForm({ previousLessonContext })}
-            placeholder="אופציונלי"
+            placeholder={form.classContextSource === 'auto' && selectedClass
+              ? 'במצב אוטומטי ההקשר נטען מהמעקב; אפשר להוסיף ידנית כדי לדרוס.'
+              : 'אופציונלי'}
           />
         </div>
 
@@ -590,6 +658,57 @@ export default function LessonPlanPage() {
     </main>
   );
 }
+
+function resolvePreviousLessonContextForRequest(
+  form: LessonPlanFormState,
+  profile: ClassProgressProfile | undefined,
+): string {
+  if (form.classContextSource === 'none') return '';
+  if (form.classContextSource === 'manual') return form.previousLessonContext.trim();
+  // 'auto': prefer existing text if teacher typed one; otherwise pass a localStorage-rendered
+  // snapshot as a fallback for signed-out users. Server-side load (when signed in) overrides this.
+  const typed = form.previousLessonContext.trim();
+  if (typed) return typed;
+  return profile ? renderClassContext(profile) : '';
+}
+
+function formatTimelineDate(iso: string): string {
+  const parts = iso.split('-');
+  if (parts.length !== 3) return iso;
+  const [, month, day] = parts;
+  return `${day}.${month}`;
+}
+
+const miniTimelineStyle: React.CSSProperties = {
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'grid',
+  gap: '0.3rem',
+  fontSize: '0.88rem',
+};
+
+const miniTimelineItemStyle: React.CSSProperties = {
+  display: 'flex',
+  gap: '0.4rem',
+  alignItems: 'baseline',
+  flexWrap: 'wrap',
+};
+
+const miniTimelineDateStyle: React.CSSProperties = {
+  fontVariantNumeric: 'tabular-nums',
+  color: '#64748b',
+  minWidth: '3.2rem',
+};
+
+const miniTimelineTopicStyle: React.CSSProperties = {
+  color: '#111827',
+  fontWeight: 500,
+};
+
+const miniTimelineNoteStyle: React.CSSProperties = {
+  color: '#4b5563',
+};
 
 function buildLessonPlanFilename(plan: LessonPlan | undefined, fallback: LessonPlanFormState): string {
   const topic = plan?.topic?.trim() || fallback.topic.trim() || 'ללא נושא';

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
+  buildClassActivityTimeline,
   buildClassProgressSummary,
   buildExamFromTaughtMaterial,
   buildLessonSuggestion,
@@ -10,6 +11,7 @@ import {
   getCurriculumUnitForGrade,
   STATUS_LABELS,
   updateTopicProgress,
+  type ClassActivityEntry,
   type ClassProgressProfile,
   type TopicProgressStatus,
 } from '@/curriculumProgress/progress';
@@ -131,6 +133,10 @@ export default function CurriculumPage() {
   );
   const lessonSuggestion = selectedClass ? buildLessonSuggestion(selectedClass) : undefined;
   const examTopics = selectedClass ? buildExamFromTaughtMaterial(selectedClass) : [];
+  const activityTimeline = useMemo(
+    () => selectedClass ? buildClassActivityTimeline(selectedClass, 8) : [],
+    [selectedClass],
+  );
 
   function addClass() {
     const now = new Date().toISOString();
@@ -238,6 +244,16 @@ export default function CurriculumPage() {
             </div>
           </section>
 
+          {activityTimeline.length > 0 && (
+            <section style={panelStyle}>
+              <div style={timelineHeaderStyle}>
+                <strong>פעילות אחרונה בכיתה</strong>
+                <span style={hintTextStyle}>{activityTimeline.length} רישומים אחרונים</span>
+              </div>
+              <ActivityTimeline entries={activityTimeline} />
+            </section>
+          )}
+
           <section style={topicListStyle}>
             {summary.topics.map(({ topic, progress }) => (
               <article key={topic.id} style={topicCardStyle}>
@@ -312,6 +328,32 @@ function SelectField<T extends string>({ label, value, options, onChange }: {
       </select>
     </label>
   );
+}
+
+function ActivityTimeline({ entries }: { entries: ClassActivityEntry[] }) {
+  return (
+    <ol style={timelineListStyle}>
+      {entries.map((entry, idx) => (
+        <li key={`${entry.date}-${entry.topicId}-${idx}`} style={timelineItemStyle}>
+          <div style={timelineDateStyle}>
+            {formatTimelineDate(entry.date)}
+            <span style={timelineStatusStyle}>{STATUS_LABELS[entry.status]}</span>
+          </div>
+          <div style={timelineBodyStyle}>
+            <span style={timelineTopicStyle}>{entry.topicName}</span>
+            {entry.note && <span style={timelineNoteStyle}>{entry.note}</span>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function formatTimelineDate(iso: string): string {
+  const parts = iso.split('-');
+  if (parts.length !== 3) return iso;
+  const [, month, day] = parts;
+  return `${day}.${month}`;
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
@@ -446,6 +488,63 @@ const actionsStyle: React.CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap',
   gap: '0.5rem',
+};
+
+const timelineHeaderStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'baseline',
+  marginBottom: '0.6rem',
+  gap: '0.6rem',
+};
+
+const timelineListStyle: React.CSSProperties = {
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'grid',
+  gap: '0.5rem',
+};
+
+const timelineItemStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(78px, auto) 1fr',
+  gap: '0.75rem',
+  padding: '0.55rem 0.7rem',
+  background: '#fff',
+  border: '1px solid #e5e7eb',
+  borderRadius: 6,
+};
+
+const timelineDateStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '0.2rem',
+  fontVariantNumeric: 'tabular-nums',
+  color: '#374151',
+};
+
+const timelineStatusStyle: React.CSSProperties = {
+  fontSize: '0.75rem',
+  color: '#6b7280',
+};
+
+const timelineBodyStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.2rem',
+};
+
+const timelineTopicStyle: React.CSSProperties = {
+  fontWeight: 600,
+  color: '#111827',
+};
+
+const timelineNoteStyle: React.CSSProperties = {
+  color: '#4b5563',
+  fontSize: '0.9rem',
+  lineHeight: 1.45,
 };
 
 const topicListStyle: React.CSSProperties = {

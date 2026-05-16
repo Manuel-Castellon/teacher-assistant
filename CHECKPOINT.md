@@ -1,49 +1,52 @@
 # CHECKPOINT.md
 
 ## Last completed
-- Session resumed from `CLAUDE.md`, `PROGRESS.md`, `CHECKPOINT.md`, `HANDOFF.md`, `MVP_STATUS.md`, and `AGENTS.md`.
-- Current state stated: MVP 4 is active; missing slice is post-lesson update flow from generated/taught lesson back into class progress.
-- Created branch `mvp-4-post-lesson-flow` from clean `main`.
-- Inspected `src/curriculumProgress/progress.ts`, `serverStore.ts`, `/api/curriculum/classes`, `/curriculum`, `/lesson-plan`, `/exam`, and focused progress tests.
-- Added `recordPostLessonProgress()` and focused tests for cumulative hours, last-taught date, status updates, and dated note appending.
-- `npm run test:progress` passed: 9 progress/server-store tests.
-- Wired `/lesson-plan` result view with an `עדכון אחרי השיעור` panel for selected class/topic: status, hours taught, date, actual notes, local cache update, and `/api/curriculum/classes` sync.
-- Guarded post-lesson saves so only topics belonging to the selected class grade are written to class progress.
-- `npm run type-check` passed after UI wiring.
-- `npm run test:signoff` passed: type-check, 62 lesson-plan tests, 9 progress/server-store tests, MVP1 2/2 evals, MVP2 4/4 evals.
-- `npm run build` passed.
-- Started `npm run dev`; local app is serving on `http://localhost:3000`.
-- `curl -I http://localhost:3000/lesson-plan` and `/curriculum` both returned `200 OK`.
-- After interruption, restarted `npm run dev` and re-smoked `/lesson-plan`, `/curriculum`, and unauthenticated `/api/curriculum/classes`.
-- `psql` is not installed in this shell and safe `.env.local` check did not find `DATABASE_URL`, so the DB migration was not applied from here.
-- Playwright local fallback smoke passed: seeded a class and saved plan, opened `/lesson-plan?classId=playwright-class-7a&topicId=ms-grade7-t01`, saved post-lesson progress, and verified localStorage updated topic `ms-grade7-t01` to `completed`, `hoursSpent: 3.5`, `lastTaughtDate: 2026-05-16`, with the dated note appended.
-- Playwright console check reported 0 warnings/errors.
-- Re-ran `npm run test:progress` after resume/docs update; 9 tests passed.
-- Updated `PROGRESS.md`, `HANDOFF.md`, and `MVP_STATUS.md` for the post-lesson flow.
-- New priority completed: worksheet generation toggle for lesson plans.
-- Added `includeWorksheet` to the lesson-plan request path, worksheet policy helper, UI checkbox, API prompt instructions, and generator prompt line.
-- Worksheet toggle is visible for teachable lesson types and hidden/forced off for `מבחן`.
-- Backed out repo-level Playwright dependency/config/spec churn; validation used the existing Playwright MCP browser instead.
-- `npm run type-check` passed.
-- `npm run test:lesson-plan` passed: 67 focused lesson-plan/API/prompt tests.
-- Playwright MCP worksheet smoke passed: toggle off sent `includeWorksheet: false` and no worksheet result; toggle on sent `includeWorksheet: true` and rendered `דף עבודה לתלמידים`; `מבחן` hid the checkbox and sent `includeWorksheet: false`.
-- Playwright MCP comprehensive loop passed: `/curriculum` suggestion -> `/lesson-plan` with worksheet -> post-lesson feedback -> `/exam` taught-material generation. The exam request included topic `ms-grade7-t01`, completed progress, cumulative `3.5` hours, and the dated feedback note.
-- Playwright MCP console check reported 0 warnings/errors.
-- `npm run test:signoff` passed: type-check, 67 lesson-plan tests, 9 progress/server-store tests, MVP1 2/2 evals, MVP2 4/4 evals.
-- `npm run build` passed.
-- Committed on branch `mvp-4-post-lesson-flow` with message `mvp-4: add worksheet toggle and post-lesson loop`.
+- Session resumed on `mvp-4-post-lesson-flow` after the worksheet/post-lesson commit.
+- Decision: with MVP 4 manual steps (DB migration, real-class signed-in loop) still blocked, prioritized software-only follow-ups.
+- MVP 4 software-only — server-side class context loading by `classId`:
+  - New `src/curriculumProgress/classContextResolver.ts` with explicit source modes (`none` / `manual` / `auto`) and graceful fallback to client-rendered context for signed-out users.
+  - New `src/curriculumProgress/loadClassProgressProfile()` in `serverStore.ts`.
+  - `/api/lesson-plan/generate` and `/api/exam/generate` accept `classId` + `classContextSource`; signed-in path loads profile from Postgres fresh per request. Exam path appends resolved context to teacherNotes under a labeled block.
+  - `/lesson-plan` and `/exam` UIs gained a "הקשר כיתה בפרומפט" selector with auto/manual/none, defaulting to auto when a class is selected.
+  - 8 focused resolver tests covering all source modes, fallback, and back-compat.
+- MVP 2 polish — exam PDF buttons:
+  - `/api/exam/export` already supported `format=pdf`; lesson-plan UI already used it.
+  - Exam UI now exposes four download buttons (exam/answers × docx/pdf) wired through the existing route.
+- MVP 4 software-only — class continuity timeline:
+  - `buildClassActivityTimeline()` in `progress.ts` parses dated post-lesson notes plus `lastTaughtDate` and returns a desc-sorted activity stream.
+  - `/curriculum` shows an 8-entry "פעילות אחרונה בכיתה" panel between the suggestions panel and the topic list.
+  - `/lesson-plan` class panel shows a compact 4-entry timeline inline with the context controls.
+  - 3 focused tests for the helper.
+- Quality gates:
+  - `npm run type-check` passed.
+  - `npm run test:progress` passed: 20 tests (progress + serverStore + classContextResolver).
+  - `npm run test:lesson-plan` passed: 67 tests.
+  - `npm run test:signoff` passed: type-check + lesson-plan + progress + MVP1 2/2 evals + MVP2 4/4 evals.
+  - `npm run build` passed.
+- Playwright MCP smoke (unauthenticated, localStorage seeded):
+  - `/lesson-plan` three source modes sent expected payloads (auto with client-rendered fallback; manual; none with empty context).
+  - `/exam` three source modes confirmed; none preserves teacher-typed notes without adding class context.
+  - `/curriculum` 8-entry timeline rendered with date/status/topic/note.
+  - `/lesson-plan` mini-timeline rendered with 4 entries.
+  - PDF route returned real `%PDF` bytes (15KB) with correct headers; all four exam download buttons rendered after generation.
+  - Console: 0 warnings / 0 errors across runs.
 
 ## Next
-- Try a real model generation with the worksheet toggle on/off and inspect whether the generated worksheet/key quality matches the hand-built artifacts in `data/lesson-plans/generated`.
-- Try the full real-class loop with a teacher-selected class and real model output.
-- DB migration remains tabled: apply later on a machine with `psql` and `DATABASE_URL`.
+- Optional: PRIOR worksheet sign-off doc updates (CHECKPOINT.md / docs/lesson-plan-signoff.md from before this session) are still in the working tree and folded into this commit.
+- Resume options when ready:
+  - MVP 1 LLM-judge rubric (dev-only eval; modest token cost when run).
+  - MVP 2 rubric artifacts browser/export UI.
+  - MVP 3 question bank schema + tagging + stub list/search UI.
+  - MVP 4 subtopic-level progress (larger schema/UI change).
+- Real-class signed-in loop and DB migration remain tabled until a usable local Postgres path exists.
 
 ## Key files changed
-- `src/curriculumProgress/progress.ts` — post-lesson update helper.
-- `src/curriculumProgress/progress.test.ts` — post-lesson helper coverage.
-- `src/app/lesson-plan/page.tsx` — post-lesson update panel and progress persistence from generated plans.
-- `src/lessonPlan/worksheetPolicy.ts` — worksheet suitability/default policy.
-- `src/lessonPlan/worksheetPolicy.test.ts`, `src/app/api/lesson-plan/generate/route.test.ts` — worksheet prompt contract tests.
-- `src/types/lessonPlan.ts`, `src/lessonPlan/LessonPlanGenerator.ts`, `src/providers/impl/lessonPlanPrompt.ts`, `src/app/api/lesson-plan/generate/route.ts`, `src/app/lesson-plan/page.tsx` — worksheet toggle request/prompt/UI wiring.
-- `package.json` — expanded `test:lesson-plan` to include worksheet contract tests.
-- `PROGRESS.md`, `HANDOFF.md`, `MVP_STATUS.md`, `CHECKPOINT.md` — current status and next steps.
+- `src/curriculumProgress/classContextResolver.ts` and `classContextResolver.test.ts` — new resolver + tests.
+- `src/curriculumProgress/serverStore.ts` — added `loadClassProgressProfile()`.
+- `src/curriculumProgress/progress.ts`, `progress.test.ts` — new `buildClassActivityTimeline()` + 3 tests.
+- `src/app/api/lesson-plan/generate/route.ts`, `src/app/api/exam/generate/route.ts` — accept `classId` + `classContextSource`, server-resolve via the new helper.
+- `src/app/lesson-plan/page.tsx` — class context source selector + mini-timeline.
+- `src/app/exam/page.tsx` — class context source selector + four download buttons (docx/pdf for exam and answers).
+- `src/app/curriculum/page.tsx` — activity timeline panel and component.
+- `package.json` — `test:progress` now includes `classContextResolver.test.ts`.
+- `CHECKPOINT.md`, `docs/lesson-plan-signoff.md` — updated.
