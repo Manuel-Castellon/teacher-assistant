@@ -111,7 +111,7 @@ Ephemeral directory for `scripts/generate-exam.ts` CLI output. Not imported by t
 ### Forward-looking code (intentionally unreferenced from app, not dead code)
 | Module | Purpose | Target MVP |
 |--------|---------|------------|
-| `src/examRubric/renderRubric.ts` | Renders rubric JSON to markdown | MVP 6 (supervised grading UI) |
+| `src/examRubric/renderRubric.ts` | Renders rubric JSON to markdown | Wired to `/rubrics` browser UI (MVP 2). Criterion-level grading reuse still targets MVP 6. |
 | `src/providers/impl/NextAuthProvider.ts` | IAuthProvider wrapper around Auth.js | Wiring when auth guard is added to routes |
 | `src/providers/interfaces/IDocumentExporter.ts` | Export interface (partially realized via exportDocx + exportPdf) | Current |
 | `src/providers/interfaces/IOCRProvider.ts` | OCR interface | MVP 3 (question bank scanning) |

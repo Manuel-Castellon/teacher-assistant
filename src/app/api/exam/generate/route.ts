@@ -9,11 +9,18 @@ import {
   resolveClassContext,
   type ClassContextSource,
 } from '@/curriculumProgress/classContextResolver';
-import type { ExamRequest } from '@/exam/types';
+import type { ExamRequest, GeneratedExam } from '@/exam/types';
+import { buildRubricFromExam } from '@/examRubric/buildRubricFromExam';
+import { generateAiRubric } from '@/examRubric/aiRubricGenerator';
+import { generateRubricId, saveExamRubric } from '@/examRubric/saveRubric';
+import { createDefaultBackend } from '@/exam/backends';
+
+export type RubricMode = 'deterministic' | 'ai' | 'none';
 
 interface GenerateExamBody extends ExamRequest {
   classId?: string;
   classContextSource?: ClassContextSource;
+  rubricMode?: RubricMode;
 }
 
 export async function POST(request: Request) {
@@ -48,11 +55,23 @@ export async function POST(request: Request) {
     const examMarkdown = renderExamMarkdown(exam);
     const answerKeyMarkdown = renderAnswerKeyMarkdown(exam);
 
+    const rubricMode: RubricMode = body.rubricMode ?? 'deterministic';
+    const rubricResult = await persistRubric({
+      mode: rubricMode,
+      exam,
+      examRequest,
+      examMarkdown,
+      answerKeyMarkdown,
+    });
+
     return NextResponse.json({
       exam,
       examMarkdown,
       answerKeyMarkdown,
       verification,
+      rubricId: rubricResult.rubricId,
+      rubricMode: rubricResult.appliedMode,
+      rubricWarning: rubricResult.warning,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
@@ -66,8 +85,51 @@ async function getAuthenticatedUserId(): Promise<string | undefined> {
 }
 
 function stripWrapperFields(body: GenerateExamBody): ExamRequest {
-  const { classId: _classId, classContextSource: _src, ...rest } = body;
+  const { classId: _classId, classContextSource: _src, rubricMode: _rm, ...rest } = body;
   return rest;
+}
+
+interface PersistRubricInput {
+  mode: RubricMode;
+  exam: GeneratedExam;
+  examRequest: ExamRequest;
+  examMarkdown: string;
+  answerKeyMarkdown: string;
+}
+
+interface PersistRubricResult {
+  rubricId?: string;
+  appliedMode: RubricMode;
+  warning?: string;
+}
+
+async function persistRubric(input: PersistRubricInput): Promise<PersistRubricResult> {
+  if (input.mode === 'none') return { appliedMode: 'none' };
+
+  const id = generateRubricId();
+  const base = buildRubricFromExam(input.exam, input.examRequest, { id });
+
+  let rubric = base;
+  let appliedMode: RubricMode = 'deterministic';
+  let warning: string | undefined;
+
+  if (input.mode === 'ai') {
+    try {
+      const complete = createDefaultBackend();
+      rubric = await generateAiRubric({
+        baseRubric: base,
+        examMarkdown: input.examMarkdown,
+        answerKeyMarkdown: input.answerKeyMarkdown,
+        complete,
+      });
+      appliedMode = 'ai';
+    } catch (err) {
+      warning = `מחוון AI נכשל ונשמרה גרסה דטרמיניסטית: ${err instanceof Error ? err.message : 'unknown'}`;
+    }
+  }
+
+  saveExamRubric(rubric);
+  return { rubricId: id, appliedMode, ...(warning ? { warning } : {}) };
 }
 
 export function mergeClassContextIntoNotes(

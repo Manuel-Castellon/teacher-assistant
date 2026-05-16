@@ -19,13 +19,24 @@ interface VerificationResult {
   message: string;
 }
 
+type RubricMode = 'deterministic' | 'ai' | 'none';
+
 interface GenerateResponse {
   exam: GeneratedExam;
   examMarkdown: string;
   answerKeyMarkdown: string;
   verification: VerificationResult[];
+  rubricId?: string;
+  rubricMode?: RubricMode;
+  rubricWarning?: string;
   error?: string;
 }
+
+const RUBRIC_MODE_OPTIONS: { value: RubricMode; label: string }[] = [
+  { value: 'deterministic', label: 'אוטומטי (מהיר)' },
+  { value: 'ai', label: 'מפורט (AI)' },
+  { value: 'none', label: 'ללא מחוון' },
+];
 
 interface SavedExam {
   id: string;
@@ -71,7 +82,7 @@ function emptyPart(): ExamPartSpec {
 
 export default function ExamPage() {
   const [className, setClassName] = useState("שכבה ב' מואצת");
-  const [date, setDate] = useState(new Date().toLocaleDateString('he-IL'));
+  const [date, setDate] = useState(toDateInputValue(new Date()));
   const [grade, setGrade] = useState<GradeLevel>('חי');
   const [durationMinutes, setDurationMinutes] = useState(90);
   const [totalPoints, setTotalPoints] = useState(100);
@@ -89,6 +100,7 @@ export default function ExamPage() {
   const [classProfiles, setClassProfiles] = useState<ClassProgressProfile[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
   const [classContextSource, setClassContextSource] = useState<ClassContextSource>('auto');
+  const [rubricMode, setRubricMode] = useState<RubricMode>('deterministic');
   const curriculumTopicOptions = getCurriculumTopicOptions(grade);
 
   useEffect(() => {
@@ -216,7 +228,7 @@ export default function ExamPage() {
   function buildRequest(): ExamRequest {
     return {
       className,
-      date,
+      date: formatDateForExam(date),
       grade,
       durationMinutes,
       totalPoints,
@@ -225,10 +237,16 @@ export default function ExamPage() {
     };
   }
 
-  function buildGenerateBody(): ExamRequest & { classId?: string; classContextSource?: ClassContextSource } {
+  function buildGenerateBody(): ExamRequest & {
+    classId?: string;
+    classContextSource?: ClassContextSource;
+    rubricMode: RubricMode;
+  } {
     const base = buildRequest();
-    if (!selectedClassId) return base;
-    return { ...base, classId: selectedClassId, classContextSource };
+    const withClass = selectedClassId
+      ? { ...base, classId: selectedClassId, classContextSource }
+      : base;
+    return { ...withClass, rubricMode };
   }
 
   function rememberExam(request: ExamRequest, response: GenerateResponse) {
@@ -251,7 +269,7 @@ export default function ExamPage() {
 
   function openSavedExam(saved: SavedExam) {
     setClassName(saved.request.className);
-    setDate(saved.request.date);
+    setDate(parseDateInputValue(saved.request.date));
     setGrade(saved.request.grade);
     setDurationMinutes(saved.request.durationMinutes);
     setTotalPoints(saved.request.totalPoints);
@@ -430,7 +448,7 @@ export default function ExamPage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
         <Field label="שכבה / כיתה" value={className} onChange={setClassName} />
-        <Field label="תאריך" value={date} onChange={setDate} />
+        <Field label="תאריך" type="date" value={date} onChange={setDate} />
         <SelectField label="שכבת גיל" value={grade} options={GRADE_OPTIONS} onChange={v => handleGradeChange(v as GradeLevel)} />
         <Field label="משך (דקות)" type="number" value={String(durationMinutes)} onChange={v => setDurationMinutes(Number(v))} />
         <Field label='סה"כ ניקוד' type="number" value={String(totalPoints)} onChange={v => setTotalPoints(Number(v))} />
@@ -549,6 +567,20 @@ export default function ExamPage() {
         />
       </div>
 
+      <div style={{ marginBottom: '1.5rem' }}>
+        <SelectField
+          label="מחוון"
+          value={rubricMode}
+          options={RUBRIC_MODE_OPTIONS}
+          onChange={v => setRubricMode(v as RubricMode)}
+        />
+        <p style={hintTextStyle}>
+          {rubricMode === 'deterministic' && 'מחוון אוטומטי לפי המבנה: 70% פתרון מסודר, 30% תשובה סופית. נוצר מיד עם המבחן.'}
+          {rubricMode === 'ai' && 'מחוון מפורט נוצר על-ידי המודל: ניקוד לפי שלבי פתרון + טעויות נפוצות. עולה זימון מודל נוסף.'}
+          {rubricMode === 'none' && 'לא ייווצר מחוון. ניתן להוסיף אחר כך.'}
+        </p>
+      </div>
+
       <button
         type="button"
         onClick={handleGenerate}
@@ -570,6 +602,32 @@ export default function ExamPage() {
 
       {result && (
         <div style={{ marginTop: '2rem' }}>
+          {result.rubricId && (
+            <div style={{
+              padding: '0.75rem 1rem',
+              borderRadius: 6,
+              marginBottom: '1rem',
+              background: '#eef6ff',
+              border: '1px solid #b6d4f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '0.75rem',
+              flexWrap: 'wrap',
+            }}>
+              <span>
+                <strong>מחוון נוצר</strong>{' '}
+                ({result.rubricMode === 'ai' ? 'מפורט (AI)' : 'אוטומטי'})
+                {result.rubricWarning && (
+                  <span style={{ color: '#9a6700', marginRight: '0.5rem' }}> · {result.rubricWarning}</span>
+                )}
+              </span>
+              <a href={`/rubrics?rubric=${encodeURIComponent(result.rubricId)}`} style={{ color: '#1769aa', textDecoration: 'underline' }}>
+                פתח ב-/rubrics ←
+              </a>
+            </div>
+          )}
+
           {/* Verification summary */}
           <div style={{
             padding: '0.75rem 1rem',
@@ -736,6 +794,31 @@ function TopicWarning({ profile, topicId }: { profile: ClassProgressProfile; top
   return <div style={warningStyle}>{warning}</div>;
 }
 
+function toDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateInputValue(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+
+  const dotted = /^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/.exec(value.trim());
+  if (!dotted) return toDateInputValue(new Date());
+
+  const [, rawDay, rawMonth, rawYear] = dotted;
+  const year = rawYear!.length === 2 ? `20${rawYear}` : rawYear!;
+  return `${year}-${rawMonth!.padStart(2, '0')}-${rawDay!.padStart(2, '0')}`;
+}
+
+function formatDateForExam(value: string): string {
+  const iso = parseDateInputValue(value);
+  const [year, month, day] = iso.split('-');
+  if (!year || !month || !day) return value;
+  return `${day}.${month}.${year.slice(-2)}`;
+}
+
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
@@ -764,6 +847,8 @@ function MarkdownPreview({ markdown }: { markdown: string }) {
     <div style={previewStyle}>
       {lines.map((line, idx) => {
         if (!line.trim()) return <div key={idx} style={{ height: '0.5rem' }} />;
+        const image = /^!\[([^\]]*)\]\((data:image\/svg\+xml;base64,[^)]+)\)$/.exec(line.trim());
+        if (image) return <img key={idx} src={image[2]} alt={image[1] || 'שרטוט'} style={previewImageStyle} />;
         if (line.startsWith('#### ')) return <h4 key={idx} style={previewH4}>{renderInline(line.slice(5))}</h4>;
         if (line.startsWith('### ')) return <h3 key={idx} style={previewH3}>{renderInline(line.slice(4))}</h3>;
         if (line.startsWith('## ')) return <h2 key={idx} style={previewH2}>{renderInline(line.slice(3))}</h2>;
@@ -910,6 +995,15 @@ const previewH4: React.CSSProperties = {
 
 const previewParagraph: React.CSSProperties = {
   margin: 0,
+};
+
+const previewImageStyle: React.CSSProperties = {
+  display: 'block',
+  maxWidth: '100%',
+  margin: '0.75rem auto',
+  border: '1px solid #e5e7eb',
+  borderRadius: 4,
+  background: '#fff',
 };
 
 const mathStyle: React.CSSProperties = {

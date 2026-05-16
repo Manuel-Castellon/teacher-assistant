@@ -1,10 +1,9 @@
 import { jest } from '@jest/globals';
 import { execFileSync } from 'node:child_process';
-import type { ExecFileException } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import type Anthropic from '@anthropic-ai/sdk';
 import { anthropicBackend, claudeCliBackend, codexCliBackend, createBackendByName, createDefaultBackend, fallbackChain, geminiBackend } from './backends';
-import type { CompletionFn, ExecFn, SpawnFn } from './backends';
+import type { CompletionFn, SpawnFn } from './backends';
 import type { AnthropicLike } from '../providers/impl/ClaudeTextGenerator';
 
 const claudeCliAvailable = (() => {
@@ -259,40 +258,116 @@ describe('claudeCliBackend', () => {
   });
 
   it('calls claude CLI and returns trimmed output', async () => {
-    const fakeExec: ExecFn = ((_cmd, _args, _opts, cb) => {
-      (cb as (err: ExecFileException | null, stdout: string, stderr: string) => void)(null, '  {"ok": true}  ', '');
-    }) as ExecFn;
+    const calls: { cmd: string; args: string[]; prompt: string }[] = [];
+    const fakeSpawn: SpawnFn = ((cmd, args) => {
+      const child = new EventEmitter() as any;
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = {
+        write: (prompt: string) => {
+          calls.push({ cmd, args: args as string[], prompt });
+          return true;
+        },
+        end: () => {
+          queueMicrotask(() => {
+            child.stdout.emit('data', Buffer.from('  {"ok": true}  '));
+            child.emit('close', 0);
+          });
+        },
+      };
+      return child;
+    }) as SpawnFn;
 
-    const complete = claudeCliBackend(fakeExec);
+    const complete = claudeCliBackend(fakeSpawn);
     await expect(complete('system', 'user')).resolves.toBe('{"ok": true}');
+
+    expect(calls[0]).toMatchObject({
+      cmd: 'claude',
+      args: ['-p', '--output-format', 'text'],
+    });
+    expect(calls[0]!.prompt).toBe('system\n\n---\n\nuser');
   });
 
   it('rejects with stderr when claude CLI fails', async () => {
-    const fakeExec: ExecFn = ((_cmd, _args, _opts, cb) => {
-      const err = new Error('exit 1') as ExecFileException;
-      (cb as (err: ExecFileException | null, stdout: string, stderr: string) => void)(err, '', 'process error');
-    }) as ExecFn;
+    const fakeSpawn: SpawnFn = (() => {
+      const child = new EventEmitter() as any;
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = {
+        write: () => true,
+        end: () => {
+          queueMicrotask(() => {
+            child.stderr.emit('data', Buffer.from('process error'));
+            child.emit('close', 1);
+          });
+        },
+      };
+      return child;
+    }) as SpawnFn;
 
-    const complete = claudeCliBackend(fakeExec);
+    const complete = claudeCliBackend(fakeSpawn);
     await expect(complete('system', 'user')).rejects.toThrow(/process error/);
   });
 
-  it('rejects with err.message when stderr is empty', async () => {
-    const fakeExec: ExecFn = ((_cmd, _args, _opts, cb) => {
-      const err = new Error('SIGTERM') as ExecFileException;
-      (cb as (err: ExecFileException | null, stdout: string, stderr: string) => void)(err, '', '');
-    }) as ExecFn;
+  it('rejects with exit code when stderr is empty', async () => {
+    const fakeSpawn: SpawnFn = (() => {
+      const child = new EventEmitter() as any;
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = {
+        write: () => true,
+        end: () => {
+          queueMicrotask(() => {
+            child.emit('close', 1);
+          });
+        },
+      };
+      return child;
+    }) as SpawnFn;
 
-    const complete = claudeCliBackend(fakeExec);
-    await expect(complete('system', 'user')).rejects.toThrow(/SIGTERM/);
+    const complete = claudeCliBackend(fakeSpawn);
+    await expect(complete('system', 'user')).rejects.toThrow(/exit 1/);
+  });
+
+  it('labels quota and rate-limit failures clearly', async () => {
+    const fakeSpawn: SpawnFn = (() => {
+      const child = new EventEmitter() as any;
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = {
+        write: () => true,
+        end: () => {
+          queueMicrotask(() => {
+            child.stderr.emit('data', Buffer.from('quota exceeded'));
+            child.emit('close', 1);
+          });
+        },
+      };
+      return child;
+    }) as SpawnFn;
+
+    const complete = claudeCliBackend(fakeSpawn);
+    await expect(complete('system', 'user')).rejects.toThrow(/over quota or rate-limited/);
   });
 
   it('rejects on empty output', async () => {
-    const fakeExec: ExecFn = ((_cmd, _args, _opts, cb) => {
-      (cb as (err: ExecFileException | null, stdout: string, stderr: string) => void)(null, '   ', '');
-    }) as ExecFn;
+    const fakeSpawn: SpawnFn = (() => {
+      const child = new EventEmitter() as any;
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      child.stdin = {
+        write: () => true,
+        end: () => {
+          queueMicrotask(() => {
+            child.stdout.emit('data', Buffer.from('   '));
+            child.emit('close', 0);
+          });
+        },
+      };
+      return child;
+    }) as SpawnFn;
 
-    const complete = claudeCliBackend(fakeExec);
+    const complete = claudeCliBackend(fakeSpawn);
     await expect(complete('system', 'user')).rejects.toThrow(/empty output/);
   });
 });

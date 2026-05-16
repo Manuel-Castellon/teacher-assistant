@@ -46,6 +46,7 @@ describe('curriculum progress helpers', () => {
     expect(summary.completedCount).toBe(0);
     expect(summary.inProgressCount).toBe(0);
     expect(summary.needsReviewCount).toBe(0);
+    expect(summary.skippedCount).toBe(0);
     expect(summary.notStartedCount).toBe(unit.topics.length);
     expect(summary.totalHoursSpent).toBe(0);
     expect(summary.nextLessonTopic?.topic.id).toBe(firstTopic.id);
@@ -114,6 +115,28 @@ describe('curriculum progress helpers', () => {
     expect(reviewSuggestion?.teacherRequest).toContain(`שיעור חזרה ממוקד לכיתה ז' 1 בנושא ${secondTopic.name}.`);
     expect(reviewSuggestion?.teacherRequest).toContain('להתייחס להערת המעקב: צריך חזרה ממוקדת.');
     expect(reviewSuggestion?.teacherRequest).not.toContain('..');
+  });
+
+  it('preserves typed note spacing and keeps skipped topics out of exam-ready material', () => {
+    let profile = createClassProgressProfile({
+      id: 'class-7a',
+      name: "ז' 1",
+      grade: 'זי',
+      now,
+    });
+
+    profile = updateTopicProgress(profile, firstTopic.id, {
+      status: 'skipped',
+      hoursSpent: 0,
+      notes: 'נחזור לזה  אחרי המבחן ',
+    }, later);
+
+    const summary = buildClassProgressSummary(profile);
+    expect(profile.topics[firstTopic.id]?.notes).toBe('נחזור לזה  אחרי המבחן ');
+    expect(summary.skippedCount).toBe(1);
+    expect(summary.examReadyTopics).toEqual([]);
+    expect(buildExamFromTaughtMaterial(profile)).toEqual([]);
+    expect(getExamTopicWarning(profile, firstTopic.id)).toBe('הנושא סומן כמדולג כרגע בכיתה הזו.');
   });
 
   it('builds editable exam defaults and warnings from taught material', () => {

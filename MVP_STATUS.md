@@ -1,6 +1,6 @@
 # MVP Status Rundown
 
-Last updated: 2026-05-16 (post classId resolver + continuity timeline + exam PDF UI)
+Last updated: 2026-05-16 (post auto-rubric on exam generation)
 
 Source of truth: `PROGRESS.md` and `CHECKPOINT.md`.
 
@@ -59,10 +59,11 @@ Done:
 - PDF export via the same `/api/exam/export` route; `/exam` exposes docx+pdf buttons for both exam and answer key, `/lesson-plan` already used the pdf format.
 - MVP2 deterministic eval suite and Playwright smoke coverage.
 - Real exam rubric extraction infrastructure and May 2026 rubric exported as JSON/Markdown/DOCX/PDF. This has immediate MVP2 value because it attaches to generated/real exams, but the reusable criterion-level rubric model is mainly groundwork for MVP6 supervised grading.
+- `/rubrics` browser UI lists rubric artifacts from `data/exam-rubrics/`, previews rendered markdown, and offers DOCX/PDF download via the shared `/api/exam/export` route. Backed by `GET /api/rubrics` and `GET /api/rubrics/[id]`.
+- Auto-rubric on every `/exam` generation. Default mode is deterministic (mechanical mapping with 70/30 criteria split); toggle exposes an AI mode that reuses the default backend chain to enrich criteria + common mistakes (identity fields and totals are reconciled against the deterministic base so model drift cannot break the schema); `none` mode skips. Generated rubrics persist to `data/exam-rubrics/<id>.json` and surface in `/rubrics` automatically, with the result panel deep-linking to `/rubrics?rubric=<id>`.
 
 Missing:
 - OCR ingestion for scanned/student work is deferred.
-- UI for browsing/exporting rubric artifacts is not built.
 
 ## MVP 3 — Question Bank / Bagrut Archive
 
@@ -141,7 +142,8 @@ Recent verification:
 - `npm run type-check` passed.
 - `npm run test:lesson-plan` is the focused lesson-plan sign-off command.
 - `npm run test:progress` passed: 20 tests (progress + serverStore + classContextResolver).
-- `npm run test:signoff` passed after classId resolver + timeline + exam PDF UI: 67 lesson-plan, 20 progress, MVP1 2/2, MVP2 4/4.
+- `npm run test:rubrics` passed: 27 tests (renderRubric + loadRubrics + buildRubricFromExam + saveRubric + aiRubricGenerator + /api/rubrics route).
+- `npm run test:signoff` passed after auto-rubric: 67 lesson-plan, 20 progress, 27 rubric, MVP1 2/2, MVP2 4/4.
 - `npm run build` passed.
 - Playwright MCP smoke (unauthenticated, localStorage seeded): three classContextSource modes on `/lesson-plan` and `/exam` sent expected payloads; `/curriculum` and `/lesson-plan` continuity timelines rendered with correct sort/labels; `/api/exam/export` returned a real PDF (`%PDF` magic, 15KB); four exam download buttons rendered after generation. 0 console warnings/errors.
 

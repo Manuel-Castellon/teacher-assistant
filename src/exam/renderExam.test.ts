@@ -96,11 +96,44 @@ describe('renderExamMarkdown', () => {
     expect(lines[idx1 + 1]).toBe('');
   });
 
+  it('keeps multi-line sub-questions on separate paragraphs', () => {
+    const md = renderExamMarkdown({
+      ...MINIMAL_EXAM,
+      parts: [{
+        ...MINIMAL_EXAM.parts[0]!,
+        questions: [{
+          ...MINIMAL_EXAM.parts[0]!.questions[0]!,
+          subQuestions: [{ label: '1.', content: '$5x+3y=29$\n$3x+2y=18$' }],
+        }],
+      }],
+    });
+    const lines = md.split('\n');
+    expect(lines).toContain('1. $5x+3y=29$');
+    expect(lines).toContain('$3x+2y=18$');
+  });
+
   it('renders geometry given data and diagram description', () => {
     const md = renderExamMarkdown(GEOMETRY_EXAM);
     expect(md).toContain('$AB = 6$');
     expect(md).toContain('$DE = 12$');
     expect(md).toContain('[שרטוט: שני משולשים ישרי זווית]');
+  });
+
+  it('embeds generated SVG diagrams as printable images', () => {
+    const md = renderExamMarkdown({
+      ...GEOMETRY_EXAM,
+      parts: [{
+        ...GEOMETRY_EXAM.parts[0]!,
+        questions: [{
+          ...GEOMETRY_EXAM.parts[0]!.questions[0]!,
+          diagramSvg: '<svg xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="0" x2="10" y2="0"/></svg>',
+        }],
+      }],
+    });
+
+    expect(md).toContain('![שרטוט](data:image/svg+xml;base64,');
+    expect(md).toContain('תיאור שרטוט: שני משולשים ישרי זווית');
+    expect(md).not.toContain('[שרטוט:');
   });
 
   it('ends with בהצלחה!', () => {

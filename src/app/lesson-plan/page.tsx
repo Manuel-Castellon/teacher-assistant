@@ -24,6 +24,7 @@ import {
 interface GenerateLessonPlanResponse {
   plan?: LessonPlan;
   markdown?: string;
+  worksheetMarkdown?: string;
   invariantViolations?: { code: string; message: string }[];
   error?: string;
 }
@@ -361,16 +362,19 @@ export default function LessonPlanPage() {
     }
   }
 
-  async function handleDownload(format: 'docx' | 'pdf') {
-    if (!result?.markdown) return;
-    const filename = buildLessonPlanFilename(result.plan, form);
+  async function handleDownload(format: 'docx' | 'pdf', kind: 'plan' | 'worksheet' = 'plan') {
+    const markdown = kind === 'plan' ? result?.markdown : result?.worksheetMarkdown;
+    if (!markdown) return;
+    const filename = kind === 'plan'
+      ? buildLessonPlanFilename(result?.plan, form)
+      : buildWorksheetFilename(result?.plan, form);
     setExporting(true);
     setError(null);
     try {
       const resp = await fetch('/api/exam/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markdown: result.markdown, filename, format }),
+        body: JSON.stringify({ markdown, filename, format }),
       });
       if (!resp.ok) {
         const err = await readJsonOrError<{ error?: string }>(resp);
@@ -588,6 +592,16 @@ export default function LessonPlanPage() {
               <button type="button" onClick={() => handleDownload('pdf')} disabled={exporting || !result.markdown} style={btnDownloadPdf}>
                 {exporting ? 'מייצא...' : 'הורד PDF'}
               </button>
+              {result.worksheetMarkdown && (
+                <>
+                  <button type="button" onClick={() => handleDownload('docx', 'worksheet')} disabled={exporting} style={btnDownloadWorksheet}>
+                    {exporting ? 'מייצא...' : 'דף עבודה DOCX'}
+                  </button>
+                  <button type="button" onClick={() => handleDownload('pdf', 'worksheet')} disabled={exporting} style={btnDownloadWorksheetPdf}>
+                    {exporting ? 'מייצא...' : 'דף עבודה PDF'}
+                  </button>
+                </>
+              )}
               <button type="button" onClick={() => setShowPreview(prev => !prev)} style={btnSecondary}>
                 {showPreview ? 'הסתר תצוגה' : 'הצג תצוגה'}
               </button>
@@ -714,6 +728,12 @@ function buildLessonPlanFilename(plan: LessonPlan | undefined, fallback: LessonP
   const topic = plan?.topic?.trim() || fallback.topic.trim() || 'ללא נושא';
   const grade = gradeLabel(plan?.grade ?? fallback.grade);
   return sanitizeFilename(`מערך שיעור ${topic} כיתה ${grade}`);
+}
+
+function buildWorksheetFilename(plan: LessonPlan | undefined, fallback: LessonPlanFormState): string {
+  const topic = plan?.topic?.trim() || fallback.topic.trim() || 'ללא נושא';
+  const grade = gradeLabel(plan?.grade ?? fallback.grade);
+  return sanitizeFilename(`דף עבודה ${topic} כיתה ${grade}`);
 }
 
 function sanitizeFilename(filename: string): string {
@@ -1129,6 +1149,16 @@ const btnDownload: React.CSSProperties = {
 const btnDownloadPdf: React.CSSProperties = {
   ...btnPrimary,
   background: '#b71c1c',
+};
+
+const btnDownloadWorksheet: React.CSSProperties = {
+  ...btnPrimary,
+  background: '#2f6f73',
+};
+
+const btnDownloadWorksheetPdf: React.CSSProperties = {
+  ...btnPrimary,
+  background: '#8a3a16',
 };
 
 const linkButtonStyle: React.CSSProperties = {

@@ -32,6 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <a href="/curriculum" style={{ color: '#374151', textDecoration: 'none' }}>תכנית לימודים</a>
             <a href="/lesson-plan" style={{ color: '#374151', textDecoration: 'none' }}>מערכי שיעור</a>
             <a href="/exam" style={{ color: '#374151', textDecoration: 'none' }}>מבחנים</a>
+            <a href="/rubrics" style={{ color: '#374151', textDecoration: 'none' }}>מחוונים</a>
           </div>
           {session?.user ? (
             <form

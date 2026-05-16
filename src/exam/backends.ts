@@ -1,4 +1,4 @@
-import { execFile, execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import Anthropic from '@anthropic-ai/sdk';
 import type { AnthropicLike } from '../providers/impl/ClaudeTextGenerator';
 
@@ -102,27 +102,51 @@ export function geminiBackend(opts: GeminiBackendOptions = {}): CompletionFn {
 
 // ── Claude CLI backend (local dev fallback) ────────────────────────────────
 
-export type ExecFn = typeof execFile;
 export type SpawnFn = typeof spawn;
 
-export function claudeCliBackend(exec?: ExecFn): CompletionFn {
-  const run = exec ?? execFile;
+export function claudeCliBackend(spawnFn?: SpawnFn): CompletionFn {
+  const run = spawnFn ?? spawn;
   return async (systemPrompt, userPrompt) => {
     const prompt = `${systemPrompt}\n\n---\n\n${userPrompt}`;
     const text = await new Promise<string>((resolve, reject) => {
-      run(
-        'claude',
-        ['-p', prompt, '--output-format', 'text'],
-        { maxBuffer: 4 * 1024 * 1024, timeout: 120_000 },
-        (err, stdout, stderr) => {
-          if (err) return reject(new Error(`claude CLI failed: ${stderr || err.message}`));
-          if (!stdout.trim()) return reject(new Error('claude CLI returned empty output'));
-          resolve(stdout.trim());
-        },
-      );
+      const child = run('claude', ['-p', '--output-format', 'text'], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 120_000,
+      });
+
+      const chunks: Buffer[] = [];
+      const errChunks: Buffer[] = [];
+      child.stdout.on('data', (d: Buffer) => chunks.push(d));
+      child.stderr.on('data', (d: Buffer) => errChunks.push(d));
+
+      child.on('close', (code) => {
+        const stdout = Buffer.concat(chunks).toString().trim();
+        const stderr = Buffer.concat(errChunks).toString().trim();
+        if (code !== 0) return reject(new Error(formatClaudeCliError(stderr || `exit ${code}`)));
+        if (!stdout) return reject(new Error('claude CLI returned empty output'));
+        resolve(stdout);
+      });
+      child.on('error', (err) => reject(new Error(`claude CLI spawn error: ${err.message}`)));
+
+      child.stdin.write(prompt);
+      child.stdin.end();
     });
     return text;
   };
+}
+
+function formatClaudeCliError(stderr: string): string {
+  const lower = stderr.toLowerCase();
+  if (
+    lower.includes('quota')
+    || lower.includes('rate limit')
+    || lower.includes('usage limit')
+    || lower.includes('credit')
+    || lower.includes('billing')
+  ) {
+    return `claude CLI failed because the account appears to be over quota or rate-limited: ${stderr}`;
+  }
+  return `claude CLI failed: ${stderr}`;
 }
 
 // ── Codex CLI backend (OpenAI via codex exec) ─────────────────────────────

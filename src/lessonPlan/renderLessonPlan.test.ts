@@ -1,5 +1,5 @@
 import type { LessonPlan } from '../types/lessonPlan';
-import { renderLessonPlanMarkdown } from './renderLessonPlan';
+import { renderLessonPlanMarkdown, renderStudentWorksheetMarkdown } from './renderLessonPlan';
 
 const SAMPLE_PLAN: LessonPlan = {
   id: 'sample',
@@ -204,5 +204,37 @@ describe('renderLessonPlanMarkdown', () => {
     expect(markdown).not.toContain('לוחות_מחיקה');
     expect(markdown).not.toContain('זמן משוער');
     expect(markdown).not.toContain('1. תרגול כיתה');
+  });
+});
+
+describe('renderStudentWorksheetMarkdown', () => {
+  it('renders a separate student worksheet from independent work only', () => {
+    const worksheet = renderStudentWorksheetMarkdown({
+      ...SAMPLE_PLAN,
+      phases: {
+        ...SAMPLE_PLAN.phases,
+        independentWork: {
+          name: 'עבודה עצמית - דף עבודה לתלמידים',
+          durationMinutes: 15,
+          description: 'פתרו לבד.',
+          exercises: [{
+            source: 'generated',
+            generatedContent: 'דף עבודה:\nא. חשבו $1+1$\nב. חשבו $2+2$',
+            practiceMode: 'עצמאי',
+            estimatedMinutes: 15,
+            notes: 'פתרונות למורה: א. $2$. ב. $4$',
+          }],
+        },
+      },
+    });
+
+    expect(worksheet).toContain('# דף עבודה - מספרים מרוכבים');
+    expect(worksheet).toContain('דף עבודה:\nא. חשבו $1+1$');
+    expect(worksheet).not.toContain('שיעור ראשון בנושא');
+    expect(worksheet).not.toContain('פתרונות למורה');
+  });
+
+  it('returns undefined when the lesson has no worksheet signal', () => {
+    expect(renderStudentWorksheetMarkdown(SAMPLE_PLAN)).toBeUndefined();
   });
 });

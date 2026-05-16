@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { pool } from '@/lib/db';
-import { renderLessonPlanMarkdown } from '@/lessonPlan/renderLessonPlan';
+import { renderLessonPlanMarkdown, renderStudentWorksheetMarkdown } from '@/lessonPlan/renderLessonPlan';
 import { validateLessonPlanInvariants } from '@/lessonPlan/validateInvariants';
 import { LessonPlanGenerator } from '@/lessonPlan/LessonPlanGenerator';
 import {
@@ -115,6 +115,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       plan,
       markdown: renderLessonPlanMarkdown(plan),
+      worksheetMarkdown: renderStudentWorksheetMarkdown(plan),
       invariantViolations,
     });
   } catch (err) {

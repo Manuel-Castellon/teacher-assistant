@@ -31,6 +31,7 @@ const STATUS_OPTIONS: { value: TopicProgressStatus; label: string }[] = [
   { value: 'in_progress', label: STATUS_LABELS.in_progress },
   { value: 'completed', label: STATUS_LABELS.completed },
   { value: 'needs_review', label: STATUS_LABELS.needs_review },
+  { value: 'skipped', label: STATUS_LABELS.skipped },
 ];
 
 export default function CurriculumPage() {
@@ -214,6 +215,7 @@ export default function CurriculumPage() {
               <Stat label="הושלמו" value={summary.completedCount} />
               <Stat label="בתהליך" value={summary.inProgressCount} />
               <Stat label="דורשים חזרה" value={summary.needsReviewCount} />
+              <Stat label="דולגו כרגע" value={summary.skippedCount} />
               <Stat label="לא הותחלו" value={summary.notStartedCount} />
               <Stat label="שעות בפועל" value={summary.totalHoursSpent} />
             </div>
@@ -261,6 +263,7 @@ export default function CurriculumPage() {
                   <div>
                     <h2 style={topicTitleStyle}>{topic.name}</h2>
                     <p style={topicMetaStyle}>{topic.recommendedHours} שעות בתכנית · {topic.subTopics.length} תתי-נושאים</p>
+                    <TopicTargets subTopics={topic.subTopics} />
                   </div>
                   <SelectField
                     label="סטטוס"
@@ -327,6 +330,24 @@ function SelectField<T extends string>({ label, value, options, onChange }: {
         {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
     </label>
+  );
+}
+
+function TopicTargets({ subTopics }: {
+  subTopics: { id: string; name: string; learningObjectives: string[] }[];
+}) {
+  const targets = subTopics.flatMap(subTopic => subTopic.learningObjectives);
+  return (
+    <details style={targetsDetailsStyle}>
+      <summary style={targetsSummaryStyle}>יעדי למידה ({targets.length})</summary>
+      {targets.length > 0 ? (
+        <ul style={targetsListStyle}>
+          {targets.map((target, idx) => <li key={idx} style={targetsItemStyle}>{target}</li>)}
+        </ul>
+      ) : (
+        <p style={targetsEmptyStyle}>לא פורטו יעדי למידה בקובץ המקור.</p>
+      )}
+    </details>
   );
 }
 
@@ -576,6 +597,33 @@ const topicMetaStyle: React.CSSProperties = {
   margin: '0.25rem 0 0',
   color: '#64748b',
   fontSize: '0.85rem',
+};
+
+const targetsDetailsStyle: React.CSSProperties = {
+  marginTop: '0.45rem',
+  color: '#374151',
+  fontSize: '0.85rem',
+  lineHeight: 1.55,
+};
+
+const targetsSummaryStyle: React.CSSProperties = {
+  cursor: 'pointer',
+  color: '#1769aa',
+  fontWeight: 500,
+};
+
+const targetsListStyle: React.CSSProperties = {
+  margin: '0.35rem 0 0',
+  paddingInlineStart: '1.1rem',
+};
+
+const targetsItemStyle: React.CSSProperties = {
+  marginBottom: '0.15rem',
+};
+
+const targetsEmptyStyle: React.CSSProperties = {
+  margin: '0.35rem 0 0',
+  color: '#64748b',
 };
 
 const topicFieldsStyle: React.CSSProperties = {

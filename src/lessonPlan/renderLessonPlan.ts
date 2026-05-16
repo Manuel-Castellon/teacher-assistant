@@ -48,6 +48,48 @@ export function renderLessonPlanMarkdown(plan: LessonPlan): string {
   return lines.join('\n').trimEnd() + '\n';
 }
 
+export function renderStudentWorksheetMarkdown(plan: LessonPlan): string | undefined {
+  if (!hasWorksheet(plan)) return undefined;
+
+  const lines: string[] = [
+    `# דף עבודה - ${plan.topic}`,
+    '',
+    `כיתה: ${gradeLabel(plan.grade)}`,
+    '',
+    `נושא: ${plan.subTopic}`,
+    '',
+  ];
+
+  if (plan.phases.independentWork.description) {
+    lines.push(plan.phases.independentWork.description, '');
+  }
+
+  const exercises = plan.phases.independentWork.exercises;
+  if (exercises.length === 0) return undefined;
+
+  exercises.forEach((exercise, index) => {
+    const content = renderExerciseContent(exercise);
+    if (exercise.generatedContent && isStructuredMarkdown(content)) {
+      lines.push(content);
+    } else {
+      lines.push(`${index + 1}. ${content}`);
+    }
+    lines.push('');
+  });
+
+  return lines.join('\n').trimEnd() + '\n';
+}
+
+function hasWorksheet(plan: LessonPlan): boolean {
+  const independent = plan.phases.independentWork;
+  const searchable = [
+    independent.name,
+    independent.description ?? '',
+    ...independent.exercises.map(exercise => exercise.generatedContent ?? ''),
+  ].join('\n');
+  return /דף עבודה|worksheet/i.test(searchable);
+}
+
 function renderPhase(lines: string[], phase: LessonPhase) {
   lines.push(`### ${phase.name} (${phase.durationMinutes} דקות)`, '');
   if (phase.description) {

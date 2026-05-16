@@ -62,6 +62,12 @@ _SAFE_NS = {
 
 def _parse(expr_str: str):
     """Parse a SymPy expression string from our own verification data."""
+    if _looks_like_compound_sympy(expr_str):
+        try:
+            return _safe_eval(expr_str)
+        except Exception:
+            pass
+
     # Try sympify first (handles basic math like "25", "Rational(4,3)")
     try:
         return sympify(expr_str, locals={"x": x, "y": y, "z": z})
@@ -75,6 +81,21 @@ def _parse(expr_str: str):
         pass
     # For compound constructs like Eq(...), Interval(...), {25}:
     # compile + exec with restricted namespace (no builtins, no I/O)
+    return _safe_eval(expr_str)
+
+
+def _looks_like_compound_sympy(expr_str: str) -> bool:
+    stripped = expr_str.strip()
+    return (
+        stripped.startswith("[")
+        or stripped.startswith("{")
+        or stripped.startswith("(")
+        or "Eq(" in stripped
+        or "Interval." in stripped
+    )
+
+
+def _safe_eval(expr_str: str):
     code = compile(expr_str, "<verification>", "eval")
     for name in code.co_names:
         if name not in _SAFE_NS:
@@ -85,6 +106,9 @@ def _parse(expr_str: str):
 def verify_equation(expression: str, expected: str) -> dict:
     try:
         expr = _parse(expression)
+        if _is_equation_system(expr):
+            return verify_equation_system(expr, expected)
+
         computed = solve(expr, x)
 
         # Identity equation: solve() returns [] when true for all x.
@@ -134,6 +158,77 @@ def verify_equation(expression: str, expected: str) -> dict:
 
     except Exception as e:
         return {"isValid": False, "computedAnswer": None, "message": f"Error: {e}"}
+
+
+def _is_equation_system(expr) -> bool:
+    return isinstance(expr, (list, tuple)) and all(isinstance(item, Relational) for item in expr)
+
+
+def verify_equation_system(expressions, expected: str) -> dict:
+    variables = sorted(
+        {symbol for expression in expressions for symbol in expression.free_symbols},
+        key=lambda symbol: symbol.name,
+    )
+    if not variables:
+        return {"isValid": False, "computedAnswer": None, "message": "System has no variables"}
+
+    solutions = solve(expressions, variables, dict=True)
+    computed_str = _format_system_solutions(solutions)
+    if len(solutions) == 0:
+        return {
+            "isValid": False,
+            "computedAnswer": "no solution",
+            "message": f"No solution exists, expected {expected}",
+        }
+    if len(solutions) != 1:
+        return {
+            "isValid": False,
+            "computedAnswer": computed_str,
+            "message": f"Expected one solution, got {len(solutions)}",
+        }
+
+    expected_parsed = _parse(expected)
+    expected_dict = _expected_system_dict(expected_parsed, variables)
+    if expected_dict is None:
+        return {
+            "isValid": False,
+            "computedAnswer": computed_str,
+            "message": f"Expected answer for system must be a dict or tuple/list, got {expected}",
+        }
+
+    solution = solutions[0]
+    for variable in variables:
+        if variable not in solution or variable not in expected_dict:
+            return {
+                "isValid": False,
+                "computedAnswer": computed_str,
+                "message": f"Variable set differs: computed {computed_str}, expected {expected}",
+            }
+        if simplify(solution[variable] - expected_dict[variable]) != 0:
+            return {
+                "isValid": False,
+                "computedAnswer": computed_str,
+                "message": f"Mismatch: computed {computed_str}, expected {expected}",
+            }
+
+    return {"isValid": True, "computedAnswer": computed_str, "message": "Verified: system solution matches"}
+
+
+def _expected_system_dict(expected_parsed, variables):
+    if isinstance(expected_parsed, dict):
+        return expected_parsed
+    if isinstance(expected_parsed, (list, tuple)) and len(expected_parsed) == len(variables):
+        return {variable: expected_parsed[index] for index, variable in enumerate(variables)}
+    return None
+
+
+def _format_system_solutions(solutions) -> str:
+    if not solutions:
+        return "[]"
+    return "; ".join(
+        ", ".join(f"{symbol}={value}" for symbol, value in sorted(solution.items(), key=lambda item: item[0].name))
+        for solution in solutions
+    )
 
 
 def verify_inequality(expression: str, expected: str) -> dict:

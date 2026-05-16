@@ -10,7 +10,7 @@ import type { GradeLevel } from '../types/shared';
 
 export const CLASS_PROGRESS_STORAGE_KEY = 'teacher-assistant.class-progress.v1';
 
-export type TopicProgressStatus = 'not_started' | 'in_progress' | 'completed' | 'needs_review';
+export type TopicProgressStatus = 'not_started' | 'in_progress' | 'completed' | 'needs_review' | 'skipped';
 
 export interface TopicProgress {
   topicId: string;
@@ -40,6 +40,7 @@ export interface ClassProgressSummary {
   completedCount: number;
   inProgressCount: number;
   needsReviewCount: number;
+  skippedCount: number;
   notStartedCount: number;
   totalHoursSpent: number;
   nextLessonTopic?: TopicProgressView;
@@ -60,6 +61,7 @@ export const STATUS_LABELS: Record<TopicProgressStatus, string> = {
   in_progress: 'בתהליך',
   completed: 'הושלם',
   needs_review: 'דורש חזרה',
+  skipped: 'מדולג כרגע',
 };
 
 const CURRICULUM_BY_GRADE: Record<GradeLevel, CurriculumUnit> = {
@@ -109,6 +111,7 @@ export function buildClassProgressSummary(profile: ClassProgressProfile): ClassP
   const completedCount = topics.filter(item => item.progress.status === 'completed').length;
   const inProgressCount = topics.filter(item => item.progress.status === 'in_progress').length;
   const needsReviewCount = topics.filter(item => item.progress.status === 'needs_review').length;
+  const skippedCount = topics.filter(item => item.progress.status === 'skipped').length;
   const notStartedCount = topics.filter(item => item.progress.status === 'not_started').length;
   const totalHoursSpent = topics.reduce((sum, item) => sum + item.progress.hoursSpent, 0);
   const nextLessonTopic =
@@ -122,6 +125,7 @@ export function buildClassProgressSummary(profile: ClassProgressProfile): ClassP
     completedCount,
     inProgressCount,
     needsReviewCount,
+    skippedCount,
     notStartedCount,
     totalHoursSpent,
     ...(nextLessonTopic ? { nextLessonTopic } : {}),
@@ -183,6 +187,7 @@ export function getExamTopicWarning(profile: ClassProgressProfile, topicId?: str
   const progress = normalizeTopicProgress(topicId, profile.topics[topicId]);
   if (progress.status === 'not_started') return 'הנושא עדיין לא סומן כנלמד בכיתה הזו.';
   if (progress.status === 'in_progress') return 'הנושא עדיין בתהליך, כדאי לוודא שהמבחן לא מתקדם מדי.';
+  if (progress.status === 'skipped') return 'הנושא סומן כמדולג כרגע בכיתה הזו.';
   return undefined;
 }
 
@@ -232,6 +237,7 @@ export function renderClassContext(
     `נושאים שהושלמו: ${summary.completedCount}`,
     `נושאים בתהליך: ${summary.inProgressCount}`,
     `נושאים שדורשים חזרה: ${summary.needsReviewCount}`,
+    `נושאים שדולגו כרגע: ${summary.skippedCount}`,
   ];
 
   const recent = summary.topics
@@ -272,6 +278,7 @@ function renderLessonTeacherRequest(
     in_progress: 'שיעור המשך ותרגול',
     completed: 'שיעור תרגול והעמקה',
     needs_review: 'שיעור חזרה ממוקד',
+    skipped: 'שיעור פתיחה והקנייה',
   };
   const notes = item.progress.notes ? ` ${sentenceWithPeriod(`להתייחס להערת המעקב: ${item.progress.notes}`)}` : '';
   const objectiveLine = objective ? ` ${sentenceWithPeriod(`מטרה מרכזית: ${objective}`)}` : '';
@@ -360,7 +367,7 @@ function normalizeTopicProgress(topicId: string, progress?: TopicProgress): Topi
     status: progress.status,
     hoursSpent: Math.max(0, Number.isFinite(progress.hoursSpent) ? progress.hoursSpent : 0),
     ...(progress.lastTaughtDate ? { lastTaughtDate: progress.lastTaughtDate } : {}),
-    ...(progress.notes?.trim() ? { notes: progress.notes.trim() } : {}),
+    ...(progress.notes?.trim() ? { notes: progress.notes } : {}),
   };
 }
 
@@ -370,6 +377,6 @@ function stripEmptyTopicProgress(progress: TopicProgress): TopicProgress {
     status: progress.status,
     hoursSpent: progress.hoursSpent,
     ...(progress.lastTaughtDate ? { lastTaughtDate: progress.lastTaughtDate } : {}),
-    ...(progress.notes?.trim() ? { notes: progress.notes.trim() } : {}),
+    ...(progress.notes?.trim() ? { notes: progress.notes } : {}),
   };
 }

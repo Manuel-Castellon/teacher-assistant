@@ -48,6 +48,7 @@ export interface ExamQuestion {
   subQuestions: ExamSubQuestion[];
   givenData?: string[];
   diagramDescription?: string;
+  diagramSvg?: string;
 }
 
 export interface ExamPart {

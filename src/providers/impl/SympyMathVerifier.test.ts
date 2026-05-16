@@ -35,6 +35,20 @@ describe('SympyMathVerifier', () => {
       expect(results[0]!.isValid).toBe(true);
     });
 
+    it('verifies a two-variable system of equations', async () => {
+      const items: VerificationItem[] = [
+        {
+          questionRef: 'Q1.2',
+          type: 'equation',
+          sympyExpression: '[Eq(5*x + 3*y, 29), Eq(3*x + 2*y, 18)]',
+          expectedAnswer: '{x: 4, y: 3}',
+        },
+      ];
+      const results = await verifier.verifyExamItems(items);
+      expect(results[0]!.isValid).toBe(true);
+      expect(results[0]!.message).toContain('system solution');
+    });
+
     it('verifies an inequality', async () => {
       const items: VerificationItem[] = [
         { questionRef: 'Q1.3', type: 'inequality', sympyExpression: '2*x < 10', expectedAnswer: 'Interval.open(-oo, 5)' },

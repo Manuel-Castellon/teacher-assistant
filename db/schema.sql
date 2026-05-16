@@ -146,7 +146,7 @@ CREATE TABLE teacher_progress (
   topic_id              TEXT NOT NULL,
   sub_topic_id          TEXT REFERENCES curriculum_sub_topics(id),
   class_id              UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
-  status                TEXT NOT NULL CHECK (status IN ('not_started','in_progress','completed','needs_review')),
+  status                TEXT NOT NULL CHECK (status IN ('not_started','in_progress','completed','needs_review','skipped')),
   hours_spent           NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (hours_spent >= 0),
   last_taught_date      DATE,
   notes                 TEXT,
