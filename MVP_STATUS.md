@@ -1,6 +1,6 @@
 # MVP Status Rundown
 
-Last updated: 2026-05-16 (post auto-rubric on exam generation)
+Last updated: 2026-05-17 (post MVP3 question-bank first slice)
 
 Source of truth: `PROGRESS.md` and `CHECKPOINT.md`.
 
@@ -11,11 +11,13 @@ Status: complete.
 Done:
 - Next.js/TypeScript/Postgres scaffold, tests, coverage gate, Hebrew RTL/font setup.
 - Curriculum PDFs and parsed curriculum JSON for middle school and high-school 5 יח"ל.
-- Auth.js with Google OAuth and PG adapter.
+- Auth.js v5 with Google OAuth, dev-only `dev-email` Credentials provider (passwordless, gated to `NODE_ENV !== 'production'`), and PG adapter. JWT session strategy.
 - Database schema and provider interfaces.
+- Local Postgres 18.3 stood up via docker (`math-teacher-pg` + named volume). Schema + both migrations applied; `npm run db:migrate` is idempotent.
 
 Missing:
-- Nothing blocking. PG client/ORM refinement is deferred until it is needed.
+- Production Google OAuth path not yet exercised end-to-end (no `AUTH_GOOGLE_ID`/`SECRET` configured); the JWT session-strategy switch made for Credentials should be confirmed not to regress Google sign-in.
+- PG client/ORM refinement is deferred until it is needed.
 
 ## MVP 1 — Lesson Plan Generator
 
@@ -46,7 +48,7 @@ Missing:
 
 ## MVP 2 — Exercise / Exam Creator + Verification
 
-Status: complete for exam generation.
+Status: complete for exam generation; one latent reliability issue with default backend.
 
 Done:
 - Exam schema, prompt, renderer, answer key rendering.
@@ -62,24 +64,32 @@ Done:
 - Real exam rubric extraction infrastructure and May 2026 rubric exported as JSON/Markdown/DOCX/PDF. This has immediate MVP2 value because it attaches to generated/real exams, but the reusable criterion-level rubric model is mainly groundwork for MVP6 supervised grading.
 - `/rubrics` browser UI lists rubric artifacts from `data/exam-rubrics/`, previews rendered markdown, and offers DOCX/PDF download via the shared `/api/exam/export` route. Backed by `GET /api/rubrics` and `GET /api/rubrics/[id]`.
 - Auto-rubric on every `/exam` generation. Default mode is deterministic (mechanical mapping with 70/30 criteria split); toggle exposes an AI mode that reuses the default backend chain to enrich criteria + common mistakes (identity fields and totals are reconciled against the deterministic base so model drift cannot break the schema); `none` mode skips. Generated rubrics persist to `data/exam-rubrics/<id>.json` and surface in `/rubrics` automatically, with the result panel deep-linking to `/rubrics?rubric=<id>`.
+- `/exam` page exposes a "מודל AI" selector (parity with `/lesson-plan`): auto / Gemini 2.5 Flash / Gemini 3 Flash Preview / Gemini 2.5 Pro / Claude CLI / GPT-5.5 (Codex). `/api/exam/generate` accepts a `backend` body field and routes via `createBackendByName`.
 
 Missing:
+- Gemini 2.5 Flash exam JSON-escape fragility is a known reliability issue: the model emits raw LaTeX backslashes (`\frac`, `\sqrt`) inside JSON strings and the response fails to parse. Today's smoke saw this fail 3× in a row on the same prompt; Codex/GPT-5.5 succeeded first try. Workaround in place: teacher can pick the model. Real fixes pending: tolerant JSON parser, or default exam path to a more reliable backend.
 - OCR ingestion for scanned/student work is deferred.
 
 ## MVP 3 — Question Bank / Bagrut Archive
 
-Status: schema/tagging stub started.
+Status: first slice complete; reusable catalog and `/exam` seed path are live.
 
 Done:
-- Some source notes exist for Bagrut/question-bank seeding.
-- Exam/rubric data models now give useful shapes for future question-bank items.
-- Initial DB schema and TypeScript store stubs exist for question-bank items and tags.
+- Provenance-first schema, migration, and TypeScript types for question-bank items/tags.
+- License tiers are explicit: `ministry-public`, `teacher-original`, `open-license`, `public-domain`, `copyrighted-personal-use`, `student-submitted`, `unknown`.
+- Insert validation rejects `unknown`; copyrighted-personal-use items require author, page number, and exercise number.
+- Idempotent seed ingest CLI exists: `npm run db:ingest-question-bank`; script-level dry run is `npm run db:ingest-question-bank -- --dry`.
+- Seed catalog has 20 items: 10 בני גורן complex-number exercises (`copyrighted-personal-use`, pages 16-17, exercise numbers kept) and 10 teacher-original May-2026 grade-8 exam items.
+- `/question-bank` browse UI lists/filter items and shows prompt, answer, tags, and full provenance footer.
+- `GET /api/question-bank` and `GET /api/question-bank/[id]` are live and tested.
+- `/exam` has a "השתמש בבנק שאלות" toggle, grade-filtered picker, and `style-reference` / `verbatim` modes.
+- Server-side exam seed resolution loads selected items, enforces grade/license gates, requires teacher acknowledgement before copyrighted-personal-use verbatim classroom use, and adds markdown attribution for verbatim items.
 
 Missing:
-- Bagrut archive ingestion/parsing.
-- Question-bank list/search/reuse UI.
-- Tagging by curriculum topic, grade, difficulty, representation type, and source.
-- Deduplication and copyright/source policy for imported questions.
+- Real ministry-public Bagrut archive ingestion/parsing once a PDF/URL is provided.
+- Topic-grade picker is basic; no advanced search, bulk actions, or preview-in-exam panel yet.
+- Current verbatim mode is prompt-directed for generation; deterministic pre-placement of exact questions can be a later hardening slice.
+- Copyrighted acknowledged-verbatim and style-reference outputs still need real-teacher quality review for classroom expectations and non-public distribution wording.
 
 ## MVP 4 — Curriculum Tracker / Class Progress
 
@@ -137,9 +147,14 @@ Missing:
 
 ## Current Cross-Cutting State
 
-Known broken: nothing.
+Known broken: nothing hard-broken. Gemini Flash exam JSON parsing is stochastically fragile; workaround via `/exam` model selector.
 
-Recent verification:
+Recent verification (2026-05-17):
+- MVP3 question-bank first slice and copyright-policy update: `npm run db:migrate`, `npm run db:ingest-question-bank -- --dry`, `npm run test:signoff`, and `npm run build` passed; `/exam` and `/question-bank` returned 200; `/api/question-bank?grade=חי` returned 10 teacher-original items; `/api/question-bank?grade=יבי` returned 10 copyrighted textbook items; cached Playwright/Chrome verified the copyrighted-verbatim acknowledgement warning, disabled/enabled generate state, and 0 console warnings/errors.
+- Full signed-in Playwright MCP smoke (signin via dev-email → `/curriculum` → `/lesson-plan` → post-lesson update → `/exam` → `/rubrics`) green end-to-end against the new local Postgres. DB rows confirmed at each step.
+- `npm run type-check`, `npm run test:lesson-plan` (74 tests), `npm run test:rubrics` (27 tests) passed after the two route-side fixes (lesson-plan grade persistence, /exam backend param).
+
+Earlier verification:
 - Real `/lesson-plan` generation smoke produced a worksheet with 3/3 SymPy-verified worksheet items.
 - Real `/exam` generation smoke produced 2/2 verified items and deterministic rubric `rubric-20260516-194359-fd56d9`.
 - `/api/artifacts` unauthenticated smoke returned `200 { authenticated:false, artifacts:[] }`.
@@ -153,4 +168,4 @@ Recent verification:
 - Playwright MCP smoke (unauthenticated, localStorage seeded): three classContextSource modes on `/lesson-plan` and `/exam` sent expected payloads; `/curriculum` and `/lesson-plan` continuity timelines rendered with correct sort/labels; `/api/exam/export` returned a real PDF (`%PDF` magic, 15KB); four exam download buttons rendered after generation. 0 console warnings/errors.
 
 Immediate next decision:
-- Pick the next milestone from the open options: MVP 1 LLM-judge rubric (dev-only eval), MVP 2 rubric browser/export UI, MVP 3 question-bank schema + tagging stub, or MVP 4 subtopic-level progress. Real-class signed-in loop and DB migration remain tabled until a usable local Postgres path exists.
+- Open options now that the signed-in real-class loop and MVP3 first slice are live: real ministry-public Bagrut ingestion, MVP 2 exam reliability (Gemini JSON fragility), deterministic pre-placement for bank verbatim mode, MVP 4 subtopic-level progress, or wiring Google OAuth credentials and confirming the Google path post-JWT-switch.

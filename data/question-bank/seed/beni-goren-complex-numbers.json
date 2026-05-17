@@ -1,0 +1,136 @@
+{
+  "source": {
+    "sourceKind": "manual",
+    "license": "copyrighted-personal-use",
+    "sourceTitle": "מתמטיקה (5 יחידות לימוד) חלק ג'-2",
+    "author": "בני גורן",
+    "publisher": "בני גורן (הוצאה עצמית)",
+    "year": 2020,
+    "isbn": "035582",
+    "sourceUrl": "https://www.bennygoren.co.il",
+    "notes": "Transcribed for closed classroom/exam use only. Verbatim reuse requires teacher acknowledgement that the school/students have lawful access to the source, use is limited to teaching/examination, attribution is kept, and output is not publicly redistributed. Notation preserved from source (book uses a+bi)."
+  },
+  "defaultTags": ["מספרים מרוכבים", "5-יחידות", "בני-גורן"],
+  "items": [
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "בסיסי",
+      "representationType": "טקסט",
+      "pageNumber": 16,
+      "exerciseNumber": "1",
+      "promptMarkdown": "פתור את המשוואה ומצא את $z$:  $z^2 + 9 = 0$",
+      "answerMarkdown": "$z = \\pm 3i$",
+      "tags": ["משוואה ריבועית"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "בינוני",
+      "representationType": "טקסט",
+      "pageNumber": 16,
+      "exerciseNumber": "4",
+      "promptMarkdown": "פתור את המשוואה ומצא את $z$:  $z^2 - 4z + 5 = 0$",
+      "answerMarkdown": "$z = 2 \\pm i$",
+      "tags": ["משוואה ריבועית", "השלמה לריבוע"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "בינוני",
+      "representationType": "טקסט",
+      "pageNumber": 16,
+      "exerciseNumber": "7",
+      "promptMarkdown": "פתור את המשוואה ומצא את $z$:  $5z^2 + 8z + 4 = 0$",
+      "answerMarkdown": "$z = -\\dfrac{4}{5} \\pm \\dfrac{2}{5}i$",
+      "tags": ["משוואה ריבועית", "נוסחת השורשים"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "מתקדם",
+      "representationType": "טקסט",
+      "pageNumber": 16,
+      "exerciseNumber": "10",
+      "promptMarkdown": "פתור את המשוואה ומצא את $z$:  $z^4 - 1 = 0$",
+      "answerMarkdown": "$z = \\pm 1,\\; \\pm i$",
+      "tags": ["משוואה ממעלה רביעית", "פירוק לגורמים"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "בסיסי",
+      "representationType": "טקסט",
+      "pageNumber": 16,
+      "exerciseNumber": "26",
+      "promptMarkdown": "חשב:  $(1 - i) + (3 + i)$",
+      "answerMarkdown": "$4$",
+      "tags": ["חיבור"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "בסיסי",
+      "representationType": "טקסט",
+      "pageNumber": 16,
+      "exerciseNumber": "34",
+      "promptMarkdown": "חשב:  $(1 - i)(2 + i)$",
+      "answerMarkdown": "$3 - i$",
+      "tags": ["כפל"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "בינוני",
+      "representationType": "טקסט",
+      "pageNumber": 17,
+      "exerciseNumber": "40",
+      "promptMarkdown": "חשב (היעזר בנוסחאות $(1+i)^2 = 2i$ ו-$(1-i)^2 = -2i$ במידת הצורך):  $(2 + 3i)^2$",
+      "answerMarkdown": "$-5 + 12i$",
+      "tags": ["חזקה"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "מתקדם",
+      "representationType": "טקסט",
+      "pageNumber": 17,
+      "exerciseNumber": "42",
+      "promptMarkdown": "חשב (היעזר בנוסחאות $(1+i)^2 = 2i$ ו-$(1-i)^2 = -2i$ במידת הצורך):  $(1 + i)^9$",
+      "answerMarkdown": "$16 + 16i$",
+      "tags": ["חזקה", "זהויות (1±i)²"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "בינוני",
+      "representationType": "טקסט",
+      "pageNumber": 17,
+      "exerciseNumber": "46",
+      "promptMarkdown": "מצא את המספרים הממשיים $x$ ו-$y$ המקיימים את המשוואה:  $2x + yi = 4 + i$",
+      "answerMarkdown": "$x = 2,\\; y = 1$",
+      "tags": ["שוויון מרוכבים", "מערכת משוואות"]
+    },
+    {
+      "grade": "יבי",
+      "curriculumTopicId": "complex-numbers",
+      "questionType": "חישובי",
+      "difficulty": "מתקדם",
+      "representationType": "טקסט",
+      "pageNumber": 17,
+      "exerciseNumber": "65",
+      "promptMarkdown": "בסדרה הנדסית נתון:  $a_1 = 1 + 2i,\\; q = 1 - i$.\n\nא. חשב את $a_9$.\n\nב. הבע באמצעות $n$ את $a_{4n+1}$.",
+      "answerMarkdown": "א. $a_9 = 16 + 32i$\n\nב. $a_{4n+1} = (-4)^n (1 + 2i)$",
+      "tags": ["סדרה הנדסית"]
+    }
+  ]
+}

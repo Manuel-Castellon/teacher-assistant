@@ -1,4 +1,5 @@
 import type { GradeLevel } from '../types/shared';
+import type { QuestionLicense, QuestionProvenance } from '../questionBank/types';
 
 // ── Request types (what the teacher specifies) ──
 
@@ -25,6 +26,35 @@ export interface ExamRequest {
   totalPoints: number;
   parts: ExamPartSpec[];
   teacherNotes?: string;
+  bankSeed?: ExamQuestionBankSeed;
+}
+
+export type ExamQuestionBankSeedMode = 'verbatim' | 'style-reference';
+
+export interface ExamQuestionBankSeed {
+  mode: ExamQuestionBankSeedMode;
+  itemIds: string[];
+  copyrightAcknowledged?: boolean;
+  copyrightAcknowledgedAt?: string;
+  examples?: ExamQuestionBankSeedExample[];
+}
+
+export interface ExamQuestionBankSeedExample {
+  id: string;
+  requestedMode: ExamQuestionBankSeedMode;
+  useMode: ExamQuestionBankSeedMode;
+  license: QuestionLicense;
+  sourceTitle: string;
+  provenanceLabel: string;
+  promptMarkdown: string;
+  answerMarkdown?: string;
+}
+
+export interface ExamQuestionBankAttribution {
+  itemId: string;
+  sourceTitle: string;
+  license: QuestionLicense;
+  provenance: QuestionProvenance;
 }
 
 export interface RegenerateQuestionRequest {
@@ -85,4 +115,5 @@ export interface GeneratedExam {
   totalPoints: number;
   answerKey: ExamSolution[];
   verificationItems: VerificationItem[];
+  questionBankAttributions?: ExamQuestionBankAttribution[];
 }

@@ -1,0 +1,53 @@
+{
+  "id": "rubric-20260516-205307-6d80b3",
+  "sourceExamPath": "generated:exam:16.05.26",
+  "title": "מבחן במתמטיקה - כיתה ז'",
+  "className": "כיתה ז'",
+  "date": "16.05.26",
+  "totalPoints": 20,
+  "projectLearnings": [],
+  "questions": [
+    {
+      "questionNumber": 1,
+      "title": "פתרון משוואות ליניאריות",
+      "topic": "פתרון משוואות ליניאריות",
+      "maxPoints": 20,
+      "subQuestions": [
+        {
+          "label": "1.",
+          "maxPoints": 10,
+          "expectedAnswer": "$x = 35$",
+          "criteria": [
+            {
+              "id": "1-solve",
+              "description": "פתרון מסודר ונכון על-פי שלבים",
+              "points": 7
+            },
+            {
+              "id": "1-answer",
+              "description": "תשובה סופית נכונה",
+              "points": 3
+            }
+          ]
+        },
+        {
+          "label": "2.",
+          "maxPoints": 10,
+          "expectedAnswer": "$x = 40$",
+          "criteria": [
+            {
+              "id": "2-solve",
+              "description": "פתרון מסודר ונכון על-פי שלבים",
+              "points": 7
+            },
+            {
+              "id": "2-answer",
+              "description": "תשובה סופית נכונה",
+              "points": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

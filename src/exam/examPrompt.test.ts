@@ -158,6 +158,48 @@ describe('examPrompt', () => {
     expect(prompt).toContain('קריאת גרפים (קריאה_וניתוח, 20 נק');
   });
 
+  it('renders question-bank verbatim and style-reference blocks', () => {
+    const prompt = renderExamUserPrompt({
+      className: "ח'1",
+      date: '17.05.26',
+      grade: 'חי',
+      durationMinutes: 45,
+      totalPoints: 20,
+      parts: [{ title: 'אלגברה', questionSpecs: [{ topic: 'משוואות', questionType: 'חישובי', points: 20 }] }],
+      bankSeed: {
+        mode: 'verbatim',
+        itemIds: ['a', 'b'],
+        examples: [
+          {
+            id: 'a',
+            requestedMode: 'verbatim',
+            useMode: 'verbatim',
+            license: 'teacher-original',
+            sourceTitle: 'מבחן מורה',
+            provenanceLabel: 'מבחן מורה · שאלה 1',
+            promptMarkdown: 'פתרו $x+1=2$',
+            answerMarkdown: '$x=1$',
+          },
+          {
+            id: 'b',
+            requestedMode: 'verbatim',
+            useMode: 'style-reference',
+            license: 'copyrighted-personal-use',
+            sourceTitle: 'ספר',
+            provenanceLabel: "ספר · עמ' 16 · תרגיל 8",
+            promptMarkdown: 'פתרו $2x=8$',
+          },
+        ],
+      },
+    });
+
+    expect(prompt).toContain('### שאלות לשילוב כלשונן');
+    expect(prompt).toContain('פתרו $x+1=2$');
+    expect(prompt).toContain('### דוגמאות סגנון בלבד');
+    expect(prompt).toContain('אין להעתיק ניסוח');
+    expect(prompt).toContain("ספר · עמ' 16 · תרגיל 8");
+  });
+
   it('renders a scoped regenerate-question prompt', () => {
     const prompt = renderRegenerateQuestionUserPrompt({
       originalRequest: {

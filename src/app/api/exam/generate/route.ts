@@ -14,7 +14,8 @@ import type { ExamRequest, GeneratedExam } from '@/exam/types';
 import { buildRubricFromExam } from '@/examRubric/buildRubricFromExam';
 import { generateAiRubric } from '@/examRubric/aiRubricGenerator';
 import { generateRubricId, saveExamRubric } from '@/examRubric/saveRubric';
-import { createDefaultBackend } from '@/exam/backends';
+import { createBackendByName, createDefaultBackend, type BackendName } from '@/exam/backends';
+import { resolveExamQuestionBankSeed } from '@/exam/questionBankSeed';
 
 export type RubricMode = 'deterministic' | 'ai' | 'none';
 
@@ -22,6 +23,7 @@ interface GenerateExamBody extends ExamRequest {
   classId?: string;
   classContextSource?: ClassContextSource;
   rubricMode?: RubricMode;
+  backend?: BackendName | 'auto';
 }
 
 export async function POST(request: Request) {
@@ -42,13 +44,27 @@ export async function POST(request: Request) {
     });
 
     const mergedTeacherNotes = mergeClassContextIntoNotes(body.teacherNotes, resolved.context);
+    const resolvedBankSeed = await resolveExamQuestionBankSeed({
+      db: pool,
+      grade: body.grade,
+      ...(body.bankSeed ? { seed: body.bankSeed } : {}),
+      ...(userId ? { userId } : {}),
+    });
     const examRequest: ExamRequest = {
       ...stripWrapperFields(body),
       ...(mergedTeacherNotes ? { teacherNotes: mergedTeacherNotes } : {}),
+      ...(resolvedBankSeed.seed ? { bankSeed: resolvedBankSeed.seed } : {}),
     };
 
-    const generator = new ExamGenerator();
+    const backend = body.backend && body.backend !== 'auto'
+      ? createBackendByName(body.backend)
+      : undefined;
+    const generator = new ExamGenerator(backend);
     const exam = await generator.generate(examRequest);
+    if (resolvedBankSeed.verbatimAttributions.length > 0) {
+      exam.questionBankAttributions = resolvedBankSeed.verbatimAttributions;
+    }
+    const persistedExamRequest = stripResolvedBankExamples(examRequest);
 
     const verifier = new SympyMathVerifier();
     const verification = await verifier.verifyExamItems(exam.verificationItems);
@@ -59,7 +75,7 @@ export async function POST(request: Request) {
       ...(userId ? { userId } : {}),
       ...(resolved.classId ? { classId: resolved.classId } : {}),
       exam,
-      examRequest,
+      examRequest: persistedExamRequest,
       examMarkdown,
       answerKeyMarkdown,
       verification,
@@ -72,7 +88,7 @@ export async function POST(request: Request) {
       ...(resolved.classId ? { classId: resolved.classId } : {}),
       ...(examArtifact.artifactId ? { sourceArtifactId: examArtifact.artifactId } : {}),
       exam,
-      examRequest,
+      examRequest: persistedExamRequest,
       examMarkdown,
       answerKeyMarkdown,
     });
@@ -84,6 +100,7 @@ export async function POST(request: Request) {
       verification,
       artifactId: examArtifact.artifactId,
       artifactWarning: examArtifact.warning,
+      bankSeedWarning: resolvedBankSeed.warning,
       rubricId: rubricResult.rubricId,
       rubricArtifactId: rubricResult.artifactId,
       rubricMode: rubricResult.appliedMode,
@@ -101,8 +118,24 @@ async function getAuthenticatedUserId(): Promise<string | undefined> {
 }
 
 function stripWrapperFields(body: GenerateExamBody): ExamRequest {
-  const { classId: _classId, classContextSource: _src, rubricMode: _rm, ...rest } = body;
+  const {
+    classId: _classId,
+    classContextSource: _src,
+    rubricMode: _rm,
+    backend: _b,
+    bankSeed: _seed,
+    ...rest
+  } = body;
   return rest;
+}
+
+function stripResolvedBankExamples(request: ExamRequest): ExamRequest {
+  if (!request.bankSeed) return request;
+  const { examples: _examples, ...bankSeed } = request.bankSeed;
+  return {
+    ...request,
+    bankSeed,
+  };
 }
 
 interface PersistRubricInput {

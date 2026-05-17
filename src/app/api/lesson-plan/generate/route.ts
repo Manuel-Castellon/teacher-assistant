@@ -121,6 +121,7 @@ export async function POST(request: Request) {
       ...(userId ? { userId } : {}),
       ...(resolved.classId ? { classId: resolved.classId } : {}),
       plan,
+      requestGrade: grade,
       markdown,
       ...(worksheetMarkdown ? { worksheetMarkdown } : {}),
       ...(worksheetVerification ? { worksheetVerification } : {}),
@@ -189,6 +190,7 @@ interface PersistLessonPlanArtifactInput {
   userId?: string;
   classId?: string;
   plan: Awaited<ReturnType<LessonPlanGenerator['generate']>>;
+  requestGrade: GradeLevel;
   markdown: string;
   worksheetMarkdown?: string;
   worksheetVerification?: Awaited<ReturnType<typeof verifyLessonWorksheetMath>>;
@@ -202,7 +204,7 @@ async function persistLessonPlanArtifact(input: PersistLessonPlanArtifactInput):
       teacherId: input.userId,
       kind: 'lesson_plan',
       title: `${input.plan.topic} - ${input.plan.subTopic}`,
-      grade: input.plan.grade,
+      grade: input.requestGrade,
       ...(input.classId ? { classId: input.classId } : {}),
       ...(input.plan.curriculumTopicId ? { curriculumTopicId: input.plan.curriculumTopicId } : {}),
       payload: input.plan,

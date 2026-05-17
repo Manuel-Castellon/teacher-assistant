@@ -3,6 +3,7 @@ import {
   renderCurriculumExamScope,
   type CurriculumExamScope,
 } from './curriculumContext';
+import type { ExamQuestionBankSeed } from './types';
 import { gradeLabel, type GradeLevel } from '../types/shared';
 
 export const EXAM_PROMPT_VERSION = 'exam-v0.1.0';
@@ -82,6 +83,7 @@ export function renderExamUserPrompt(request: {
   }[];
   curriculumScope?: CurriculumExamScope;
   teacherNotes?: string;
+  bankSeed?: ExamQuestionBankSeed;
 }): string {
   const lines = [
     'צור מבחן במתמטיקה עבור הבקשה הבאה. החזר JSON בלבד התואם את הסכמה של GeneratedExam.',
@@ -116,6 +118,10 @@ export function renderExamUserPrompt(request: {
     }
   }
 
+  if (request.bankSeed?.examples?.length) {
+    appendQuestionBankSeed(lines, request.bankSeed.examples);
+  }
+
   if (request.teacherNotes) {
     lines.push('', '## הערות מהמורה (לכבד בקפדנות)', request.teacherNotes);
   }
@@ -123,6 +129,44 @@ export function renderExamUserPrompt(request: {
   lines.push('', '## סכמת JSON', EXAM_JSON_SCHEMA);
 
   return lines.join('\n');
+}
+
+function appendQuestionBankSeed(
+  lines: string[],
+  examples: NonNullable<Parameters<typeof renderExamUserPrompt>[0]['bankSeed']>['examples'],
+): void {
+  if (!examples?.length) return;
+  const verbatim = examples.filter(example => example.useMode === 'verbatim');
+  const style = examples.filter(example => example.useMode === 'style-reference');
+
+  lines.push('', '## בנק שאלות');
+  if (verbatim.length) {
+    lines.push(
+      '',
+      '### שאלות לשילוב כלשונן',
+      'שלב את השאלות הבאות במבחן כלשונן, למעט התאמות מספור/ניקוד/עיצוב הכרחיות. אל תשמיט את הרעיון המתמטי או את הנתונים. שמור ייחוס מקור בנתוני המבחן.',
+    );
+    for (const example of verbatim) {
+      lines.push('', `#### ${example.id}`, `מקור: ${example.provenanceLabel}`, example.promptMarkdown);
+      if (example.answerMarkdown) {
+        lines.push('פתרון מקור לשימוש במפתח התשובות:', example.answerMarkdown);
+      }
+    }
+  }
+
+  if (style.length) {
+    lines.push(
+      '',
+      '### דוגמאות סגנון בלבד',
+      'הדוגמאות הבאות מיועדות להשראת סגנון ורמת קושי בלבד. אין להעתיק ניסוח, מספרים, סיפור, רצף סעיפים או פתרון.',
+    );
+    for (const example of style) {
+      lines.push('', `#### ${example.id}`, `מקור: ${example.provenanceLabel}`, example.promptMarkdown);
+      if (example.answerMarkdown) {
+        lines.push('מאפייני פתרון לעיון בלבד:', example.answerMarkdown);
+      }
+    }
+  }
 }
 
 export function renderRegenerateQuestionUserPrompt(request: {

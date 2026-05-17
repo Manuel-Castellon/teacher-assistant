@@ -60,7 +60,28 @@ export function renderExamMarkdown(exam: GeneratedExam): string {
   }
 
   lines.push('בהצלחה!');
+
+  if (exam.questionBankAttributions?.length) {
+    lines.push('', '---', '', 'ייחוס שאלות מבנק השאלות:');
+    for (const attribution of exam.questionBankAttributions) {
+      lines.push(`- ${renderAttribution(attribution)}`);
+    }
+  }
+
   return lines.join('\n');
+}
+
+function renderAttribution(attribution: NonNullable<GeneratedExam['questionBankAttributions']>[number]): string {
+  const p = attribution.provenance;
+  const parts = [
+    p.sourceTitle,
+    p.author,
+    p.publisher,
+    p.year ? String(p.year) : undefined,
+    p.pageNumber !== undefined ? `עמ' ${p.pageNumber}` : undefined,
+    p.exerciseNumber ? `תרגיל ${p.exerciseNumber}` : undefined,
+  ].filter(Boolean);
+  return parts.join(' · ');
 }
 
 function renderSubQuestionLines(label: string, content: string): string[] {

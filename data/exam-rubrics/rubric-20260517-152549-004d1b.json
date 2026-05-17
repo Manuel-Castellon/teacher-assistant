@@ -1,0 +1,36 @@
+{
+  "id": "rubric-20260517-152549-004d1b",
+  "sourceExamPath": "generated:exam:17.05.26",
+  "title": "מבחן במתמטיקה - ח׳, שכבה א",
+  "className": "ח׳, שכבה א",
+  "date": "17.05.26",
+  "totalPoints": 20,
+  "projectLearnings": [],
+  "questions": [
+    {
+      "questionNumber": 1,
+      "title": "משוואות פשוטות",
+      "topic": "משוואות פשוטות",
+      "maxPoints": 20,
+      "subQuestions": [
+        {
+          "label": "1.",
+          "maxPoints": 20,
+          "expectedAnswer": "$x=\\frac{17}{4}$",
+          "criteria": [
+            {
+              "id": "1-solve",
+              "description": "פתרון מסודר ונכון על-פי שלבים",
+              "points": 14
+            },
+            {
+              "id": "1-answer",
+              "description": "תשובה סופית נכונה",
+              "points": 6
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

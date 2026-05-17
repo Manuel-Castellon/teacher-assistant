@@ -230,13 +230,33 @@ CREATE TABLE question_bank_items (
   question_type         TEXT NOT NULL CHECK (question_type IN ('חישובי','בעיה_מילולית','הוכחה','קריאה_וניתוח','מעורב')),
   difficulty            TEXT CHECK (difficulty IN ('בסיסי','בינוני','מתקדם','אתגר')),
   representation_type   TEXT CHECK (representation_type IN ('טקסט','גרף','טבלה','שרטוט','ציר_מספרים','מעורב')),
+  license               TEXT NOT NULL CHECK (license IN (
+    'ministry-public',
+    'teacher-original',
+    'open-license',
+    'public-domain',
+    'copyrighted-personal-use',
+    'student-submitted',
+    'unknown'
+  )),
   prompt_markdown       TEXT NOT NULL,
   answer_markdown       TEXT,
   verification_item     JSONB,
   rubric_json           JSONB,
   metadata              JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT question_bank_items_provenance_required CHECK (
+    license = 'unknown'
+    OR (
+      jsonb_typeof(metadata->'provenance') = 'object'
+      AND jsonb_typeof(metadata->'provenance'->'sourceTitle') = 'string'
+      AND length(metadata->'provenance'->>'sourceTitle') > 0
+      AND jsonb_typeof(metadata->'provenance'->'license') = 'string'
+      AND metadata->'provenance'->>'license' = license
+      AND jsonb_typeof(metadata->'provenance'->'ingestedAt') = 'string'
+    )
+  )
 );
 
 CREATE TABLE question_bank_tags (
@@ -252,6 +272,11 @@ CREATE INDEX question_bank_items_topic_idx
   ON question_bank_items(curriculum_topic_id);
 CREATE INDEX question_bank_items_grade_type_idx
   ON question_bank_items(grade_level, question_type);
+CREATE INDEX question_bank_items_license_idx
+  ON question_bank_items(license);
+CREATE UNIQUE INDEX question_bank_items_catalog_source_label_unique
+  ON question_bank_items(source_label)
+  WHERE teacher_id IS NULL AND source_label IS NOT NULL;
 CREATE INDEX question_bank_tags_tag_idx
   ON question_bank_tags(tag);
 

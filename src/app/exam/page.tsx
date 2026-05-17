@@ -1,9 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { ExamRequest, ExamPartSpec, ExamQuestionSpec, GeneratedExam, RegenerateQuestionRequest } from '@/exam/types';
+import type {
+  ExamQuestionBankSeedMode,
+  ExamRequest,
+  ExamPartSpec,
+  ExamQuestionSpec,
+  GeneratedExam,
+  RegenerateQuestionRequest,
+} from '@/exam/types';
+import type { BackendName } from '@/exam/backends';
 import { CUSTOM_CURRICULUM_TOPIC_ID, getCurriculumTopicOptions } from '@/exam/curriculumContext';
 import type { GradeLevel } from '@/types/shared';
+import type { QuestionBankItemSummary } from '@/questionBank/types';
 import {
   buildExamFromTaughtMaterial,
   CLASS_PROGRESS_STORAGE_KEY,
@@ -20,6 +29,16 @@ interface VerificationResult {
 }
 
 type RubricMode = 'deterministic' | 'ai' | 'none';
+type AIBackend = 'auto' | BackendName;
+
+const BACKEND_OPTIONS: { value: AIBackend; label: string }[] = [
+  { value: 'auto', label: 'אוטומטי' },
+  { value: 'gemini', label: 'Gemini 2.5 Flash' },
+  { value: 'gemini-3-flash', label: 'Gemini 3 Flash Preview' },
+  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+  { value: 'claude-cli', label: 'Claude CLI' },
+  { value: 'codex', label: 'GPT-5.5 (Codex)' },
+];
 
 interface GenerateResponse {
   exam: GeneratedExam;
@@ -28,10 +47,16 @@ interface GenerateResponse {
   verification: VerificationResult[];
   artifactId?: string;
   artifactWarning?: string;
+  bankSeedWarning?: string;
   rubricId?: string;
   rubricArtifactId?: string;
   rubricMode?: RubricMode;
   rubricWarning?: string;
+  error?: string;
+}
+
+interface QuestionBankListResponse {
+  items?: QuestionBankItemSummary[];
   error?: string;
 }
 
@@ -104,6 +129,14 @@ export default function ExamPage() {
   const [selectedClassId, setSelectedClassId] = useState('');
   const [classContextSource, setClassContextSource] = useState<ClassContextSource>('auto');
   const [rubricMode, setRubricMode] = useState<RubricMode>('deterministic');
+  const [backend, setBackend] = useState<AIBackend>('auto');
+  const [useQuestionBank, setUseQuestionBank] = useState(false);
+  const [bankSeedMode, setBankSeedMode] = useState<ExamQuestionBankSeedMode>('style-reference');
+  const [bankItems, setBankItems] = useState<QuestionBankItemSummary[]>([]);
+  const [selectedBankItemIds, setSelectedBankItemIds] = useState<string[]>([]);
+  const [copyrightAcknowledged, setCopyrightAcknowledged] = useState(false);
+  const [bankLoading, setBankLoading] = useState(false);
+  const [bankError, setBankError] = useState<string | null>(null);
   const curriculumTopicOptions = getCurriculumTopicOptions(grade);
 
   useEffect(() => {
@@ -133,7 +166,39 @@ export default function ExamPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!useQuestionBank) return;
+    let cancelled = false;
+    setBankLoading(true);
+    setBankError(null);
+    (async () => {
+      try {
+        const resp = await fetch(`/api/question-bank?grade=${encodeURIComponent(grade)}`);
+        const body = (await resp.json()) as QuestionBankListResponse;
+        if (cancelled) return;
+        if (!resp.ok || body.error || !body.items) {
+          setBankError(body.error ?? 'שגיאה בטעינת בנק השאלות');
+          setBankItems([]);
+        } else {
+          setBankItems(body.items);
+          setSelectedBankItemIds(prev => prev.filter(id => body.items!.some(item => item.id === id)));
+        }
+      } catch (err) {
+        if (!cancelled) setBankError(err instanceof Error ? err.message : 'שגיאה בטעינה');
+      } finally {
+        if (!cancelled) setBankLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [useQuestionBank, grade]);
+
   const selectedClass = classProfiles.find(item => item.id === selectedClassId);
+  const selectedBankItems = bankItems.filter(item => selectedBankItemIds.includes(item.id));
+  const selectedCopyrightedBankItems = selectedBankItems.filter(item => item.license === 'copyrighted-personal-use');
+  const requiresCopyrightAcknowledgement =
+    useQuestionBank
+    && bankSeedMode === 'verbatim'
+    && selectedCopyrightedBankItems.length > 0;
 
   function updatePart(idx: number, patch: Partial<ExamPartSpec>) {
     setParts(prev => prev.map((p, i) => i === idx ? { ...p, ...patch } : p));
@@ -157,6 +222,7 @@ export default function ExamPage() {
 
   function handleGradeChange(nextGrade: GradeLevel) {
     setGrade(nextGrade);
+    setSelectedBankItemIds([]);
     setParts(prev => prev.map(part => ({
       ...part,
       questionSpecs: part.questionSpecs.map(question => {
@@ -244,12 +310,30 @@ export default function ExamPage() {
     classId?: string;
     classContextSource?: ClassContextSource;
     rubricMode: RubricMode;
+    backend: AIBackend;
   } {
     const base = buildRequest();
     const withClass = selectedClassId
       ? { ...base, classId: selectedClassId, classContextSource }
       : base;
-    return { ...withClass, rubricMode };
+    const bankSeed = useQuestionBank && selectedBankItemIds.length > 0
+      ? {
+          bankSeed: {
+            mode: bankSeedMode,
+            itemIds: selectedBankItemIds,
+            ...(requiresCopyrightAcknowledgement && copyrightAcknowledged
+              ? { copyrightAcknowledged: true }
+              : {}),
+          },
+        }
+      : {};
+    return { ...withClass, ...bankSeed, rubricMode, backend };
+  }
+
+  function toggleBankItem(id: string) {
+    setSelectedBankItemIds(prev => (
+      prev.includes(id) ? prev.filter(itemId => itemId !== id) : [...prev, id]
+    ));
   }
 
   function rememberExam(request: ExamRequest, response: GenerateResponse) {
@@ -560,6 +644,93 @@ export default function ExamPage() {
         + חלק חדש
       </button>
 
+      <div style={{ border: '1px solid #d7dee8', borderRadius: 8, padding: '0.85rem 1rem', marginBottom: '1.5rem', background: '#f8fbff' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+          <input
+            type="checkbox"
+            checked={useQuestionBank}
+            onChange={e => setUseQuestionBank(e.target.checked)}
+          />
+          השתמש בבנק שאלות
+        </label>
+
+        {useQuestionBank && (
+          <div style={{ marginTop: '0.75rem' }}>
+            <SelectField
+              label="אופן שימוש"
+              value={bankSeedMode}
+              options={[
+                { value: 'style-reference', label: 'השראה סגנונית' },
+                { value: 'verbatim', label: 'שילוב כלשונו' },
+              ]}
+              onChange={v => setBankSeedMode(v as ExamQuestionBankSeedMode)}
+            />
+            <p style={hintTextStyle}>
+              ברירת המחדל היא השראה סגנונית. שילוב כלשונו של ספר לימוד דורש אישור שהשימוש מותר במסגרת ההוראה שלך.
+            </p>
+
+            {bankError && <div style={{ ...errorBoxStyle, marginTop: '0.75rem' }}>{bankError}</div>}
+            {bankLoading ? (
+              <p style={hintTextStyle}>טוען שאלות…</p>
+            ) : bankItems.length === 0 ? (
+              <p style={hintTextStyle}>אין שאלות זמינות לכיתה הנוכחית.</p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.5rem', marginTop: '0.75rem', maxHeight: 220, overflow: 'auto' }}>
+                {bankItems.map(item => (
+                  <label
+                    key={item.id}
+                    style={{
+                      border: `1px solid ${selectedBankItemIds.includes(item.id) ? '#1769aa' : '#cbd5e1'}`,
+                      borderRadius: 6,
+                      padding: '0.55rem 0.65rem',
+                      background: selectedBankItemIds.includes(item.id) ? '#eef6ff' : '#fff',
+                      display: 'flex',
+                      gap: '0.45rem',
+                      alignItems: 'flex-start',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedBankItemIds.includes(item.id)}
+                      onChange={() => toggleBankItem(item.id)}
+                    />
+                    <span>
+                      <span style={{ display: 'block', fontWeight: 600 }}>{item.sourceTitle}</span>
+                      <span style={{ display: 'block', color: '#475569', fontSize: '0.84rem' }}>
+                        {item.questionType.replace(/_/g, ' ')}
+                        {item.difficulty ? ` · ${item.difficulty}` : ''}
+                        {' · '}
+                        {renderLicenseLabel(item.license)}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {requiresCopyrightAcknowledgement && (
+              <div style={copyrightNoticeStyle}>
+                <strong>שימוש כלשונו בחומר מוגן</strong>
+                <p style={{ margin: '0.4rem 0 0.55rem', lineHeight: 1.55 }}>
+                  יש לאשר שהשימוש בשאלות אלה מותר במסגרת ההוראה: לבית הספר/לתלמידים יש גישה חוקית למקור,
+                  השימוש הוא לצורך לימוד או בחינה בכיתה בלבד, בהיקף הנדרש, עם ייחוס מקור, ולא לפרסום ציבורי
+                  או להפצה מחוץ למסגרת הכיתה.
+                </p>
+                <label style={{ display: 'flex', gap: '0.45rem', alignItems: 'flex-start', fontWeight: 500 }}>
+                  <input
+                    type="checkbox"
+                    checked={copyrightAcknowledged}
+                    onChange={e => setCopyrightAcknowledged(e.target.checked)}
+                  />
+                  אני מאשר/ת שימוש לימודי סגור כלשונו בפריטים המוגנים שנבחרו.
+                </label>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={labelStyle}>הערות למורה</label>
         <textarea
@@ -568,6 +739,18 @@ export default function ExamPage() {
           onChange={e => setTeacherNotes(e.target.value)}
           placeholder="הערות נוספות לגבי רמת הקושי, סגנון השאלות וכו'"
         />
+      </div>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <SelectField
+          label="מודל AI"
+          value={backend}
+          options={BACKEND_OPTIONS}
+          onChange={v => setBackend(v as AIBackend)}
+        />
+        <p style={hintTextStyle}>
+          אוטומטי משתמש בשרשרת ברירת המחדל (Gemini 2.5 Flash). למבחנים מורכבים מומלץ GPT-5.5 (Codex) — Gemini נכשל לעיתים בפענוח JSON עם LaTeX.
+        </p>
       </div>
 
       <div style={{ marginBottom: '1.5rem' }}>
@@ -587,11 +770,16 @@ export default function ExamPage() {
       <button
         type="button"
         onClick={handleGenerate}
-        disabled={loading}
+        disabled={loading || (requiresCopyrightAcknowledgement && !copyrightAcknowledged)}
+        aria-disabled={loading || (requiresCopyrightAcknowledgement && !copyrightAcknowledged)}
         style={{
           ...btnPrimary,
-          opacity: loading ? 0.6 : 1,
-          cursor: loading ? 'wait' : 'pointer',
+          opacity: loading || (requiresCopyrightAcknowledgement && !copyrightAcknowledged) ? 0.6 : 1,
+          cursor: loading
+            ? 'wait'
+            : requiresCopyrightAcknowledgement && !copyrightAcknowledged
+              ? 'not-allowed'
+              : 'pointer',
         }}
       >
         {loading ? 'מייצר מבחן...' : 'ייצר מבחן'}
@@ -615,6 +803,19 @@ export default function ExamPage() {
               color: result.artifactWarning ? '#92400e' : '#065f46',
             }}>
               {result.artifactId ? `המבחן נשמר בארכיון המורה: ${result.artifactId}` : result.artifactWarning}
+            </div>
+          )}
+
+          {result.bankSeedWarning && (
+            <div style={{
+              padding: '0.75rem 1rem',
+              borderRadius: 6,
+              marginBottom: '1rem',
+              background: '#fffbeb',
+              border: '1px solid #fde68a',
+              color: '#92400e',
+            }}>
+              {result.bankSeedWarning}
             </div>
           )}
 
@@ -765,6 +966,16 @@ export default function ExamPage() {
       )}
     </div>
   );
+}
+
+function renderLicenseLabel(license: QuestionBankItemSummary['license']): string {
+  if (license === 'ministry-public') return 'משרד החינוך';
+  if (license === 'teacher-original') return 'המורה';
+  if (license === 'open-license') return 'רישיון פתוח';
+  if (license === 'public-domain') return 'נחלת הכלל';
+  if (license === 'copyrighted-personal-use') return 'ספר לימוד';
+  if (license === 'student-submitted') return 'תלמיד/ה';
+  return 'לא ידוע';
 }
 
 function Field({ label, value, onChange, type = 'text', placeholder }: {
@@ -949,6 +1160,24 @@ const warningStyle: React.CSSProperties = {
   background: '#fffbeb',
   color: '#92400e',
   fontSize: '0.85rem',
+};
+
+const copyrightNoticeStyle: React.CSSProperties = {
+  marginTop: '0.85rem',
+  padding: '0.75rem 0.85rem',
+  border: '1px solid #fbbf24',
+  borderRadius: 6,
+  background: '#fffbeb',
+  color: '#78350f',
+  fontSize: '0.9rem',
+};
+
+const errorBoxStyle: React.CSSProperties = {
+  padding: '0.65rem 0.75rem',
+  border: '1px solid #f5c2c7',
+  borderRadius: 6,
+  background: '#fff3f4',
+  color: '#9c1c1c',
 };
 
 const btnDanger: React.CSSProperties = {

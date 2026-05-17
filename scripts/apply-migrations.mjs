@@ -5,6 +5,8 @@ import pg from 'pg';
 const DEFAULT_MIGRATIONS = [
   'db/migrations/2026-05-15-class-progress-persistence.sql',
   'db/migrations/2026-05-16-generated-artifacts-question-bank.sql',
+  'db/migrations/2026-05-17-question-bank-provenance.sql',
+  'db/migrations/2026-05-17-question-bank-license-tiers.sql',
 ];
 
 function loadDatabaseUrl() {

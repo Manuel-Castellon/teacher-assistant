@@ -1,72 +1,86 @@
-# CHECKPOINT.md
+# CHECKPOINT.md — Ready for next slice
 
-## Last completed
-- 2026-05-16 — Highest-value follow-up batch:
-  - `/lesson-plan` worksheet math verification: generated worksheet exercises can now carry a structured `verificationItem`; the API runs SymPy over deterministic worksheet items and returns `worksheetVerification`. The UI shows verified/failed/skipped counts and warns when worksheet math needs manual review. Prompt version bumped to `lp-v0.3.4-mvp1` and now tells models to create one ExerciseRef per printed worksheet exercise rather than duplicating a full worksheet plus repeated sub-items.
-  - Wolfram key was considered for this path. Decision: keep SymPy as default because it is offline, deterministic, and already uses structured expressions; use Wolfram later only as a non-blocking fallback for SymPy parser/modeling gaps.
-  - Added Postgres-backed generated artifact persistence foundation: `generated_artifacts` table, `src/artifacts/serverStore.ts`, `GET /api/artifacts`, and signed-in save hooks for generated lesson plans, exams, and rubrics. Generation remains non-blocking if DB persistence fails.
-  - Added MVP3 question-bank schema/tagging stub: `question_bank_items`, `question_bank_tags`, `src/questionBank/types.ts`, and `src/questionBank/serverStore.ts`.
-  - Added Node migration runner `npm run db:migrate` for shells without `psql`.
-  - Updated migrations: `2026-05-15-class-progress-persistence.sql` now includes the `skipped` progress status; new `2026-05-16-generated-artifacts-question-bank.sql` adds generated artifacts and question-bank tables.
-  - Live smoke: `/lesson-plan` real generation produced a worksheet with 3/3 SymPy-verified worksheet items. `/exam` real generation produced an exam with 2/2 verified items and deterministic rubric `rubric-20260516-194359-fd56d9`; `/api/rubrics/<id>` and `/rubrics?rubric=<id>` returned 200.
-  - UI smoke: Playwright MCP could not be used because the MCP browser transport stayed closed after clearing an old locked profile (`Transport closed`). A local Playwright browser smoke was used only where practical: `/exam` UI passed with generated exam, `מחוון נוצר`, `אימות מתמטי: 2/2 תקינים`, download buttons visible, and no console warnings/errors. `/lesson-plan` UI smoke was started but interrupted before completion; API-level lesson-plan worksheet verification had already passed.
-  - DB migration attempt: `npm run db:migrate` ran, but this machine still has no `DATABASE_URL` in the environment or `.env.local`, so signed-in DB persistence could not be exercised end-to-end.
+## Current State
+MVP 3 question-bank first slice is complete and folded into `PROGRESS.md` / `MVP_STATUS.md`.
 
-- Quality gates for this batch:
-  - `npm run type-check` passed.
-  - `npm run test:lesson-plan` passed: 74 tests.
-  - `npm run test:artifacts` passed: 5 tests.
+Completed in this slice:
+- Provenance/license schema + migration.
+- Seed JSON format + ingest CLI.
+- 10 בני גורן complex-number items with copyrighted-personal-use provenance.
+- 10 teacher-original May-2026 grade-8 exam items.
+- Idempotent DB ingest: current local DB has 20 catalog rows.
+- `/question-bank` browse UI + list/detail APIs.
+- `/exam` seed-from-bank UI and server path with `style-reference` / `verbatim` modes.
+- License gate: copyrighted-personal-use items require explicit teacher acknowledgement before verbatim closed classroom/exam use; verbatim items get exam markdown attribution.
+- License tiers now also include `open-license` and `public-domain` for explicitly reusable sources.
+- Tests and signoff updated.
 
-- Remaining concrete blockers:
-  - Add a real `DATABASE_URL` and run `npm run db:migrate`, then smoke signed-in `/curriculum` → `/lesson-plan` → post-lesson update → `/exam`.
-  - Re-run true Playwright MCP for `/lesson-plan` UI once the MCP transport is healthy.
-  - Decide whether to keep or remove smoke-generated rubric artifacts after manual review.
+User constraint preserved:
+> "make sure that in metadata you extract you save credit, topics, page numbers, etc. everything to later protect us in terms of trademark if needed."
 
-- 2026-05-16 — Smoke-test fixes from `Smoke tests results.txt`:
-  - `/curriculum`: notes preserve typed spacing; added first-class `skipped` status (`מדולג כרגע`) in `src/curriculumProgress/progress.ts`, UI, tests, and DB CHECK constraint. Skipped topics are not completed/exam-ready and warn if selected for an exam.
-  - `/curriculum` ST-03: kept both grade-8 entries because the raw source contains both `מערכת משוואות בשני נעלמים` and `מערכת משוואות ושאלות מילוליות`. Added expandable `יעדי למידה` visibility per topic; the later repeated entry currently shows zero extracted objectives rather than being merged/deleted.
-  - `/exam`: date field is now `type="date"` with generated output still formatted as `dd.mm.yy`; saved older dotted dates are normalized when reopened.
-  - `/exam`: multi-line sub-questions render as separate paragraphs. Generated diagrams can use `diagramSvg`, embedded as a printable data-image in markdown/preview/export while keeping `diagramDescription` as fallback text.
-  - SymPy verifier: `scripts/verify-math.py` safely parses generated list/dict expressions and verifies two-variable systems like `[Eq(5*x + 3*y, 29), Eq(3*x + 2*y, 18)]` with expected `{x: 4, y: 3}`.
-  - `/lesson-plan`: generation response includes `worksheetMarkdown` when the independent-work phase signals a worksheet; UI offers separate worksheet DOCX/PDF downloads so student handouts are separate from the teacher plan.
-  - Claude CLI backend: changed from passing the huge prompt as a `-p` argument to piping prompt through stdin via `claude -p --output-format text`; quota/rate-limit stderr is labeled clearly. User manually confirmed the smoke failure also involved quota, so this is a reliability/error-clarity fix, not a claim that quota was false.
-- Quality gates for smoke fixes:
-  - `npm run type-check` passed.
-  - `npm run build` passed.
-  - `npm run test:lesson-plan` passed.
-  - `npm run test:progress` passed.
-  - Exam-focused tests passed: `src/exam/renderExam.test.ts`, `src/exam/examPrompt.test.ts`, `src/providers/impl/SympyMathVerifier.test.ts`, `src/exam/ExamGenerator.test.ts`.
-  - Direct SymPy smoke for the reported two-variable system passed: computed `x=4, y=3`.
-  - Playwright smoke checked `/exam`, `/curriculum`, and `/lesson-plan`; dev server was stopped afterward.
+## Verification
+- `npm run db:ingest-question-bank -- --dry` passed: 20 items across 2 seed files.
+- `npm run db:migrate` passed after adding `open-license` and `public-domain` tiers.
+- `npm run test:signoff` passed:
+  - 74 lesson-plan tests
+  - 21 progress tests
+  - 27 rubric tests
+  - 26 artifact/question-bank tests
+  - MVP1 evals 2/2
+  - MVP2 evals 4/4
+- `npm run build` passed.
+- Local smoke:
+  - `GET /exam` -> 200
+  - `GET /question-bank` -> 200
+  - `GET /api/question-bank?grade=חי` -> 10 items
+  - Cached Playwright/Chrome smoke verified `/exam` bank picker loads copyrighted textbook items, switches to verbatim mode, shows the acknowledgement warning, disables generation before acknowledgement, enables it after acknowledgement, and logs 0 console warnings/errors.
 
-## Previous completed
-- MVP 2 — auto-rubric on exam generation:
-  - `src/examRubric/buildRubricFromExam.ts` — deterministic mapper from `GeneratedExam` + `ExamRequest` → `ExamRubric`. Splits parent points evenly across sub-questions; criteria split 70/30 (פתרון מסודר ונכון / תשובה סופית נכונה). Falls back to part title when the request lacks a topic. 8 focused tests including the `splitPoints` helper.
-  - `src/examRubric/saveRubric.ts` — `generateRubricId({ now, randomSuffix })` produces UTC timestamp slugs (`rubric-YYYYMMDD-HHMMSS-<hex>`); `saveExamRubric(rubric, { baseDir })` writes JSON under `data/exam-rubrics/` with a safe-id guard. 4 tests.
-  - `src/examRubric/aiRubricGenerator.ts` — prompt version `rubric-v0.1`. Sends the deterministic base + exam markdown + answer key markdown to a `CompletionFn`, parses JSON, then reconciles against the base so the model cannot tamper with id/title/totalPoints/labels/sub-question maxPoints. When AI criteria sum != sub-question maxPoints, that sub falls back to deterministic criteria; expectedAnswer falls back when blank; acceptedAlternatives/commonMistakes are added when valid strings. 5 tests including markdown fence stripping, schema-drift fallback, and identity-field tampering.
-  - `POST /api/exam/generate` accepts `rubricMode: 'deterministic' | 'ai' | 'none'` (default deterministic). Builds the deterministic base; if AI mode is selected, tries to enrich and falls back to the base on any error with a `rubricWarning` string. Saves the chosen rubric and returns `{ rubricId, rubricMode, rubricWarning }` alongside the exam.
-  - `/exam` UI: new "מחוון" `<select>` (אוטומטי מהיר / מפורט AI / ללא). After generation, a panel surfaces "מחוון נוצר" with a deep link to `/rubrics?rubric=<id>` and shows any AI fallback warning.
-  - `/rubrics` page reads `?rubric=<id>` from the URL on mount and preselects that rubric instead of the first one.
-  - `package.json` — `test:rubrics` now runs the full 27-test rubric suite.
-- Quality gates:
-  - `npm run type-check` passed.
-  - `npm run test:rubrics` passed: 27 tests (2 renderRubric + 4 loadRubrics + 8 buildRubricFromExam + 4 saveRubric + 5 aiRubricGenerator + 4 route).
-  - `npm run test:signoff` passed: type-check + 67 lesson-plan + 20 progress + 27 rubric + MVP1 2/2 + MVP2 4/4 evals.
-  - `npm run build` passed; routes unchanged.
+## Environment
+- Dev server is running on `http://localhost:3000`.
+- Docker `math-teacher-pg` is still expected to be running on port 5432.
+- `.env.local` has `DATABASE_URL`, `AUTH_SECRET`, `GEMINI_API_KEY`, `WOLFRAM_APP_ID`; Google OAuth creds are still blank.
+- `dev-email` auth is passwordless and dev-only (`NODE_ENV !== 'production'`); do not expose it publicly.
 
-## Next
-- Options when resuming:
-  - Live smoke `/exam` → generate → confirm `data/exam-rubrics/rubric-...json` appears and the deep link selects it on `/rubrics`. (Needs a backend with valid keys / claude CLI installed.)
-  - Wire the AI-mode failure path to a real model (currently exercised via the fake completion fn).
-  - Persist rubrics to Postgres alongside saved exams (currently filesystem only — per session decision).
-  - Open a PR for `mvp-4-post-lesson-flow` (now also carries rubric UI + auto-rubric work).
-  - Move on to MVP 1 LLM-judge rubric, MVP 3 question-bank schema + tagging stub, or MVP 4 subtopic-level progress.
-- Real-class signed-in loop and DB migration remain tabled until a usable local Postgres path exists.
+## Next Options
+- MVP3: ingest a real ministry-public/open-license/public-domain source once a PDF/URL/license is provided.
+- MVP3 hardening: deterministic pre-placement for allowed verbatim bank questions instead of relying on prompt instruction.
+- MVP2 reliability: fix Gemini JSON parse fragility with LaTeX backslashes or change default exam backend.
+- MVP4: subtopic-level progress.
+- Auth: wire real Google OAuth creds and confirm the Google path after the JWT-session switch.
 
-## Key files added/changed
-- New: `src/examRubric/buildRubricFromExam.ts` + test, `src/examRubric/saveRubric.ts` + test, `src/examRubric/aiRubricGenerator.ts` + test.
-- Modified: `src/app/api/exam/generate/route.ts` (rubricMode wiring + `persistRubric` helper).
-- Modified: `src/app/exam/page.tsx` (rubric mode select, response type, result-panel link).
-- Modified: `src/app/rubrics/page.tsx` (`?rubric=<id>` deep link).
-- Modified: `package.json` (extended `test:rubrics`).
-- Docs: `PROGRESS.md`, `MVP_STATUS.md` folded in.
+## Planned Next Slice — Question-Bank Teacher-Facing Titles
+Do not implement this until the next session. The current question-bank picker uses `sourceTitle`, which is good provenance but a bad teacher-facing title because many rows only say the book/exam name.
+
+Backend plan:
+- Add compact pedagogical metadata to question-bank items, separate from provenance:
+  - `displayTitle`: short instructional title, e.g. "משוואה ריבועית עם פתרונות מרוכבים".
+  - `shortPrompt`: one-line safe preview/truncated prompt.
+  - `concepts`: small tag list for math concepts.
+  - `skills`: small tag list for required actions.
+  - `estimatedMinutes?`: optional compact planning hint.
+  - `examFit?`: optional `starter | standard | challenge | bonus`.
+- Keep `sourceTitle`, author, publisher, page, exercise, license, etc. as provenance/audit metadata, not as the primary row title.
+- Support seed JSON overrides for these fields; derive reasonable defaults during ingest for existing seed items from prompt/tags/difficulty/provenance.
+- Add API response fields to both list and detail routes. Do not require clients to parse the full prompt just to render a useful picker row.
+
+UX plan:
+- Keep the UI compact and intuitive. Avoid large verbose cards in `/exam` or lesson-plan flows.
+- In `/question-bank`, show a concise row/card:
+  - primary: `displayTitle`
+  - secondary: grade/topic/difficulty/estimated minutes
+  - chips: 2-3 concepts/skills max
+  - muted source line: book/exam + page/exercise
+  - full prompt/answer/provenance only in the detail panel after selection.
+- In `/exam`, replace the current book-name checkbox list with a compact searchable picker:
+  - row title: `displayTitle`
+  - one-line preview: `shortPrompt`
+  - badges: difficulty, source/license, estimated minutes
+  - selected items shown as small chips/cards above the generator.
+  - copyright acknowledgement remains visible only when relevant, not repeated on every row.
+- For lesson-plan integration later, reuse the same picker but with intent labels like "דוגמה בכיתה", "דף עבודה", "שאלת אתגר", or "השראה בלבד".
+
+Smoke-test expectations for next slice:
+- Desktop and mobile `/exam` picker should fit without tall verbose cards.
+- Long titles/previews must truncate or wrap cleanly without layout overlap.
+- `/question-bank` remains usable: list rows scan quickly, detail view carries the full content.
+- Playwright smoke should confirm picker search/filter, item selection, compact row rendering, and no console warnings/errors.

@@ -56,6 +56,8 @@ type AIBackend = 'auto' | BackendName;
 
 type ClassContextSource = 'auto' | 'manual' | 'none';
 
+type ExportKey = 'plan:docx' | 'plan:pdf' | 'worksheet:docx' | 'worksheet:pdf';
+
 interface LessonPlanFormState {
   topic: string;
   subTopic: string;
@@ -139,7 +141,7 @@ export default function LessonPlanPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GenerateLessonPlanResponse | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [exporting, setExporting] = useState<ExportKey | null>(null);
   const [savedPlans, setSavedPlans] = useState<SavedLessonPlan[]>([]);
   const [classProfiles, setClassProfiles] = useState<ClassProgressProfile[]>([]);
   const [selectedClassId, setSelectedClassId] = useState('');
@@ -384,7 +386,8 @@ export default function LessonPlanPage() {
     const filename = kind === 'plan'
       ? buildLessonPlanFilename(result?.plan, form)
       : buildWorksheetFilename(result?.plan, form);
-    setExporting(true);
+    const exportKey: ExportKey = `${kind}:${format}`;
+    setExporting(exportKey);
     setError(null);
     try {
       const resp = await fetch('/api/exam/export', {
@@ -407,7 +410,7 @@ export default function LessonPlanPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'שגיאה ביצוא');
     } finally {
-      setExporting(false);
+      setExporting(null);
     }
   }
 
@@ -602,19 +605,19 @@ export default function LessonPlanPage() {
               </p>
             </div>
             <div style={actionsStyle}>
-              <button type="button" onClick={() => handleDownload('docx')} disabled={exporting || !result.markdown} style={btnDownload}>
-                {exporting ? 'מייצא...' : 'הורד DOCX'}
+              <button type="button" onClick={() => handleDownload('docx')} disabled={exporting !== null || !result.markdown} style={btnDownload}>
+                {exporting === 'plan:docx' ? 'מייצא...' : 'מערך למורה DOCX'}
               </button>
-              <button type="button" onClick={() => handleDownload('pdf')} disabled={exporting || !result.markdown} style={btnDownloadPdf}>
-                {exporting ? 'מייצא...' : 'הורד PDF'}
+              <button type="button" onClick={() => handleDownload('pdf')} disabled={exporting !== null || !result.markdown} style={btnDownloadPdf}>
+                {exporting === 'plan:pdf' ? 'מייצא...' : 'מערך למורה PDF'}
               </button>
               {result.worksheetMarkdown && (
                 <>
-                  <button type="button" onClick={() => handleDownload('docx', 'worksheet')} disabled={exporting} style={btnDownloadWorksheet}>
-                    {exporting ? 'מייצא...' : 'דף עבודה DOCX'}
+                  <button type="button" onClick={() => handleDownload('docx', 'worksheet')} disabled={exporting !== null} style={btnDownloadWorksheet}>
+                    {exporting === 'worksheet:docx' ? 'מייצא...' : 'דף עבודה DOCX'}
                   </button>
-                  <button type="button" onClick={() => handleDownload('pdf', 'worksheet')} disabled={exporting} style={btnDownloadWorksheetPdf}>
-                    {exporting ? 'מייצא...' : 'דף עבודה PDF'}
+                  <button type="button" onClick={() => handleDownload('pdf', 'worksheet')} disabled={exporting !== null} style={btnDownloadWorksheetPdf}>
+                    {exporting === 'worksheet:pdf' ? 'מייצא...' : 'דף עבודה PDF'}
                   </button>
                 </>
               )}
@@ -759,7 +762,7 @@ const miniTimelineNoteStyle: React.CSSProperties = {
 function buildLessonPlanFilename(plan: LessonPlan | undefined, fallback: LessonPlanFormState): string {
   const topic = plan?.topic?.trim() || fallback.topic.trim() || 'ללא נושא';
   const grade = gradeLabel(plan?.grade ?? fallback.grade);
-  return sanitizeFilename(`מערך שיעור ${topic} כיתה ${grade}`);
+  return sanitizeFilename(`מערך שיעור למורה ${topic} כיתה ${grade}`);
 }
 
 function buildWorksheetFilename(plan: LessonPlan | undefined, fallback: LessonPlanFormState): string {
